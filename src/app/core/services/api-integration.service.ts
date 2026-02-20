@@ -5,6 +5,7 @@ import { map, catchError, retry, delay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { NotificationService } from './notification.service';
 import { PurchaseOrderHeader } from '../../features/purchase-order/models/purchase-order.model';
+import { SalesOrderHeader } from '../../features/sales-order/models/sales-order.model';
 
 /**
  * API Integration Service
@@ -61,10 +62,12 @@ export class ApiIntegrationService {
      * Fetch sales orders from external API
      * Implements retry strategy for transient errors
      * 
+     * Requirements: 5.6, 5.7, 5.8
+     * 
      * @param criteria - Search criteria for fetching sales orders
      * @returns Observable of API sync result containing sales orders
      */
-    fetchSalesOrders(criteria: ApiSyncCriteria): Observable<ApiSyncResult<any>> {
+    fetchSalesOrders(criteria: ApiSyncCriteria): Observable<ApiSyncResult<SalesOrderHeader>> {
         return this.http.post<ApiResponse>(`${this.apiEndpoint}/sales-orders/sync`, criteria).pipe(
             retry({
                 count: this.maxRetries,
@@ -76,7 +79,7 @@ export class ApiIntegrationService {
                     return throwError(() => error);
                 }
             }),
-            map(response => this.transformApiResponse<any>(response)),
+            map(response => this.transformApiResponse<SalesOrderHeader>(response)),
             catchError(error => {
                 this.logApiError('fetchSalesOrders', error);
                 this.notifyAdminOfError('fetchSalesOrders', error);

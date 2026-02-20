@@ -73,6 +73,9 @@ export class ApiIntegrationComponent {
     /**
      * Manually trigger API data fetch
      */
+    /**
+         * Manually trigger API data fetch
+         */
     fetchData(): void {
         this.isFetching = true;
         this.syncResult = null;
@@ -84,35 +87,33 @@ export class ApiIntegrationComponent {
             dateTo: new Date()
         };
 
-        const fetchObservable = this.dataType === 'purchase-order'
-            ? this.apiIntegrationService.fetchPurchaseOrders(criteria)
-            : this.apiIntegrationService.fetchSalesOrders(criteria);
-
-        fetchObservable.subscribe({
-            next: (result) => {
-                this.isFetching = false;
-                this.syncResult = result;
-                this.previewData = result.data;
-                this.validationErrors = result.errors;
-                this.dataFetched.emit(result);
-            },
-            error: (error) => {
-                this.isFetching = false;
-                console.error('Error fetching data from API:', error);
-
-                // Create error result
-                this.syncResult = {
-                    success: false,
-                    data: [],
-                    errors: [{
-                        code: 'API_ERROR',
-                        message: error.message || 'Failed to fetch data from external API'
-                    }],
-                    timestamp: new Date()
-                };
-                this.validationErrors = this.syncResult.errors;
-            }
-        });
+        if (this.dataType === 'purchase-order') {
+            this.apiIntegrationService.fetchPurchaseOrders(criteria).subscribe({
+                next: (result: ApiSyncResult<any>) => {
+                    this.isFetching = false;
+                    this.syncResult = result;
+                    this.previewData = result.data;
+                    this.validationErrors = result.errors;
+                    this.dataFetched.emit(result);
+                },
+                error: (error: any) => {
+                    this.handleFetchError(error);
+                }
+            });
+        } else {
+            this.apiIntegrationService.fetchSalesOrders(criteria).subscribe({
+                next: (result: ApiSyncResult<any>) => {
+                    this.isFetching = false;
+                    this.syncResult = result;
+                    this.previewData = result.data;
+                    this.validationErrors = result.errors;
+                    this.dataFetched.emit(result);
+                },
+                error: (error: any) => {
+                    this.handleFetchError(error);
+                }
+            });
+        }
     }
 
     /**
@@ -199,5 +200,25 @@ export class ApiIntegrationComponent {
         this.syncResult = null;
         this.previewData = [];
         this.validationErrors = [];
+    }
+
+    /**
+     * Handle fetch error
+     */
+    private handleFetchError(error: any): void {
+        this.isFetching = false;
+        console.error('Error fetching data from API:', error);
+
+        // Create error result
+        this.syncResult = {
+            success: false,
+            data: [],
+            errors: [{
+                code: 'API_ERROR',
+                message: error.message || 'Failed to fetch data from external API'
+            }],
+            timestamp: new Date()
+        };
+        this.validationErrors = this.syncResult.errors;
     }
 }

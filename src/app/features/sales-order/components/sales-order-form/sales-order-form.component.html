@@ -1,0 +1,123 @@
+<div class="card">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+        {{ isEditMode ? 'Edit Sales Order' : 'Create Sales Order' }}
+    </h2>
+
+    <!-- Input Method Selector -->
+    <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Select Input Method</label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div *ngFor="let method of inputMethodOptions"
+                class="border-2 rounded-lg p-4 cursor-pointer transition-all hover:border-blue-500"
+                [class.border-blue-500]="selectedInputMethod === method.value"
+                [class.bg-blue-50]="selectedInputMethod === method.value" (click)="onInputMethodChange(method.value)">
+                <div class="flex items-center gap-3">
+                    <i [class]="method.icon" class="text-2xl"
+                        [class.text-blue-600]="selectedInputMethod === method.value"></i>
+                    <span class="font-medium" [class.text-blue-600]="selectedInputMethod === method.value">
+                        {{ method.label }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Content Based on Input Method -->
+    <div class="mt-6">
+        <!-- Excel Upload -->
+        <div *ngIf="selectedInputMethod === InputMethod.EXCEL">
+            <p class="text-gray-600 mb-4">Excel upload component will be integrated here</p>
+            <!-- TODO: Integrate ExcelUploadComponent -->
+        </div>
+
+        <!-- API Integration -->
+        <div *ngIf="selectedInputMethod === InputMethod.API">
+            <p class="text-gray-600 mb-4">API integration component will be integrated here</p>
+            <!-- TODO: Integrate ApiIntegrationComponent -->
+        </div>
+
+        <!-- Manual Entry -->
+        <div *ngIf="selectedInputMethod === InputMethod.MANUAL">
+            <form [formGroup]="salesOrderForm" (ngSubmit)="onSubmit()">
+                <!-- Header Information -->
+                <p-card header="Sales Order Information" styleClass="mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SO Number *</label>
+                            <input pInputText formControlName="soNumber" class="w-full" placeholder="Enter SO Number" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SO Date *</label>
+                            <p-datepicker formControlName="soDate" dateFormat="dd/mm/yy" styleClass="w-full">
+                            </p-datepicker>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+                            <input pInputText formControlName="customerId" class="w-full"
+                                placeholder="Select Customer" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Warehouse *</label>
+                            <input pInputText formControlName="warehouseId" class="w-full"
+                                placeholder="Select Warehouse" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shipping Address *</label>
+                            <textarea pInputTextarea formControlName="shippingAddress" rows="3" class="w-full"
+                                placeholder="Enter shipping address"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shipping Method</label>
+                            <input pInputText formControlName="shippingMethod" class="w-full"
+                                placeholder="Enter shipping method" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
+                            <p-datepicker formControlName="deliveryDate" dateFormat="dd/mm/yy" styleClass="w-full">
+                            </p-datepicker>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Currency *</label>
+                            <input pInputText formControlName="currency" class="w-full" placeholder="IDR" />
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                            <input pInputText formControlName="paymentTerms" class="w-full"
+                                placeholder="Enter payment terms" />
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"
+                                placeholder="Enter notes"></textarea>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Line Items Section -->
+                <p-card header="Line Items" styleClass="mb-4">
+                    <p class="text-gray-600">Manual entry component for line items will be integrated here</p>
+                    <!-- TODO: Integrate ManualEntryComponent -->
+                </p-card>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end gap-3">
+                    <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()"
+                        styleClass="p-button-outlined p-button-secondary">
+                    </p-button>
+                    <p-button label="{{ isEditMode ? 'Update' : 'Create' }}" icon="pi pi-check" type="submit"
+                        styleClass="p-button-primary">
+                    </p-button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
