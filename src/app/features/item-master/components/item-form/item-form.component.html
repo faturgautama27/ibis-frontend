@@ -1,0 +1,215 @@
+<div class="item-form-container p-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h2 class="text-2xl font-bold">
+            {{ isEditMode() ? 'Edit Item' : 'Create New Item' }}
+        </h2>
+        <p class="text-gray-600 mt-1">
+            {{ isEditMode() ? 'Update item information' : 'Add a new item to the inventory' }}
+        </p>
+    </div>
+
+    <!-- Category Lock Warning (Edit Mode) -->
+    <p-message *ngIf="isCategoryLocked()" severity="info" text="Category cannot be changed after creation"
+        class="mb-4 block">
+    </p-message>
+
+    <!-- Form -->
+    <form [formGroup]="itemForm" (ngSubmit)="onSubmit()">
+        <p-card>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                <!-- Item Code -->
+                <div class="field">
+                    <label for="item_code" class="block font-semibold mb-2">
+                        Item Code <span class="text-red-500">*</span>
+                    </label>
+                    <input id="item_code" type="text" pInputText formControlName="item_code"
+                        [class.ng-invalid]="hasError('item_code')" [class.ng-dirty]="hasError('item_code')"
+                        class="w-full" />
+                    <small *ngIf="hasError('item_code')" class="text-red-500">
+                        {{ getErrorMessage('item_code') }}
+                    </small>
+                </div>
+
+                <!-- Item Name -->
+                <div class="field">
+                    <label for="item_name" class="block font-semibold mb-2">
+                        Item Name <span class="text-red-500">*</span>
+                    </label>
+                    <input id="item_name" type="text" pInputText formControlName="item_name"
+                        [class.ng-invalid]="hasError('item_name')" [class.ng-dirty]="hasError('item_name')"
+                        class="w-full" />
+                    <small *ngIf="hasError('item_name')" class="text-red-500">
+                        {{ getErrorMessage('item_name') }}
+                    </small>
+                </div>
+
+                <!-- HS Code -->
+                <div class="field">
+                    <label for="hs_code" class="block font-semibold mb-2">
+                        HS Code (10 digits) <span class="text-red-500">*</span>
+                    </label>
+                    <input id="hs_code" type="text" pInputText formControlName="hs_code" placeholder="0000000000"
+                        maxlength="10" [class.ng-invalid]="hasError('hs_code')" [class.ng-dirty]="hasError('hs_code')"
+                        class="w-full" />
+                    <small *ngIf="hasError('hs_code')" class="text-red-500">
+                        {{ getErrorMessage('hs_code') }}
+                    </small>
+                </div>
+
+                <!-- Category -->
+                <div class="field">
+                    <label for="category" class="block font-semibold mb-2">
+                        Category <span class="text-red-500">*</span>
+                    </label>
+                    <p-dropdown id="category" formControlName="category" [options]="categoryOptions" optionLabel="label"
+                        optionValue="value" placeholder="Select Category" [disabled]="isCategoryLocked()"
+                        [class.ng-invalid]="hasError('category')" [class.ng-dirty]="hasError('category')"
+                        styleClass="w-full">
+                    </p-dropdown>
+                    <small *ngIf="hasError('category')" class="text-red-500">
+                        {{ getErrorMessage('category') }}
+                    </small>
+                    <small *ngIf="isCategoryLocked()" class="text-blue-600 block mt-1">
+                        <i class="pi pi-lock mr-1"></i>
+                        Category is locked and cannot be changed
+                    </small>
+                </div>
+
+                <!-- Item Type -->
+                <div class="field">
+                    <label for="item_type" class="block font-semibold mb-2">
+                        Item Type <span class="text-red-500">*</span>
+                    </label>
+                    <p-dropdown id="item_type" formControlName="item_type" [options]="itemTypeOptions"
+                        optionLabel="label" optionValue="value" placeholder="Select Item Type" styleClass="w-full">
+                    </p-dropdown>
+                </div>
+
+                <!-- Unit -->
+                <div class="field">
+                    <label for="unit" class="block font-semibold mb-2">
+                        Unit <span class="text-red-500">*</span>
+                    </label>
+                    <p-dropdown id="unit" formControlName="unit" [options]="unitOptions" optionLabel="label"
+                        optionValue="value" placeholder="Select Unit" [editable]="true" styleClass="w-full">
+                    </p-dropdown>
+                </div>
+
+                <!-- Facility Status -->
+                <div class="field">
+                    <label for="facility_status" class="block font-semibold mb-2">
+                        Facility Status <span class="text-red-500">*</span>
+                    </label>
+                    <p-dropdown id="facility_status" formControlName="facility_status" [options]="facilityStatusOptions"
+                        optionLabel="label" optionValue="value" placeholder="Select Facility Status"
+                        styleClass="w-full">
+                    </p-dropdown>
+                </div>
+
+                <!-- Brand -->
+                <div class="field">
+                    <label for="brand" class="block font-semibold mb-2">Brand</label>
+                    <input id="brand" type="text" pInputText formControlName="brand" class="w-full" />
+                </div>
+
+                <!-- Price -->
+                <div class="field">
+                    <label for="price" class="block font-semibold mb-2">Price</label>
+                    <p-inputNumber id="price" formControlName="price" mode="decimal" [minFractionDigits]="2"
+                        [maxFractionDigits]="2" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Currency -->
+                <div class="field">
+                    <label for="currency" class="block font-semibold mb-2">Currency</label>
+                    <p-dropdown id="currency" formControlName="currency" [options]="currencyOptions" optionLabel="label"
+                        optionValue="value" styleClass="w-full">
+                    </p-dropdown>
+                </div>
+
+                <!-- Min Stock -->
+                <div class="field">
+                    <label for="min_stock" class="block font-semibold mb-2">Minimum Stock</label>
+                    <p-inputNumber id="min_stock" formControlName="min_stock" [min]="0" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Max Stock -->
+                <div class="field">
+                    <label for="max_stock" class="block font-semibold mb-2">Maximum Stock</label>
+                    <p-inputNumber id="max_stock" formControlName="max_stock" [min]="0" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Reorder Point -->
+                <div class="field">
+                    <label for="reorder_point" class="block font-semibold mb-2">Reorder Point</label>
+                    <p-inputNumber id="reorder_point" formControlName="reorder_point" [min]="0" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Lead Time -->
+                <div class="field">
+                    <label for="lead_time_days" class="block font-semibold mb-2">Lead Time (days)</label>
+                    <p-inputNumber id="lead_time_days" formControlName="lead_time_days" [min]="0" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Shelf Life -->
+                <div class="field">
+                    <label for="shelf_life_days" class="block font-semibold mb-2">Shelf Life (days)</label>
+                    <p-inputNumber id="shelf_life_days" formControlName="shelf_life_days" [min]="0" styleClass="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Barcode -->
+                <div class="field">
+                    <label for="barcode" class="block font-semibold mb-2">Barcode</label>
+                    <input id="barcode" type="text" pInputText formControlName="barcode" class="w-full" />
+                </div>
+
+                <!-- Checkboxes -->
+                <div class="field flex items-center gap-4">
+                    <div class="flex items-center">
+                        <p-checkbox formControlName="is_hazardous" [binary]="true" inputId="is_hazardous">
+                        </p-checkbox>
+                        <label for="is_hazardous" class="ml-2">Hazardous Material</label>
+                    </div>
+
+                    <div class="flex items-center">
+                        <p-checkbox formControlName="active" [binary]="true" inputId="active">
+                        </p-checkbox>
+                        <label for="active" class="ml-2">Active</label>
+                    </div>
+                </div>
+
+                <!-- Description (Full Width) -->
+                <div class="field md:col-span-2">
+                    <label for="description" class="block font-semibold mb-2">Description</label>
+                    <textarea id="description" pInputTextarea formControlName="description" rows="3" class="w-full">
+          </textarea>
+                </div>
+
+                <!-- Storage Condition (Full Width) -->
+                <div class="field md:col-span-2">
+                    <label for="storage_condition" class="block font-semibold mb-2">Storage Condition</label>
+                    <textarea id="storage_condition" pInputTextarea formControlName="storage_condition" rows="2"
+                        class="w-full">
+          </textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-2 mt-6">
+                <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()">
+                </p-button>
+                <p-button [label]="isEditMode() ? 'Update Item' : 'Create Item'" type="submit"
+                    [loading]="(saving$ | async) || false" [disabled]="itemForm.invalid">
+                </p-button>
+            </div>
+        </p-card>
+    </form>
+</div>

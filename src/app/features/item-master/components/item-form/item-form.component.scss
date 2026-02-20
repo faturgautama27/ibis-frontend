@@ -1,0 +1,56 @@
+.item-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .field {
+        margin-bottom: 1rem;
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+
+            .text-red-500 {
+                color: var(--red-500);
+            }
+        }
+
+        small {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+
+            &.text-red-500 {
+                color: var(--red-500);
+            }
+
+            &.text-blue-600 {
+                color: var(--blue-600);
+            }
+        }
+    }
+
+    :host ::ng-deep {
+
+        .p-inputtext,
+        .p-dropdown,
+        .p-inputnumber {
+            width: 100%;
+        }
+
+        .p-inputtext.ng-invalid.ng-dirty,
+        .p-dropdown.ng-invalid.ng-dirty {
+            border-color: var(--red-500);
+        }
+
+        .p-card {
+            .p-card-body {
+                padding: 1.5rem;
+            }
+        }
+
+        .p-message {
+            margin-bottom: 1rem;
+        }
+    }
+}

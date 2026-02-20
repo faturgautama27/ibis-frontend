@@ -6,21 +6,21 @@ This implementation plan breaks down the IBIS System Enhancements into six migra
 
 ## Tasks
 
-- [-] 1. Phase 1: Item Master Enhancement (Raw Materials vs Finished Goods)
-  - [ ] 1.1 Create enhanced item data models and enums
+- [x] 1. Phase 1: Item Master Enhancement (Raw Materials vs Finished Goods)
+  - [x] 1.1 Create enhanced item data models and enums
     - Create `ItemCategory` enum with RAW_MATERIAL and FINISHED_GOOD values
     - Extend existing Item model with category, categoryLocked, categoryLockedAt, categoryLockedBy fields
     - Create `ItemFilters` interface with category, searchQuery, and active fields
     - _Requirements: 1.1_
 
-  - [ ] 1.2 Create item NgRx store structure
+  - [x] 1.2 Create item NgRx store structure
     - Create actions for load, create, update, delete, and filter items
     - Create reducer with item state management and category locking logic
     - Create effects for API calls with error handling
     - Create selectors for filtering items by category
     - _Requirements: 1.1, 1.6_
 
-  - [ ] 1.3 Implement ItemService with category validation
+  - [x] 1.3 Implement ItemService with category validation
     - Create service methods for CRUD operations
     - Add category validation to prevent changes after creation
     - Implement filtering by category (raw materials vs finished goods)
@@ -33,7 +33,7 @@ This implementation plan breaks down the IBIS System Enhancements into six migra
     - Generate random items with categories, update them, verify category unchanged
     - Use fast-check with 100 iterations
 
-  - [ ] 1.5 Create ItemListComponent with category filtering
+  - [x] 1.5 Create ItemListComponent with category filtering
     - Implement PrimeNG table with lazy loading
     - Add category filter tabs/toggle (Raw Material / Finished Good)
     - Add search, sort, and pagination controls
@@ -45,7 +45,7 @@ This implementation plan breaks down the IBIS System Enhancements into six migra
     - **Validates: Requirements 1.2, 1.5, 1.7**
     - Generate random category filters, verify all returned items match filter
 
-  - [ ] 1.7 Create ItemFormComponent with category selection
+  - [x] 1.7 Create ItemFormComponent with category selection
     - Implement reactive form with validation
     - Add category dropdown (locked after creation)
     - Add form validation with custom validators

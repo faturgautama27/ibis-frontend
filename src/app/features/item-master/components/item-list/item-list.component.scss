@@ -1,0 +1,34 @@
+.item-list-container {
+    max-width: 100%;
+
+    :host ::ng-deep {
+        .p-tabview {
+            .p-tabview-nav {
+                background: transparent;
+                border-bottom: 2px solid var(--surface-border);
+            }
+
+            .p-tabview-panels {
+                padding: 1.5rem 0;
+            }
+        }
+
+        .p-datatable {
+            .p-datatable-thead>tr>th {
+                background-color: var(--surface-50);
+                font-weight: 600;
+            }
+
+            .p-datatable-tbody>tr {
+                &:hover {
+                    background-color: var(--surface-hover);
+                }
+            }
+        }
+
+        .p-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
+}
