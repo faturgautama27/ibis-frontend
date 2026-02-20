@@ -1,0 +1,28 @@
+/**
+ * Purchase Order Lookup Component Styles
+ */
+
+:host {
+    ::ng-deep {
+        .p-dialog {
+            .p-dialog-content {
+                padding: 1.5rem;
+            }
+        }
+
+        .p-datatable {
+            .p-datatable-tbody>tr {
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--surface-hover);
+                }
+
+                &.p-highlight {
+                    background-color: var(--primary-100);
+                    color: var(--primary-700);
+                }
+            }
+        }
+    }
+}

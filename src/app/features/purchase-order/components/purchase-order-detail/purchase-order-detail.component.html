@@ -1,0 +1,242 @@
+<div class="purchase-order-detail-container p-4" *ngIf="purchaseOrder">
+    <!-- Header Section -->
+    <div class="header-section mb-4">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ purchaseOrder.poNumber }}</h2>
+                <div class="flex gap-2">
+                    <p-tag [value]="purchaseOrder.status" [severity]="getStatusSeverity(purchaseOrder.status)">
+                    </p-tag>
+                    <p-tag [value]="purchaseOrder.inputMethod" [severity]="getInputMethodSeverity()">
+                    </p-tag>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2">
+                <p-button icon="pi pi-print" label="Print" severity="secondary" [outlined]="true" (onClick)="printPO()">
+                </p-button>
+                <p-button icon="pi pi-file-pdf" label="Export PDF" severity="danger" [outlined]="true"
+                    (onClick)="exportToPDF()">
+                </p-button>
+                <p-button icon="pi pi-file-excel" label="Export Excel" severity="success" [outlined]="true"
+                    (onClick)="exportToExcel()">
+                </p-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Information Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <!-- General Information -->
+        <p-card header="General Information">
+            <div class="info-grid">
+                <div class="info-row">
+                    <span class="info-label">PO Number:</span>
+                    <span class="info-value font-semibold">{{ purchaseOrder.poNumber }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">PO Date:</span>
+                    <span class="info-value">{{ formatDate(purchaseOrder.poDate) }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Delivery Date:</span>
+                    <span class="info-value">{{ purchaseOrder.deliveryDate ? formatDate(purchaseOrder.deliveryDate) :
+                        '-' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Input Method:</span>
+                    <span class="info-value">{{ purchaseOrder.inputMethod }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Currency:</span>
+                    <span class="info-value">{{ purchaseOrder.currency }}</span>
+                </div>
+            </div>
+        </p-card>
+
+        <!-- Supplier & Warehouse Information -->
+        <p-card header="Supplier & Warehouse">
+            <div class="info-grid">
+                <div class="info-row">
+                    <span class="info-label">Supplier Code:</span>
+                    <span class="info-value font-semibold">{{ purchaseOrder.supplierCode }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Supplier Name:</span>
+                    <span class="info-value">{{ purchaseOrder.supplierName }}</span>
+                </div>
+                <p-divider></p-divider>
+                <div class="info-row">
+                    <span class="info-label">Warehouse Code:</span>
+                    <span class="info-value font-semibold">{{ purchaseOrder.warehouseCode }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Warehouse Name:</span>
+                    <span class="info-value">{{ purchaseOrder.warehouseName }}</span>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="summary-section mb-4">
+        <p-card header="Order Summary">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="stat-card">
+                    <p class="text-sm text-gray-600 mb-1">Total Items</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ purchaseOrder.totalItems }}</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-sm text-gray-600 mb-1">Total Quantity</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ purchaseOrder.totalQuantity }}</p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-sm text-gray-600 mb-1">Total Value</p>
+                    <p class="text-2xl font-bold text-green-600">
+                        {{ formatCurrency(purchaseOrder.totalValue, purchaseOrder.currency) }}
+                    </p>
+                </div>
+                <div class="stat-card">
+                    <p class="text-sm text-gray-600 mb-1">Fulfillment</p>
+                    <p class="text-2xl font-bold" [ngClass]="{
+            'text-green-600': getFulfillmentPercentage() === 100,
+            'text-yellow-600': getFulfillmentPercentage() > 0 && getFulfillmentPercentage() < 100,
+            'text-gray-600': getFulfillmentPercentage() === 0
+          }">{{ getFulfillmentPercentage() }}%</p>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Line Items Table -->
+    <div class="line-items-section mb-4">
+        <p-card header="Line Items">
+            <p-table [value]="orderDetails" styleClass="p-datatable-sm" [scrollable]="true" scrollHeight="400px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 60px">#</th>
+                        <th>Item Code</th>
+                        <th>Item Name</th>
+                        <th>HS Code</th>
+                        <th style="width: 100px">Ordered</th>
+                        <th style="width: 100px">Received</th>
+                        <th style="width: 100px">Remaining</th>
+                        <th>Unit</th>
+                        <th style="width: 120px">Unit Price</th>
+                        <th style="width: 120px">Total Price</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-detail let-i="rowIndex">
+                    <tr>
+                        <td>{{ detail.lineNumber }}</td>
+                        <td class="font-medium">{{ detail.itemCode }}</td>
+                        <td>{{ detail.itemName }}</td>
+                        <td>{{ detail.hsCode }}</td>
+                        <td class="text-right">{{ detail.orderedQuantity }}</td>
+                        <td class="text-right text-green-600 font-medium">{{ detail.receivedQuantity }}</td>
+                        <td class="text-right" [ngClass]="{
+              'text-red-600': detail.remainingQuantity > 0,
+              'text-green-600': detail.remainingQuantity === 0
+            }">{{ detail.remainingQuantity }}</td>
+                        <td>{{ detail.unit }}</td>
+                        <td class="text-right">{{ formatCurrency(detail.unitPrice, purchaseOrder.currency) }}</td>
+                        <td class="text-right font-medium">{{ formatCurrency(detail.totalPrice, purchaseOrder.currency)
+                            }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="10" class="text-center text-gray-500">No line items found</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+
+    <!-- Linked Inbound Transactions -->
+    <div class="linked-inbounds-section mb-4">
+        <p-card header="Linked Inbound Transactions">
+            <p-table [value]="linkedInbounds" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Inbound Number</th>
+                        <th>Inbound Date</th>
+                        <th>Received Quantity</th>
+                        <th>Status</th>
+                        <th style="width: 100px">Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-inbound>
+                    <tr>
+                        <td class="font-medium">{{ inbound.inboundNumber }}</td>
+                        <td>{{ formatDate(inbound.inboundDate) }}</td>
+                        <td class="text-right">{{ inbound.receivedQuantity }}</td>
+                        <td>
+                            <p-tag [value]="inbound.status" severity="success"></p-tag>
+                        </td>
+                        <td>
+                            <p-button icon="pi pi-eye" severity="info" [outlined]="true" size="small"
+                                pTooltip="View Details">
+                            </p-button>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="5" class="text-center text-gray-500">No linked inbound transactions</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+
+    <!-- Status History Timeline -->
+    <div class="status-history-section mb-4">
+        <p-card header="Status History">
+            <p-timeline [value]="statusHistory" align="left">
+                <ng-template pTemplate="marker" let-event>
+                    <span class="flex w-8 h-8 items-center justify-center text-white rounded-full z-10"
+                        [style.background-color]="getStatusColor(event.status)">
+                        <i [class]="getStatusIcon(event.status)"></i>
+                    </span>
+                </ng-template>
+                <ng-template pTemplate="content" let-event>
+                    <div class="timeline-content">
+                        <p-tag [value]="event.status" [severity]="getStatusSeverity(event.status)"></p-tag>
+                        <p class="text-sm text-gray-600 mt-2">{{ formatDateTime(event.timestamp) }}</p>
+                        <p class="text-sm font-medium text-gray-800 mt-1">{{ event.user }}</p>
+                        <p *ngIf="event.notes" class="text-sm text-gray-600 mt-1">{{ event.notes }}</p>
+                    </div>
+                </ng-template>
+            </p-timeline>
+        </p-card>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="additional-info-section" *ngIf="purchaseOrder.notes || purchaseOrder.paymentTerms">
+        <p-card header="Additional Information">
+            <div class="info-grid">
+                <div class="info-row" *ngIf="purchaseOrder.paymentTerms">
+                    <span class="info-label">Payment Terms:</span>
+                    <span class="info-value">{{ purchaseOrder.paymentTerms }}</span>
+                </div>
+                <div class="info-row" *ngIf="purchaseOrder.notes">
+                    <span class="info-label">Notes:</span>
+                    <span class="info-value">{{ purchaseOrder.notes }}</span>
+                </div>
+                <p-divider></p-divider>
+                <div class="info-row">
+                    <span class="info-label">Created By:</span>
+                    <span class="info-value">{{ purchaseOrder.createdBy }} on {{ formatDateTime(purchaseOrder.createdAt)
+                        }}</span>
+                </div>
+                <div class="info-row" *ngIf="purchaseOrder.updatedAt">
+                    <span class="info-label">Last Updated:</span>
+                    <span class="info-value">{{ purchaseOrder.updatedBy }} on {{ formatDateTime(purchaseOrder.updatedAt)
+                        }}</span>
+                </div>
+            </div>
+        </p-card>
+    </div>
+</div>

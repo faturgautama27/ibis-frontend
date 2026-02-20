@@ -1,0 +1,153 @@
+<div class="card">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-800">Purchase Orders</h2>
+        <p-button label="Create Purchase Order" icon="pi pi-plus" (onClick)="onCreateOrder()"
+            styleClass="p-button-primary">
+        </p-button>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <!-- Search -->
+        <div class="col-span-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" [(ngModel)]="searchQuery" (input)="onSearch($event)"
+                    placeholder="Search PO Number, Supplier..." class="w-full" />
+            </span>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="col-span-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <p-select [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onStatusChange($event.value)"
+                optionLabel="label" optionValue="value" placeholder="Select Status" [showClear]="true"
+                styleClass="w-full">
+            </p-select>
+        </div>
+
+        <!-- Date From -->
+        <div class="col-span-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+            <p-datepicker [(ngModel)]="dateFrom" (onSelect)="onDateFromChange($event)"
+                (onClear)="onDateFromChange(null)" iconDisplay="button" [showClear]="true" dateFormat="dd/mm/yy"
+                placeholder="Select Date" styleClass="w-full">
+            </p-datepicker>
+        </div>
+
+        <!-- Date To -->
+        <div class="col-span-1">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+            <p-datepicker [(ngModel)]="dateTo" (onSelect)="onDateToChange($event)" (onClear)="onDateToChange(null)"
+                iconDisplay="button" [showClear]="true" dateFormat="dd/mm/yy" placeholder="Select Date"
+                styleClass="w-full">
+            </p-datepicker>
+        </div>
+    </div>
+
+    <!-- Clear Filters Button -->
+    <div class="flex justify-end mb-4">
+        <p-button label="Clear Filters" icon="pi pi-filter-slash" (onClick)="onClearFilters()"
+            styleClass="p-button-outlined p-button-secondary">
+        </p-button>
+    </div>
+
+    <!-- Table Section -->
+    <p-table [value]="(orders$ | async) || []" [loading]="(loading$ | async) || false" [lazy]="true"
+        (onLazyLoad)="onLazyLoad($event)" [paginator]="true" [rows]="(pagination$ | async)?.pageSize || 10"
+        [totalRecords]="(totalCount$ | async) || 0" [rowsPerPageOptions]="[10, 25, 50, 100]"
+        [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+        styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '75rem' }">
+
+        <!-- PO Number Column -->
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="poNumber">
+                    PO Number <p-sortIcon field="poNumber"></p-sortIcon>
+                </th>
+                <th pSortableColumn="poDate">
+                    PO Date <p-sortIcon field="poDate"></p-sortIcon>
+                </th>
+                <th pSortableColumn="supplierName">
+                    Supplier <p-sortIcon field="supplierName"></p-sortIcon>
+                </th>
+                <th pSortableColumn="status">
+                    Status <p-sortIcon field="status"></p-sortIcon>
+                </th>
+                <th pSortableColumn="totalItems" class="text-right">
+                    Total Items <p-sortIcon field="totalItems"></p-sortIcon>
+                </th>
+                <th pSortableColumn="totalQuantity" class="text-right">
+                    Total Quantity <p-sortIcon field="totalQuantity"></p-sortIcon>
+                </th>
+                <th pSortableColumn="totalValue" class="text-right">
+                    Total Value <p-sortIcon field="totalValue"></p-sortIcon>
+                </th>
+                <th pSortableColumn="inputMethod">
+                    Input Method <p-sortIcon field="inputMethod"></p-sortIcon>
+                </th>
+                <th class="text-center" style="width: 12rem">Actions</th>
+            </tr>
+        </ng-template>
+
+        <!-- Table Body -->
+        <ng-template pTemplate="body" let-order>
+            <tr>
+                <td>
+                    <span class="font-semibold text-blue-600">{{ order.poNumber }}</span>
+                </td>
+                <td>{{ formatDate(order.poDate) }}</td>
+                <td>
+                    <div>
+                        <div class="font-medium">{{ order.supplierName }}</div>
+                        <div class="text-sm text-gray-500">{{ order.supplierCode }}</div>
+                    </div>
+                </td>
+                <td>
+                    <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)">
+                    </p-tag>
+                </td>
+                <td class="text-right">{{ order.totalItems }}</td>
+                <td class="text-right">{{ order.totalQuantity }}</td>
+                <td class="text-right">{{ formatCurrency(order.totalValue, order.currency) }}</td>
+                <td>
+                    <p-tag [value]="order.inputMethod" severity="secondary">
+                    </p-tag>
+                </td>
+                <td class="text-center">
+                    <div class="flex gap-2 justify-center">
+                        <p-button icon="pi pi-eye" (onClick)="onViewOrder(order)" [rounded]="true" [text]="true"
+                            severity="info" pTooltip="View Details" tooltipPosition="top">
+                        </p-button>
+                        <p-button icon="pi pi-pencil" (onClick)="onEditOrder(order)" [rounded]="true" [text]="true"
+                            severity="warn" pTooltip="Edit" tooltipPosition="top">
+                        </p-button>
+                        <p-button icon="pi pi-trash" (onClick)="onDeleteOrder(order)" [rounded]="true" [text]="true"
+                            severity="danger" pTooltip="Delete" tooltipPosition="top">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <!-- Empty Message -->
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="9" class="text-center py-8">
+                    <div class="flex flex-col items-center gap-3">
+                        <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                        <p class="text-gray-500">No purchase orders found</p>
+                        <p-button label="Create First Purchase Order" icon="pi pi-plus" (onClick)="onCreateOrder()"
+                            styleClass="p-button-sm">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Confirmation Dialog -->
+<p-confirmDialog></p-confirmDialog>

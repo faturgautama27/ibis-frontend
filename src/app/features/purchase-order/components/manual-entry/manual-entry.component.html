@@ -1,0 +1,210 @@
+<div class="manual-entry-container p-4">
+    <form [formGroup]="poForm" (ngSubmit)="onSubmit()">
+        <!-- Header Information Section -->
+        <div class="header-section bg-white border rounded-lg p-4 mb-4">
+            <h3 class="text-lg font-semibold mb-4">Purchase Order Information</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- PO Number -->
+                <div class="form-field">
+                    <label for="poNumber" class="block text-sm font-medium text-gray-700 mb-1">
+                        PO Number <span class="text-red-500">*</span>
+                    </label>
+                    <input pInputText id="poNumber" formControlName="poNumber" placeholder="Enter PO number"
+                        class="w-full"
+                        [class.ng-invalid]="poForm.get('poNumber')?.invalid && poForm.get('poNumber')?.touched" />
+                    <small class="text-red-500"
+                        *ngIf="poForm.get('poNumber')?.invalid && poForm.get('poNumber')?.touched">
+                        {{ getErrorMessage('poNumber') }}
+                    </small>
+                </div>
+
+                <!-- PO Date -->
+                <div class="form-field">
+                    <label for="poDate" class="block text-sm font-medium text-gray-700 mb-1">
+                        PO Date <span class="text-red-500">*</span>
+                    </label>
+                    <p-datepicker inputId="poDate" formControlName="poDate" dateFormat="dd/mm/yy" iconDisplay="button"
+                        styleClass="w-full"
+                        [class.ng-invalid]="poForm.get('poDate')?.invalid && poForm.get('poDate')?.touched">
+                    </p-datepicker>
+                </div>
+
+                <!-- Supplier -->
+                <div class="form-field">
+                    <label for="supplier" class="block text-sm font-medium text-gray-700 mb-1">
+                        Supplier <span class="text-red-500">*</span>
+                    </label>
+                    <p-select inputId="supplier" formControlName="supplierId" [options]="suppliers" optionLabel="name"
+                        optionValue="id" placeholder="Select supplier" styleClass="w-full"
+                        [class.ng-invalid]="poForm.get('supplierId')?.invalid && poForm.get('supplierId')?.touched">
+                    </p-select>
+                </div>
+
+                <!-- Warehouse -->
+                <div class="form-field">
+                    <label for="warehouse" class="block text-sm font-medium text-gray-700 mb-1">
+                        Warehouse <span class="text-red-500">*</span>
+                    </label>
+                    <p-select inputId="warehouse" formControlName="warehouseId" [options]="warehouses"
+                        optionLabel="name" optionValue="id" placeholder="Select warehouse" styleClass="w-full"
+                        [class.ng-invalid]="poForm.get('warehouseId')?.invalid && poForm.get('warehouseId')?.touched">
+                    </p-select>
+                </div>
+
+                <!-- Delivery Date -->
+                <div class="form-field">
+                    <label for="deliveryDate" class="block text-sm font-medium text-gray-700 mb-1">
+                        Delivery Date
+                    </label>
+                    <p-datepicker inputId="deliveryDate" formControlName="deliveryDate" dateFormat="dd/mm/yy"
+                        iconDisplay="button" styleClass="w-full">
+                    </p-datepicker>
+                </div>
+
+                <!-- Currency -->
+                <div class="form-field">
+                    <label for="currency" class="block text-sm font-medium text-gray-700 mb-1">
+                        Currency <span class="text-red-500">*</span>
+                    </label>
+                    <p-select inputId="currency" formControlName="currency" [options]="currencies" optionLabel="name"
+                        optionValue="code" placeholder="Select currency" styleClass="w-full">
+                    </p-select>
+                </div>
+
+                <!-- Payment Terms -->
+                <div class="form-field md:col-span-2">
+                    <label for="paymentTerms" class="block text-sm font-medium text-gray-700 mb-1">
+                        Payment Terms
+                    </label>
+                    <input pInputText id="paymentTerms" formControlName="paymentTerms" placeholder="Enter payment terms"
+                        class="w-full" />
+                </div>
+
+                <!-- Notes -->
+                <div class="form-field md:col-span-2">
+                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                        Notes
+                    </label>
+                    <textarea pInputTextarea id="notes" formControlName="notes" rows="3"
+                        placeholder="Enter additional notes" class="w-full">
+          </textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items Section -->
+        <div class="line-items-section bg-white border rounded-lg p-4 mb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Line Items</h3>
+                <p-button icon="pi pi-plus" label="Add Item" severity="success" [outlined]="true"
+                    (onClick)="addLineItem()">
+                </p-button>
+            </div>
+
+            <div *ngIf="lineItems.length === 0" class="text-center py-8 text-gray-500">
+                <i class="pi pi-inbox text-4xl mb-2"></i>
+                <p>No items added yet. Click "Add Item" to start.</p>
+            </div>
+
+            <p-table *ngIf="lineItems.length > 0" [value]="lineItems.controls" styleClass="p-datatable-sm"
+                [scrollable]="true" scrollHeight="400px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 60px">#</th>
+                        <th style="width: 150px">Item Code <span class="text-red-500">*</span></th>
+                        <th style="width: 200px">Item Name <span class="text-red-500">*</span></th>
+                        <th style="width: 120px">Quantity <span class="text-red-500">*</span></th>
+                        <th style="width: 100px">Unit <span class="text-red-500">*</span></th>
+                        <th style="width: 120px">Unit Price <span class="text-red-500">*</span></th>
+                        <th style="width: 120px">Total</th>
+                        <th style="width: 100px">Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-lineItem let-i="rowIndex">
+                    <tr [formGroup]="lineItem">
+                        <td>{{ i + 1 }}</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <input pInputText formControlName="itemCode" placeholder="Item code" class="w-full"
+                                    [class.ng-invalid]="lineItem.get('itemCode')?.invalid && lineItem.get('itemCode')?.touched" />
+                                <p-button icon="pi pi-search" severity="secondary" [outlined]="true" size="small"
+                                    (onClick)="openItemLookup(i)">
+                                </p-button>
+                            </div>
+                        </td>
+                        <td>
+                            <input pInputText formControlName="itemName" placeholder="Item name" class="w-full"
+                                [class.ng-invalid]="lineItem.get('itemName')?.invalid && lineItem.get('itemName')?.touched" />
+                        </td>
+                        <td>
+                            <p-inputNumber formControlName="orderedQuantity" [min]="1" [showButtons]="true"
+                                buttonLayout="horizontal" inputStyleClass="w-full"
+                                [class.ng-invalid]="lineItem.get('orderedQuantity')?.invalid && lineItem.get('orderedQuantity')?.touched">
+                            </p-inputNumber>
+                        </td>
+                        <td>
+                            <p-select formControlName="unit" [options]="units" optionLabel="name" optionValue="code"
+                                styleClass="w-full">
+                            </p-select>
+                        </td>
+                        <td>
+                            <p-inputNumber formControlName="unitPrice" mode="currency" currency="IDR" locale="id-ID"
+                                [min]="0" inputStyleClass="w-full"
+                                [class.ng-invalid]="lineItem.get('unitPrice')?.invalid && lineItem.get('unitPrice')?.touched">
+                            </p-inputNumber>
+                        </td>
+                        <td>
+                            <span class="font-medium">
+                                {{ lineItem.get('totalPrice')?.value | currency:'IDR':'symbol':'1.0-0':'id-ID' }}
+                            </span>
+                        </td>
+                        <td>
+                            <p-button icon="pi pi-trash" severity="danger" [outlined]="true" size="small"
+                                (onClick)="removeLineItem(i)">
+                            </p-button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+
+            <!-- Totals Summary -->
+            <div *ngIf="lineItems.length > 0" class="totals-summary mt-4 pt-4 border-t">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="stat-card">
+                        <p class="text-sm text-gray-600">Total Items</p>
+                        <p class="text-xl font-bold text-gray-800">{{ lineItems.length }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-sm text-gray-600">Total Quantity</p>
+                        <p class="text-xl font-bold text-gray-800">{{ getTotalQuantity() }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="text-sm text-gray-600">Total Value</p>
+                        <p class="text-xl font-bold text-green-600">
+                            {{ getTotalValue() | currency:'IDR':'symbol':'1.0-0':'id-ID' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="actions-section flex justify-end gap-2">
+            <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()">
+            </p-button>
+            <p-button label="Submit" severity="primary" type="submit" [disabled]="!isFormValid()">
+            </p-button>
+        </div>
+    </form>
+
+    <!-- Item Lookup Dialog -->
+    <p-dialog [(visible)]="showItemLookup" header="Select Item" [modal]="true" [style]="{ width: '50vw' }"
+        [draggable]="false" [resizable]="false">
+        <div class="p-4">
+            <p class="text-gray-600 mb-4">Item lookup functionality will be implemented here.</p>
+            <p-button label="Close" severity="secondary" (onClick)="showItemLookup = false">
+            </p-button>
+        </div>
+    </p-dialog>
+</div>

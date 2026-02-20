@@ -35,6 +35,13 @@ export interface InboundHeader {
     bc_document_id: string;
     bc_document_number: string;
 
+    // Purchase Order reference (Requirements: 4.6, 4.8)
+    purchase_order_id?: string;
+    purchase_order_number?: string;
+    auto_populated_from_po?: boolean;
+    po_link_date?: Date;
+    po_link_by?: string;
+
     // Supplier info
     supplier_id: string;
     supplier_code: string;
@@ -199,4 +206,17 @@ export function validateHSCode(hsCode: string): boolean {
 export function calculateAcceptanceRate(detail: InboundDetail): number {
     if (detail.received_quantity === 0) return 0;
     return (detail.accepted_quantity / detail.received_quantity) * 100;
+}
+
+/**
+ * Purchase Order Lookup Criteria
+ * Search criteria for PO lookup in Inbound transaction forms
+ * Requirements: 4.6, 4.8
+ */
+export interface POLookupCriteria {
+    poNumber?: string;
+    supplierId?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+    excludeFullyReceived?: boolean;
 }

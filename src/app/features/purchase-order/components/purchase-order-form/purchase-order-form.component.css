@@ -1,0 +1,184 @@
+.purchase-order-form-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.input-method-card {
+    transition: all 0.3s ease;
+}
+
+.input-method-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Form validation styles */
+:host ::ng-deep .ng-invalid.ng-dirty,
+:host ::ng-deep .ng-invalid.ng-touched {
+    border-color: #ef4444 !important;
+}
+
+/* PrimeNG overrides for better styling */
+:host ::ng-deep .p-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+:host ::ng-deep .p-card-header {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+:host ::ng-deep .p-datatable {
+    font-size: 0.875rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead>tr>th {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: 600;
+    padding: 0.75rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+    padding: 0.75rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody>tr:hover {
+    background-color: #f9fafb;
+}
+
+/* Button spacing */
+:host ::ng-deep .p-button {
+    margin: 0;
+}
+
+/* Calendar styling */
+:host ::ng-deep .p-calendar {
+    width: 100%;
+}
+
+:host ::ng-deep .p-calendar .p-inputtext {
+    width: 100%;
+}
+
+/* Dropdown styling */
+:host ::ng-deep .p-dropdown {
+    width: 100%;
+}
+
+/* Input text styling */
+:host ::ng-deep .p-inputtext {
+    width: 100%;
+}
+
+/* Textarea styling */
+:host ::ng-deep .p-inputtextarea {
+    width: 100%;
+}
+
+/* Toast positioning */
+:host ::ng-deep .p-toast {
+    z-index: 9999;
+}
+
+/* Loading spinner */
+.pi-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .purchase-order-form-container {
+        padding: 1rem;
+    }
+
+    :host ::ng-deep .p-datatable {
+        font-size: 0.75rem;
+    }
+
+    :host ::ng-deep .p-datatable .p-datatable-thead>tr>th,
+    :host ::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+        padding: 0.5rem;
+    }
+}
+
+/* Error message styling */
+.text-red-600 {
+    color: #dc2626;
+}
+
+/* Preview panel styling */
+.bg-red-50 {
+    background-color: #fef2f2;
+}
+
+.text-red-700 {
+    color: #b91c1c;
+}
+
+/* Status indicator */
+.text-green-500 {
+    color: #22c55e;
+}
+
+/* Border colors */
+.border-blue-500 {
+    border-color: #3b82f6;
+}
+
+.border-gray-300 {
+    border-color: #d1d5db;
+}
+
+.bg-blue-50 {
+    background-color: #eff6ff;
+}
+
+.text-blue-600 {
+    color: #2563eb;
+}
+
+.text-gray-600 {
+    color: #4b5563;
+}
+
+.text-gray-800 {
+    color: #1f2937;
+}
+
+/* Line item cards */
+.border {
+    border-width: 1px;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+/* Scrollbar styling */
+:host ::ng-deep .p-datatable-scrollable-body::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+:host ::ng-deep .p-datatable-scrollable-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+:host ::ng-deep .p-datatable-scrollable-body::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+:host ::ng-deep .p-datatable-scrollable-body::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

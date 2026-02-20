@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Store } from '@ngrx/store';
 
 // PrimeNG imports
 import { ButtonModule } from 'primeng/button';
@@ -15,9 +16,10 @@ import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
+import { TagModule } from 'primeng/tag';
 
 // Lucide icons
-import { LucideAngularModule, PackageCheck, Plus, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, PackageCheck, Plus, Trash2, Search } from 'lucide-angular';
 
 // Services
 import { InboundDemoService } from '../../services/inbound-demo.service';
@@ -32,6 +34,10 @@ import { BCDocument } from '../../../bc-documents/models/bc-document.model';
 import { Item } from '../../../inventory/models/item.model';
 import { Supplier } from '../../../suppliers-customers/models/supplier.model';
 import { Warehouse } from '../../../warehouse/models/warehouse.model';
+import { PurchaseOrderHeader } from '../../../purchase-order/models/purchase-order.model';
+
+// Components
+import { PurchaseOrderLookupComponent } from '../../../purchase-order/components/purchase-order-lookup/purchase-order-lookup.component';
 
 /**
  * Inbound Form Component
@@ -57,7 +63,9 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
     MessageModule,
     ToastModule,
     DialogModule,
-    LucideAngularModule
+    TagModule,
+    LucideAngularModule,
+    PurchaseOrderLookupComponent
   ],
   providers: [MessageService],
   template: `
@@ -134,6 +142,52 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
           <!-- BC Document & Supplier Information -->
           <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">BC Document & Supplier</h2>
+            
+            <!-- PO Lookup Section (Requirements: 4.1, 4.3, 4.4, 4.5, 4.7) -->
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <h3 class="text-sm font-semibold text-blue-900 mb-1">Purchase Order Link</h3>
+                  @if (linkedPurchaseOrder) {
+                    <div class="flex items-center gap-2">
+                      <p-tag value="Linked" severity="success" />
+                      <span class="text-sm text-gray-700">
+                        PO: <strong>{{ linkedPurchaseOrder.poNumber }}</strong>
+                      </span>
+                      @if (inboundForm.get('auto_populated_from_po')?.value) {
+                        <p-tag value="Auto-populated" severity="info" [rounded]="true" />
+                      }
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1">
+                      Supplier: {{ linkedPurchaseOrder.supplierName }}
+                    </p>
+                  } @else {
+                    <p class="text-sm text-gray-600">Link this inbound to a purchase order to auto-populate details</p>
+                  }
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    pButton
+                    type="button"
+                    [label]="linkedPurchaseOrder ? 'Change PO' : 'Lookup PO'"
+                    icon="pi pi-search"
+                    class="p-button-sm"
+                    (click)="showPOLookup()"
+                    [disabled]="isEditMode"
+                  ></button>
+                  @if (linkedPurchaseOrder && !isEditMode) {
+                    <button
+                      pButton
+                      type="button"
+                      label="Clear"
+                      icon="pi pi-times"
+                      class="p-button-sm p-button-secondary"
+                      (click)="clearPOLink()"
+                    ></button>
+                  }
+                </div>
+              </div>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col">
@@ -501,12 +555,19 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
 
       <p-toast />
     </div>
+
+    <!-- PO Lookup Dialog (Requirements: 4.1, 4.3) -->
+    <app-purchase-order-lookup
+      #poLookup
+      (poSelected)="onPOSelected($event)"
+    />
   `
 })
 export class InboundFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private store = inject(Store);
   private inboundService = inject(InboundDemoService);
   private bcDocumentService = inject(BCDocumentDemoService);
   private inventoryService = inject(InventoryDemoService);
@@ -514,10 +575,14 @@ export class InboundFormComponent implements OnInit {
   private warehouseService = inject(WarehouseDemoService);
   private messageService = inject(MessageService);
 
+  // ViewChild for PO Lookup component
+  @ViewChild('poLookup') poLookupComponent!: PurchaseOrderLookupComponent;
+
   // Icons
   PackageCheckIcon = PackageCheck;
   PlusIcon = Plus;
   Trash2Icon = Trash2;
+  SearchIcon = Search;
 
   // Form
   inboundForm!: FormGroup;
@@ -526,6 +591,10 @@ export class InboundFormComponent implements OnInit {
   inboundId: string | null = null;
   loading = false;
   error: string | null = null;
+
+  // PO Linking (Requirements: 4.1, 4.3, 4.4, 4.5, 4.7)
+  linkedPurchaseOrder: PurchaseOrderHeader | null = null;
+  manualOverride = false;
 
   // Dialog
   displayItemDialog = false;
@@ -666,6 +735,12 @@ export class InboundFormComponent implements OnInit {
       status: [InboundStatus.PENDING],
       bc_document_id: [''],
       bc_document_number: ['', Validators.required],
+      // PO Reference fields (Requirements: 4.6, 4.8)
+      purchase_order_id: [''],
+      purchase_order_number: [''],
+      auto_populated_from_po: [false],
+      po_link_date: [null],
+      po_link_by: [''],
       supplier_id: [''],
       supplier_code: [''],
       supplier_name: ['', Validators.required],
@@ -910,6 +985,81 @@ export class InboundFormComponent implements OnInit {
   calculateTotalValue(): number {
     return this.details.reduce((sum, detail) => sum + (detail.total_cost || 0), 0);
   }
+
+  /**
+   * Show PO Lookup Dialog
+   * Requirements: 4.1, 4.3
+   */
+  showPOLookup(): void {
+    this.poLookupComponent.show();
+  }
+
+  /**
+   * Handle PO Selection from Lookup
+   * Requirements: 4.3, 4.4, 4.5
+   */
+  onPOSelected(purchaseOrder: PurchaseOrderHeader): void {
+    this.linkedPurchaseOrder = purchaseOrder;
+
+    // Auto-populate form fields from PO
+    this.inboundForm.patchValue({
+      purchase_order_id: purchaseOrder.id,
+      purchase_order_number: purchaseOrder.poNumber,
+      auto_populated_from_po: true,
+      po_link_date: new Date(),
+      po_link_by: 'admin', // Should be current user
+      supplier_id: purchaseOrder.supplierId,
+      supplier_code: purchaseOrder.supplierCode,
+      supplier_name: purchaseOrder.supplierName,
+      warehouse_id: purchaseOrder.warehouseId,
+      warehouse_code: purchaseOrder.warehouseCode,
+      warehouse_name: purchaseOrder.warehouseName
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'PO Linked',
+      detail: `Purchase Order ${purchaseOrder.poNumber} linked successfully. Form fields have been auto-populated.`
+    });
+  }
+
+  /**
+   * Clear PO Link
+   * Requirements: 4.5, 4.7
+   */
+  clearPOLink(): void {
+    this.linkedPurchaseOrder = null;
+    this.manualOverride = false;
+
+    // Clear PO reference fields but keep manually entered data
+    this.inboundForm.patchValue({
+      purchase_order_id: '',
+      purchase_order_number: '',
+      auto_populated_from_po: false,
+      po_link_date: null,
+      po_link_by: ''
+    });
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'PO Link Cleared',
+      detail: 'Purchase order link has been removed. You can now enter details manually.'
+    });
+  }
+
+  /**
+   * Enable manual override of auto-populated fields
+   * Requirements: 4.5
+   */
+  enableManualOverride(): void {
+    this.manualOverride = true;
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Manual Override Enabled',
+      detail: 'You can now modify auto-populated fields.'
+    });
+  }
+
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.inboundForm.get(fieldName);

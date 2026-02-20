@@ -1,0 +1,41 @@
+.manual-entry-container {
+    max-width: 100%;
+}
+
+.form-field {
+    margin-bottom: 0.5rem;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown,
+:host ::ng-deep .p-calendar {
+    width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber {
+    width: 100%;
+}
+
+:host ::ng-deep .p-inputnumber-input {
+    width: 100%;
+}
+
+:host ::ng-deep .ng-invalid.ng-touched {
+    border-color: #ef4444;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+    padding: 0.5rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead>tr>th {
+    padding: 0.75rem 0.5rem;
+    background: #f8f9fa;
+}

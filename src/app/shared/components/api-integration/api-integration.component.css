@@ -1,0 +1,49 @@
+.api-integration-container {
+    max-width: 100%;
+}
+
+.connection-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.fetching-section {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.preview-section,
+.errors-section {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+:host ::ng-deep .p-progressspinner {
+    margin: 0 auto;
+}

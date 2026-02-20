@@ -1,0 +1,17 @@
+/**
+ * Inbound Detail Component Styles
+ */
+
+:host {
+    ::ng-deep {
+        .p-card {
+            .p-card-body {
+                padding: 1.5rem;
+            }
+        }
+
+        .p-divider {
+            margin: 1.5rem 0;
+        }
+    }
+}

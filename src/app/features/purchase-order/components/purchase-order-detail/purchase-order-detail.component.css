@@ -1,0 +1,87 @@
+.purchase-order-detail-container {
+    max-width: 100%;
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+}
+
+.info-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    min-width: 140px;
+}
+
+.info-value {
+    color: #1f2937;
+    font-size: 0.875rem;
+    text-align: right;
+    flex: 1;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.timeline-content {
+    padding: 0.5rem 0;
+}
+
+:host ::ng-deep .p-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+:host ::ng-deep .p-card .p-card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+:host ::ng-deep .p-card .p-card-body {
+    padding: 1.5rem;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead>tr>th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #374151;
+}
+
+:host ::ng-deep .p-timeline .p-timeline-event-content {
+    padding-left: 1rem;
+}
+
+:host ::ng-deep .p-timeline .p-timeline-event-opposite {
+    display: none;
+}
+
+/* Print styles */
+@media print {
+    .header-section .flex {
+        flex-direction: column;
+    }
+
+    .header-section p-button {
+        display: none;
+    }
+
+    :host ::ng-deep .p-card {
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+        page-break-inside: avoid;
+    }
+}
