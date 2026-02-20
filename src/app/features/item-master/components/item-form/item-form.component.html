@@ -63,11 +63,11 @@
                     <label for="category" class="block font-semibold mb-2">
                         Category <span class="text-red-500">*</span>
                     </label>
-                    <p-dropdown id="category" formControlName="category" [options]="categoryOptions" optionLabel="label"
+                    <p-select id="category" formControlName="category" [options]="categoryOptions" optionLabel="label"
                         optionValue="value" placeholder="Select Category" [disabled]="isCategoryLocked()"
                         [class.ng-invalid]="hasError('category')" [class.ng-dirty]="hasError('category')"
                         styleClass="w-full">
-                    </p-dropdown>
+                    </p-select>
                     <small *ngIf="hasError('category')" class="text-red-500">
                         {{ getErrorMessage('category') }}
                     </small>
@@ -82,9 +82,9 @@
                     <label for="item_type" class="block font-semibold mb-2">
                         Item Type <span class="text-red-500">*</span>
                     </label>
-                    <p-dropdown id="item_type" formControlName="item_type" [options]="itemTypeOptions"
-                        optionLabel="label" optionValue="value" placeholder="Select Item Type" styleClass="w-full">
-                    </p-dropdown>
+                    <p-select id="item_type" formControlName="item_type" [options]="itemTypeOptions" optionLabel="label"
+                        optionValue="value" placeholder="Select Item Type" styleClass="w-full">
+                    </p-select>
                 </div>
 
                 <!-- Unit -->
@@ -92,9 +92,9 @@
                     <label for="unit" class="block font-semibold mb-2">
                         Unit <span class="text-red-500">*</span>
                     </label>
-                    <p-dropdown id="unit" formControlName="unit" [options]="unitOptions" optionLabel="label"
+                    <p-select id="unit" formControlName="unit" [options]="unitOptions" optionLabel="label"
                         optionValue="value" placeholder="Select Unit" [editable]="true" styleClass="w-full">
-                    </p-dropdown>
+                    </p-select>
                 </div>
 
                 <!-- Facility Status -->
@@ -102,10 +102,10 @@
                     <label for="facility_status" class="block font-semibold mb-2">
                         Facility Status <span class="text-red-500">*</span>
                     </label>
-                    <p-dropdown id="facility_status" formControlName="facility_status" [options]="facilityStatusOptions"
+                    <p-select id="facility_status" formControlName="facility_status" [options]="facilityStatusOptions"
                         optionLabel="label" optionValue="value" placeholder="Select Facility Status"
                         styleClass="w-full">
-                    </p-dropdown>
+                    </p-select>
                 </div>
 
                 <!-- Brand -->
@@ -117,52 +117,52 @@
                 <!-- Price -->
                 <div class="field">
                     <label for="price" class="block font-semibold mb-2">Price</label>
-                    <p-inputNumber id="price" formControlName="price" mode="decimal" [minFractionDigits]="2"
+                    <p-inputnumber id="price" formControlName="price" mode="decimal" [minFractionDigits]="2"
                         [maxFractionDigits]="2" styleClass="w-full">
-                    </p-inputNumber>
+                    </p-inputnumber>
                 </div>
 
                 <!-- Currency -->
                 <div class="field">
                     <label for="currency" class="block font-semibold mb-2">Currency</label>
-                    <p-dropdown id="currency" formControlName="currency" [options]="currencyOptions" optionLabel="label"
+                    <p-select id="currency" formControlName="currency" [options]="currencyOptions" optionLabel="label"
                         optionValue="value" styleClass="w-full">
-                    </p-dropdown>
+                    </p-select>
                 </div>
 
                 <!-- Min Stock -->
                 <div class="field">
                     <label for="min_stock" class="block font-semibold mb-2">Minimum Stock</label>
-                    <p-inputNumber id="min_stock" formControlName="min_stock" [min]="0" styleClass="w-full">
-                    </p-inputNumber>
+                    <p-inputnumber id="min_stock" formControlName="min_stock" [min]="0" styleClass="w-full">
+                    </p-inputnumber>
                 </div>
 
                 <!-- Max Stock -->
                 <div class="field">
                     <label for="max_stock" class="block font-semibold mb-2">Maximum Stock</label>
-                    <p-inputNumber id="max_stock" formControlName="max_stock" [min]="0" styleClass="w-full">
-                    </p-inputNumber>
+                    <p-inputnumber id="max_stock" formControlName="max_stock" [min]="0" styleClass="w-full">
+                    </p-inputnumber>
                 </div>
 
                 <!-- Reorder Point -->
                 <div class="field">
                     <label for="reorder_point" class="block font-semibold mb-2">Reorder Point</label>
-                    <p-inputNumber id="reorder_point" formControlName="reorder_point" [min]="0" styleClass="w-full">
-                    </p-inputNumber>
+                    <p-inputnumber id="reorder_point" formControlName="reorder_point" [min]="0" styleClass="w-full">
+                    </p-inputnumber>
                 </div>
 
                 <!-- Lead Time -->
                 <div class="field">
                     <label for="lead_time_days" class="block font-semibold mb-2">Lead Time (days)</label>
-                    <p-inputNumber id="lead_time_days" formControlName="lead_time_days" [min]="0" styleClass="w-full">
-                    </p-inputNumber>
+                    <p-inputnumber id="lead_time_days" formControlName="lead_time_days" [min]="0" styleClass="w-full">
+                    </p-inputnumber>
                 </div>
 
                 <!-- Shelf Life -->
                 <div class="field">
                     <label for="shelf_life_days" class="block font-semibold mb-2">Shelf Life (days)</label>
-                    <p-inputNumber id="shelf_life_days" formControlName="shelf_life_days" [min]="0" styleClass="w-full">
-                    </p-inputNumber>
+                    <p-inputnumber id="shelf_life_days" formControlName="shelf_life_days" [min]="0" styleClass="w-full">
+                    </p-inputnumber>
                 </div>
 
                 <!-- Barcode -->
@@ -189,14 +189,14 @@
                 <!-- Description (Full Width) -->
                 <div class="field md:col-span-2">
                     <label for="description" class="block font-semibold mb-2">Description</label>
-                    <textarea id="description" pInputTextarea formControlName="description" rows="3" class="w-full">
+                    <textarea id="description" pTextarea formControlName="description" rows="3" class="w-full">
           </textarea>
                 </div>
 
                 <!-- Storage Condition (Full Width) -->
                 <div class="field md:col-span-2">
                     <label for="storage_condition" class="block font-semibold mb-2">Storage Condition</label>
-                    <textarea id="storage_condition" pInputTextarea formControlName="storage_condition" rows="2"
+                    <textarea id="storage_condition" pTextarea formControlName="storage_condition" rows="2"
                         class="w-full">
           </textarea>
                 </div>

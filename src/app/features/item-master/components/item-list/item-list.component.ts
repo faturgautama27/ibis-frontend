@@ -5,7 +5,7 @@ import { Store } from '@ngrx/store';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
@@ -37,7 +37,7 @@ import {
         TableModule,
         ButtonModule,
         InputTextModule,
-        TabViewModule,
+        TabsModule,
         TagModule,
         ConfirmDialogModule
     ],
@@ -83,12 +83,13 @@ export class ItemListComponent implements OnInit {
      * Handle tab change to filter by category
      */
     onTabChange(event: any): void {
-        this.activeTabIndex.set(event.index);
+        const tabValue = parseInt(event.value || event.index || '0');
+        this.activeTabIndex.set(tabValue);
 
         let category: ItemCategory | undefined;
-        if (event.index === 1) {
+        if (tabValue === 1) {
             category = ItemCategory.RAW_MATERIAL;
-        } else if (event.index === 2) {
+        } else if (tabValue === 2) {
             category = ItemCategory.FINISHED_GOOD;
         }
 
@@ -161,7 +162,7 @@ export class ItemListComponent implements OnInit {
     /**
      * Get category badge severity
      */
-    getCategorySeverity(category: ItemCategory): string {
+    getCategorySeverity(category: ItemCategory) {
         return category === ItemCategory.RAW_MATERIAL ? 'info' : 'success';
     }
 
@@ -175,7 +176,7 @@ export class ItemListComponent implements OnInit {
     /**
      * Get status badge severity
      */
-    getStatusSeverity(active: boolean): string {
+    getStatusSeverity(active: boolean) {
         return active ? 'success' : 'danger';
     }
 

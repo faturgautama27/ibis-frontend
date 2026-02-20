@@ -5,10 +5,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { TextareaModule } from 'primeng/textarea';
 import { CardModule } from 'primeng/card';
 import { MessageModule } from 'primeng/message';
 import { ItemEnhanced, CreateItemEnhancedDto, UpdateItemEnhancedDto } from '../../models/item-enhanced.model';
@@ -34,10 +34,10 @@ import { selectSelectedItem, selectItemSaving } from '../../../../store/item/ite
         ReactiveFormsModule,
         ButtonModule,
         InputTextModule,
-        DropdownModule,
+        SelectModule,
         InputNumberModule,
         CheckboxModule,
-        InputTextareaModule,
+        TextareaModule,
         CardModule,
         MessageModule
     ],
