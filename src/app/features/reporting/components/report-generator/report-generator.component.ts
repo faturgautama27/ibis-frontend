@@ -6,11 +6,18 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { ReportService, ReportParameters } from '../../services/report.service';
+import { getMockReportData, getReportColumns } from './report-generator.mock';
 
 /**
  * Report Generator Component
  * Requirements: 17.1-17.10
+ * 
+ * Development Mode:
+ * - Set USE_MOCK_DATA = true to use mock data
+ * - Set USE_MOCK_DATA = false to use service
  */
 @Component({
     selector: 'app-report-generator',
@@ -22,8 +29,10 @@ import { ReportService, ReportParameters } from '../../services/report.service';
         SelectModule,
         DatePickerModule,
         ButtonModule,
-        TableModule
+        TableModule,
+        ToastModule
     ],
+    providers: [MessageService],
     template: `
         <div class="main-layout">
             <!-- Page Header -->
@@ -127,151 +136,28 @@ import { ReportService, ReportParameters } from '../../services/report.service';
                     {{ getReportTitle() }}
                 </h3>
 
-                <!-- Inventory Balance Report -->
+                <!-- Generic Table for all reports -->
                 <p-table 
-                    *ngIf="selectedReportType === 'inventory_balance'"
                     [value]="reportData" 
                     [paginator]="true" 
                     [rows]="20"
                     [showCurrentPageReport]="true"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                    [scrollable]="true"
+                    scrollHeight="500px"
                 >
                     <ng-template pTemplate="header">
                         <tr>
-                            <th>Item Code</th>
-                            <th>Item Name</th>
-                            <th>Warehouse</th>
-                            <th>Quantity</th>
-                            <th>Unit</th>
-                            <th>Unit Cost</th>
-                            <th>Total Value</th>
-                            <th>Batch</th>
+                            <th *ngFor="let col of getDisplayColumns()" [style.min-width]="getColumnWidth(col)">
+                                {{ getColumnLabel(col) }}
+                            </th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-row>
                         <tr>
-                            <td>{{ row.item_code }}</td>
-                            <td>{{ row.item_name }}</td>
-                            <td>{{ row.warehouse_name }}</td>
-                            <td>{{ row.quantity }}</td>
-                            <td>{{ row.unit }}</td>
-                            <td>{{ formatCurrency(row.unit_cost) }}</td>
-                            <td>{{ formatCurrency(row.total_value) }}</td>
-                            <td>{{ row.batch_number || '-' }}</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <!-- Stock Movement Report -->
-                <p-table 
-                    *ngIf="selectedReportType === 'stock_movement'"
-                    [value]="reportData" 
-                    [paginator]="true" 
-                    [rows]="20"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Item</th>
-                            <th>Warehouse</th>
-                            <th>Quantity</th>
-                            <th>Reference</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.movement_date | date:'short' }}</td>
-                            <td>{{ row.movement_type }}</td>
-                            <td>{{ row.item_code }} - {{ row.item_name }}</td>
-                            <td>{{ row.warehouse_name }}</td>
-                            <td>{{ row.quantity_change }} {{ row.unit }}</td>
-                            <td>{{ row.reference_number }}</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <!-- Inbound/Outbound Report -->
-                <p-table 
-                    *ngIf="selectedReportType === 'inbound_outbound'"
-                    [value]="reportData" 
-                    [paginator]="true" 
-                    [rows]="20"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Document</th>
-                            <th>Partner</th>
-                            <th>Item</th>
-                            <th>Quantity</th>
-                            <th>Value</th>
-                            <th>BC Doc</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.transaction_date | date:'short' }}</td>
-                            <td>{{ row.transaction_type }}</td>
-                            <td>{{ row.document_number }}</td>
-                            <td>{{ row.supplier_customer }}</td>
-                            <td>{{ row.item_code }}</td>
-                            <td>{{ row.quantity }} {{ row.unit }}</td>
-                            <td>{{ formatCurrency(row.total_value) }}</td>
-                            <td>{{ row.bc_document || '-' }}</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <!-- Production Report -->
-                <p-table 
-                    *ngIf="selectedReportType === 'production'"
-                    [value]="reportData" 
-                    [paginator]="true" 
-                    [rows]="20"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>WO Number</th>
-                            <th>Date</th>
-                            <th>Output Item</th>
-                            <th>Planned</th>
-                            <th>Actual</th>
-                            <th>Yield %</th>
-                            <th>Scrap</th>
-                            <th>Status</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td>{{ row.wo_number }}</td>
-                            <td>{{ row.wo_date | date:'short' }}</td>
-                            <td>{{ row.output_item_code }}</td>
-                            <td>{{ row.planned_quantity }}</td>
-                            <td>{{ row.actual_quantity }}</td>
-                            <td>{{ row.yield_percentage }}%</td>
-                            <td>{{ row.scrap_quantity }}</td>
-                            <td>{{ row.status }}</td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-
-                <!-- Generic Table for other reports -->
-                <p-table 
-                    *ngIf="!['inventory_balance', 'stock_movement', 'inbound_outbound', 'production'].includes(selectedReportType)"
-                    [value]="reportData" 
-                    [paginator]="true" 
-                    [rows]="20"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th *ngFor="let col of getColumns()">{{ col }}</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-row>
-                        <tr>
-                            <td *ngFor="let col of getColumns()">{{ row[col] }}</td>
+                            <td *ngFor="let col of getDisplayColumns()">
+                                {{ formatCellValue(row[col], col) }}
+                            </td>
                         </tr>
                     </ng-template>
                 </p-table>
@@ -280,22 +166,32 @@ import { ReportService, ReportParameters } from '../../services/report.service';
             <!-- No Results -->
             <div *ngIf="generated && reportData.length === 0" 
                  class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-                <p class="text-yellow-800">No data found for the selected criteria.</p>
+                <div class="flex flex-col items-center gap-2">
+                    <i class="pi pi-inbox text-4xl text-yellow-400"></i>
+                    <p class="text-yellow-800">No data found for the selected criteria.</p>
+                    <p class="text-sm text-yellow-600">Try adjusting your date range or filters.</p>
+                </div>
             </div>
         </div>
+
+        <!-- Toast Notifications -->
+        <p-toast></p-toast>
     `
 })
 export class ReportGeneratorComponent implements OnInit {
     private reportService = inject(ReportService);
+    private messageService = inject(MessageService);
+
+    // Development mode toggle
+    private readonly USE_MOCK_DATA = true; // Set to false to use service
 
     reportTypes = [
-        { label: 'Inventory Balance', value: 'inventory_balance' },
-        { label: 'Stock Movement', value: 'stock_movement' },
-        { label: 'Inbound/Outbound', value: 'inbound_outbound' },
-        { label: 'Production', value: 'production' },
-        { label: 'Traceability', value: 'traceability' },
-        { label: 'Customs Documents', value: 'customs_documents' },
-        { label: 'Audit Trail', value: 'audit_trail' }
+        { label: 'Inbound Report', value: 'inbound' },
+        { label: 'Outbound Report', value: 'outbound' },
+        { label: 'Purchase Order Report', value: 'purchase_order' },
+        { label: 'Sales Order Report', value: 'sales_order' },
+        { label: 'Stock Opname Report', value: 'stock_opname' },
+        { label: 'Stock Adjustment Report', value: 'stock_adjustment' }
     ];
 
     warehouses: any[] = [];
@@ -308,65 +204,108 @@ export class ReportGeneratorComponent implements OnInit {
     ngOnInit(): void {
         // Load warehouses for filter
         this.warehouses = [
-            { id: '1', name: 'Raw Material Warehouse' },
-            { id: '2', name: 'WIP Warehouse' },
-            { id: '3', name: 'Finished Goods Warehouse' }
+            { id: 'wh-001', name: 'Warehouse Jakarta' },
+            { id: 'wh-002', name: 'Warehouse Surabaya' },
+            { id: 'wh-003', name: 'Warehouse Bandung' }
         ];
     }
 
     onReportTypeChange(): void {
         this.reportData = [];
         this.generated = false;
-        this.showWarehouseFilter = ['inventory_balance', 'stock_movement'].includes(this.selectedReportType);
+        this.showWarehouseFilter = ['inbound', 'outbound', 'stock_opname', 'stock_adjustment'].includes(this.selectedReportType);
     }
 
     generateReport(): void {
         this.generated = true;
 
-        switch (this.selectedReportType) {
-            case 'inventory_balance':
-                this.reportService.generateInventoryBalanceReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
-            case 'stock_movement':
-                this.reportService.generateStockMovementReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
-            case 'inbound_outbound':
-                this.reportService.generateInboundOutboundReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
-            case 'production':
-                this.reportService.generateProductionReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
-            case 'customs_documents':
-                this.reportService.generateCustomsDocumentReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
-            case 'audit_trail':
-                this.reportService.generateAuditTrailReport(this.parameters).subscribe(data => {
-                    this.reportData = data;
-                });
-                break;
+        if (this.USE_MOCK_DATA) {
+            // Use mock data
+            this.reportData = getMockReportData(this.selectedReportType, this.parameters);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Report Generated',
+                detail: `Found ${this.reportData.length} records for ${this.getReportTitle()}`
+            });
+        } else {
+            // Use service
+            switch (this.selectedReportType) {
+                case 'inbound':
+                    this.reportService.generateInventoryBalanceReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+                case 'outbound':
+                    this.reportService.generateStockMovementReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+                case 'purchase_order':
+                    this.reportService.generateInboundOutboundReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+                case 'sales_order':
+                    this.reportService.generateProductionReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+                case 'stock_opname':
+                    this.reportService.generateCustomsDocumentReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+                case 'stock_adjustment':
+                    this.reportService.generateAuditTrailReport(this.parameters).subscribe(data => {
+                        this.reportData = data;
+                    });
+                    break;
+            }
         }
     }
 
     exportToExcel(): void {
-        this.reportService.exportToExcel(this.reportData, this.getReportTitle()).subscribe(blob => {
-            this.downloadFile(blob, `${this.getReportTitle()}.csv`);
-        });
+        if (this.USE_MOCK_DATA) {
+            // Mock export functionality
+            const csvContent = this.generateCSV(this.reportData);
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            this.downloadFile(blob, `${this.getReportTitle().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Export Complete',
+                detail: 'Report exported to CSV successfully'
+            });
+        } else {
+            this.reportService.exportToExcel(this.reportData, this.getReportTitle()).subscribe(blob => {
+                this.downloadFile(blob, `${this.getReportTitle()}.csv`);
+            });
+        }
     }
 
     exportToPDF(): void {
-        this.reportService.exportToPDF(this.reportData, this.getReportTitle()).subscribe(blob => {
-            this.downloadFile(blob, `${this.getReportTitle()}.pdf`);
-        });
+        if (this.USE_MOCK_DATA) {
+            this.messageService.add({
+                severity: 'info',
+                summary: 'PDF Export',
+                detail: 'PDF export functionality is available in production mode'
+            });
+        } else {
+            this.reportService.exportToPDF(this.reportData, this.getReportTitle()).subscribe(blob => {
+                this.downloadFile(blob, `${this.getReportTitle()}.pdf`);
+            });
+        }
+    }
+
+    private generateCSV(data: any[]): string {
+        if (data.length === 0) return '';
+
+        const columns = this.getDisplayColumns();
+        const headers = columns.map(col => this.getColumnLabel(col));
+        const rows = data.map(row => columns.map(col => `"${row[col] || ''}"`));
+
+        return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
     }
 
     downloadFile(blob: Blob, filename: string): void {
@@ -394,5 +333,150 @@ export class ReportGeneratorComponent implements OnInit {
             currency: 'IDR',
             minimumFractionDigits: 0
         }).format(value);
+    }
+
+    getDisplayColumns(): string[] {
+        return getReportColumns(this.selectedReportType);
+    }
+
+    getColumnLabel(column: string): string {
+        const labels: Record<string, string> = {
+            // Inbound Report
+            'inbound_number': 'Inbound Number',
+            'inbound_date': 'Inbound Date',
+            'po_number': 'PO Number',
+            'supplier_name': 'Supplier',
+            'warehouse_name': 'Warehouse',
+            'item_code': 'Item Code',
+            'item_name': 'Item Name',
+            'quantity_received': 'Qty Received',
+            'unit': 'Unit',
+            'unit_price': 'Unit Price',
+            'total_value': 'Total Value',
+            'batch_number': 'Batch Number',
+            'expiry_date': 'Expiry Date',
+            'status': 'Status',
+
+            // Outbound Report
+            'outbound_number': 'Outbound Number',
+            'outbound_date': 'Outbound Date',
+            'so_number': 'SO Number',
+            'customer_name': 'Customer',
+            'quantity_shipped': 'Qty Shipped',
+            'shipping_method': 'Shipping Method',
+
+            // Purchase Order Report
+            'po_date': 'PO Date',
+            'total_items': 'Total Items',
+            'total_quantity': 'Total Quantity',
+            'currency': 'Currency',
+            'delivery_date': 'Delivery Date',
+            'payment_terms': 'Payment Terms',
+            'input_method': 'Input Method',
+            'created_by': 'Created By',
+            'created_date': 'Created Date',
+
+            // Sales Order Report
+            'so_date': 'SO Date',
+
+            // Stock Opname Report
+            'opname_number': 'Opname Number',
+            'opname_date': 'Opname Date',
+            'opname_type': 'Opname Type',
+            'system_quantity': 'System Qty',
+            'physical_quantity': 'Physical Qty',
+            'difference': 'Difference',
+            'adjustment_reason': 'Adjustment Reason',
+            'approved_by': 'Approved By',
+
+            // Stock Adjustment Report
+            'adjustment_number': 'Adjustment Number',
+            'adjustment_date': 'Adjustment Date',
+            'adjustment_type': 'Adjustment Type',
+            'quantity': 'Quantity',
+            'before_quantity': 'Before Qty',
+            'after_quantity': 'After Qty',
+            'reason': 'Reason',
+            'reason_category': 'Reason Category',
+            'submitted_by': 'Submitted By',
+            'approved_date': 'Approved Date'
+        };
+
+        return labels[column] || column.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    getColumnWidth(column: string): string {
+        const widths: Record<string, string> = {
+            'inbound_number': '140px',
+            'outbound_number': '140px',
+            'po_number': '120px',
+            'so_number': '120px',
+            'opname_number': '140px',
+            'adjustment_number': '150px',
+            'item_code': '100px',
+            'item_name': '200px',
+            'supplier_name': '180px',
+            'customer_name': '180px',
+            'warehouse_name': '150px',
+            'quantity_received': '120px',
+            'quantity_shipped': '120px',
+            'system_quantity': '120px',
+            'physical_quantity': '120px',
+            'before_quantity': '120px',
+            'after_quantity': '120px',
+            'total_value': '130px',
+            'unit_price': '120px',
+            'status': '120px',
+            'date': '120px',
+            'created_by': '150px',
+            'approved_by': '150px'
+        };
+
+        // Check for date columns
+        if (column.includes('_date')) {
+            return '120px';
+        }
+
+        return widths[column] || '120px';
+    }
+
+    formatCellValue(value: any, column: string): string {
+        if (value === null || value === undefined) {
+            return '-';
+        }
+
+        // Format dates
+        if (column.includes('_date') && value instanceof Date) {
+            return value.toLocaleDateString('id-ID');
+        }
+
+        // Format currency values
+        if (column.includes('value') || column.includes('price')) {
+            return this.formatCurrency(Number(value));
+        }
+
+        // Format quantities
+        if (column.includes('quantity') || column === 'difference') {
+            return Number(value).toLocaleString('id-ID');
+        }
+
+        // Format status with proper casing
+        if (column === 'status') {
+            return String(value).replace(/_/g, ' ').toLowerCase()
+                .replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Format adjustment type
+        if (column === 'adjustment_type') {
+            return String(value).toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Format opname type
+        if (column === 'opname_type') {
+            return String(value).replace(/_/g, ' ').toLowerCase()
+                .replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        return String(value);
     }
 }

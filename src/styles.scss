@@ -99,3 +99,33 @@ p-inputnumber {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }
+
+p-table {
+    .p-datatable-table-container {
+        table.p-datatable-table {
+            thead {
+                tr {
+                    font-size: 13px !important;
+                }
+            }
+
+            tbody {
+                tr {
+                    font-size: 13px !important;
+
+                    td {
+                        .text-sm {
+                            font-size: 12px !important;
+                        }
+
+                        p-tag {
+                            span {
+                                font-size: 12px !important;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

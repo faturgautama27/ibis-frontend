@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { map, catchError, delay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
     ItemEnhanced,
@@ -10,6 +10,7 @@ import {
 } from '../models/item-enhanced.model';
 import { ItemFilters } from '../models/item-filters.model';
 import { ItemCategory } from '../models/item-category.enum';
+import { ItemType, FacilityStatus } from '../../inventory/models/item.model';
 
 /**
  * Item Service
@@ -27,11 +28,208 @@ export class ItemService {
     private http = inject(HttpClient);
     private readonly apiUrl = `${environment.apiUrl}/items`;
 
+    // Development mode toggle - set to false to use real API
+    private readonly USE_MOCK_DATA = true;
+
+    // Mock data for development
+    private readonly MOCK_ITEMS: ItemEnhanced[] = [
+        // Raw Materials
+        {
+            id: 'item-001',
+            item_code: 'RM-001',
+            item_name: 'Steel Rod 10mm',
+            hs_code: '7213.10.00',
+            item_type: ItemType.RAW,
+            unit: 'KG',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.RAW_MATERIAL,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'High quality steel rod for construction',
+            price: 15000,
+            currency: 'IDR',
+            min_stock: 100,
+            max_stock: 1000,
+            reorder_point: 200
+        },
+        {
+            id: 'item-002',
+            item_code: 'RM-002',
+            item_name: 'Aluminum Sheet 2mm',
+            hs_code: '7606.11.00',
+            item_type: ItemType.RAW,
+            unit: 'M2',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.RAW_MATERIAL,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Premium aluminum sheet for manufacturing',
+            price: 85000,
+            currency: 'IDR',
+            min_stock: 50,
+            max_stock: 500,
+            reorder_point: 100
+        },
+        {
+            id: 'item-003',
+            item_code: 'RM-003',
+            item_name: 'Plastic Granules PP',
+            hs_code: '3902.10.00',
+            item_type: ItemType.RAW,
+            unit: 'KG',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.RAW_MATERIAL,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Polypropylene granules for injection molding',
+            price: 22000,
+            currency: 'IDR',
+            min_stock: 200,
+            max_stock: 2000,
+            reorder_point: 400
+        },
+        {
+            id: 'item-004',
+            item_code: 'RM-004',
+            item_name: 'Chemical Solvent X',
+            hs_code: '2905.11.00',
+            item_type: ItemType.RAW,
+            unit: 'LTR',
+            is_hazardous: true,
+            facility_status: FacilityStatus.FASILITAS,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.RAW_MATERIAL,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Industrial grade chemical solvent',
+            price: 45000,
+            currency: 'IDR',
+            min_stock: 20,
+            max_stock: 200,
+            reorder_point: 50
+        },
+        // Finished Goods
+        {
+            id: 'item-005',
+            item_code: 'FG-001',
+            item_name: 'Steel Frame Assembly',
+            hs_code: '7308.90.00',
+            item_type: ItemType.FG,
+            unit: 'PCS',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.FINISHED_GOOD,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Complete steel frame assembly for construction',
+            price: 250000,
+            currency: 'IDR',
+            min_stock: 10,
+            max_stock: 100,
+            reorder_point: 20
+        },
+        {
+            id: 'item-006',
+            item_code: 'FG-002',
+            item_name: 'Aluminum Window Frame',
+            hs_code: '7610.10.00',
+            item_type: ItemType.FG,
+            unit: 'PCS',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.FINISHED_GOOD,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Premium aluminum window frame',
+            price: 180000,
+            currency: 'IDR',
+            min_stock: 15,
+            max_stock: 150,
+            reorder_point: 30
+        },
+        {
+            id: 'item-007',
+            item_code: 'FG-003',
+            item_name: 'Plastic Container 5L',
+            hs_code: '3923.30.00',
+            item_type: ItemType.FG,
+            unit: 'PCS',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.FINISHED_GOOD,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Food grade plastic container 5 liter',
+            price: 35000,
+            currency: 'IDR',
+            min_stock: 50,
+            max_stock: 500,
+            reorder_point: 100
+        },
+        {
+            id: 'item-008',
+            item_code: 'FG-004',
+            item_name: 'Electronic Component Board',
+            hs_code: '8534.00.00',
+            item_type: ItemType.FG,
+            unit: 'PCS',
+            is_hazardous: false,
+            facility_status: FacilityStatus.NON,
+            active: true,
+            created_at: new Date('2024-01-01'),
+            updated_at: new Date('2024-01-01'),
+            category: ItemCategory.FINISHED_GOOD,
+            categoryLocked: true,
+            categoryLockedAt: new Date('2024-01-01'),
+            categoryLockedBy: 'system',
+            description: 'Advanced electronic component board',
+            price: 125000,
+            currency: 'IDR',
+            min_stock: 25,
+            max_stock: 250,
+            reorder_point: 50
+        }
+    ];
+
     /**
      * Get all items with optional filtering
      * Supports filtering by category, search query, and other criteria
      */
     getItems(filters?: ItemFilters): Observable<{ items: ItemEnhanced[]; totalItems: number }> {
+        if (this.USE_MOCK_DATA) {
+            return this.getMockItems(filters);
+        }
+
         let params = new HttpParams();
 
         if (filters) {
@@ -58,6 +256,40 @@ export class ItemService {
         ).pipe(
             catchError(error => this.handleError(error))
         );
+    }
+
+    /**
+     * Get mock items with filtering (for development)
+     */
+    private getMockItems(filters?: ItemFilters): Observable<{ items: ItemEnhanced[]; totalItems: number }> {
+        let filteredItems = [...this.MOCK_ITEMS];
+
+        // Apply filters
+        if (filters) {
+            if (filters.category) {
+                filteredItems = filteredItems.filter(item => item.category === filters.category);
+            }
+            if (filters.searchQuery) {
+                const query = filters.searchQuery.toLowerCase();
+                filteredItems = filteredItems.filter(item =>
+                    item.item_code.toLowerCase().includes(query) ||
+                    item.item_name.toLowerCase().includes(query) ||
+                    item.hs_code.toLowerCase().includes(query)
+                );
+            }
+            if (filters.active !== undefined) {
+                filteredItems = filteredItems.filter(item => item.active === filters.active);
+            }
+            if (filters.isHazardous !== undefined) {
+                filteredItems = filteredItems.filter(item => item.is_hazardous === filters.isHazardous);
+            }
+        }
+
+        // Simulate API delay
+        return of({
+            items: filteredItems,
+            totalItems: filteredItems.length
+        }).pipe(delay(300));
     }
 
     /**
@@ -88,6 +320,15 @@ export class ItemService {
      * Get item by ID
      */
     getById(id: string): Observable<ItemEnhanced> {
+        if (this.USE_MOCK_DATA) {
+            const item = this.MOCK_ITEMS.find(i => i.id === id);
+            if (item) {
+                return of(item).pipe(delay(200));
+            } else {
+                return throwError(() => new Error('Item not found'));
+            }
+        }
+
         return this.http.get<ItemEnhanced>(`${this.apiUrl}/${id}`).pipe(
             catchError(error => this.handleError(error))
         );
@@ -101,6 +342,20 @@ export class ItemService {
         // Validate category is provided
         if (!item.category) {
             return throwError(() => new Error('Item category is required'));
+        }
+
+        if (this.USE_MOCK_DATA) {
+            const newItem: ItemEnhanced = {
+                id: `item-${Date.now()}`,
+                ...item,
+                created_at: new Date(),
+                updated_at: new Date(),
+                categoryLocked: true,
+                categoryLockedAt: new Date(),
+                categoryLockedBy: 'current-user'
+            };
+            this.MOCK_ITEMS.push(newItem);
+            return of(newItem).pipe(delay(500));
         }
 
         return this.http.post<ItemEnhanced>(this.apiUrl, item).pipe(
@@ -120,6 +375,21 @@ export class ItemService {
             ));
         }
 
+        if (this.USE_MOCK_DATA) {
+            const existingItemIndex = this.MOCK_ITEMS.findIndex(i => i.id === id);
+            if (existingItemIndex === -1) {
+                return throwError(() => new Error('Item not found'));
+            }
+
+            const updatedItem = {
+                ...this.MOCK_ITEMS[existingItemIndex],
+                ...item,
+                updated_at: new Date()
+            };
+            this.MOCK_ITEMS[existingItemIndex] = updatedItem;
+            return of(updatedItem).pipe(delay(500));
+        }
+
         return this.http.put<ItemEnhanced>(`${this.apiUrl}/${id}`, item).pipe(
             catchError(error => this.handleError(error))
         );
@@ -129,6 +399,15 @@ export class ItemService {
      * Delete item
      */
     delete(id: string): Observable<void> {
+        if (this.USE_MOCK_DATA) {
+            const itemIndex = this.MOCK_ITEMS.findIndex(i => i.id === id);
+            if (itemIndex === -1) {
+                return throwError(() => new Error('Item not found'));
+            }
+            this.MOCK_ITEMS.splice(itemIndex, 1);
+            return of(void 0).pipe(delay(300));
+        }
+
         return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
             catchError(error => this.handleError(error))
         );

@@ -13,15 +13,19 @@ import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TableModule } from 'primeng/table';
 import { MessageModule } from 'primeng/message';
-import { MessageModule as MessagesModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
+// Shared Components
+import { InputMethodSelectorComponent, InputMethod } from '../../../../shared/components/input-method-selector/input-method-selector.component';
+import { LineItemsFormComponent, LineItemData } from '../../../../shared/components/line-items-form/line-items-form.component';
+
 // Services and Models
 import { PurchaseOrderService, CreatePurchaseOrderDto } from '../../services/purchase-order.service';
-import { InputMethod, PurchaseOrderLine } from '../../models/purchase-order.model';
+import { PurchaseOrderLine } from '../../models/purchase-order.model';
 import { ExcelService, ExcelParseResult } from '../../../../core/services/excel.service';
 import { ApiIntegrationService, ApiSyncResult } from '../../../../core/services/api-integration.service';
+import { ItemCategory } from '../../../../features/item-master/models/item-category.enum';
 
 /**
  * PurchaseOrderFormComponent
@@ -48,8 +52,9 @@ import { ApiIntegrationService, ApiSyncResult } from '../../../../core/services/
         DatePickerModule,
         TableModule,
         MessageModule,
-        MessagesModule,
-        ToastModule
+        ToastModule,
+        InputMethodSelectorComponent,
+        LineItemsFormComponent
     ],
     providers: [MessageService],
     templateUrl: './purchase-order-form.component.html',
@@ -62,12 +67,11 @@ export class PurchaseOrderFormComponent implements OnInit, OnDestroy {
     purchaseOrderForm!: FormGroup;
 
     // Input method selection
-    inputMethods = [
-        { label: 'Excel Upload', value: InputMethod.EXCEL, icon: 'pi pi-file-excel' },
-        { label: 'API Integration', value: InputMethod.API, icon: 'pi pi-cloud-download' },
-        { label: 'Manual Entry', value: InputMethod.MANUAL, icon: 'pi pi-pencil' }
-    ];
     selectedInputMethod: InputMethod = InputMethod.MANUAL;
+
+    // Expose enums to template
+    InputMethod = InputMethod;
+    ItemCategory = ItemCategory;
 
     // Preview data
     previewData: PurchaseOrderLine[] = [];
@@ -81,20 +85,22 @@ export class PurchaseOrderFormComponent implements OnInit, OnDestroy {
 
     // Dropdown options (would typically come from services)
     suppliers = [
-        { label: 'Supplier A', value: 'SUP-001' },
-        { label: 'Supplier B', value: 'SUP-002' },
-        { label: 'Supplier C', value: 'SUP-003' }
+        { label: 'PT Supplier Utama', value: 'SUP-001' },
+        { label: 'CV Mitra Sejahtera', value: 'SUP-002' },
+        { label: 'PT Global Trading', value: 'SUP-003' },
+        { label: 'UD Berkah Jaya', value: 'SUP-004' }
     ];
 
     warehouses = [
-        { label: 'Warehouse 1', value: 'WH-001' },
-        { label: 'Warehouse 2', value: 'WH-002' }
+        { label: 'Warehouse Jakarta', value: 'WH-001' },
+        { label: 'Warehouse Surabaya', value: 'WH-002' },
+        { label: 'Warehouse Bandung', value: 'WH-003' }
     ];
 
     currencies = [
-        { label: 'IDR', value: 'IDR' },
-        { label: 'USD', value: 'USD' },
-        { label: 'EUR', value: 'EUR' }
+        { label: 'Indonesian Rupiah (IDR)', value: 'IDR' },
+        { label: 'US Dollar (USD)', value: 'USD' },
+        { label: 'Euro (EUR)', value: 'EUR' }
     ];
 
     constructor(
@@ -146,6 +152,14 @@ export class PurchaseOrderFormComponent implements OnInit, OnDestroy {
     onInputMethodChange(method: InputMethod): void {
         this.selectedInputMethod = method;
         this.resetPreview();
+    }
+
+    /**
+     * Handle line items changes
+     */
+    onLineItemsChanged(items: LineItemData[]): void {
+        // Update form validation or perform other actions
+        console.log('Line items changed:', items);
     }
 
     /**

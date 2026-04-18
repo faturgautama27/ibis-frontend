@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, of } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,7 +12,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import {
     StockAdjustmentHeader,
     AdjustmentStatus,
@@ -30,6 +32,7 @@ import {
     selectFilters,
     selectPagination
 } from '../../store/stock-adjustment.selectors';
+import { MOCK_STOCK_ADJUSTMENTS } from './stock-adjustment-list.mock';
 
 /**
  * Stock Adjustment List Component
@@ -41,6 +44,10 @@ import {
  * - Add status badges with color coding using PrimeNG p-tag
  * - Add action buttons based on permissions
  * - Connect to NgRx store
+ * 
+ * Development Mode:
+ * - Set USE_MOCK_DATA = true to use mock data
+ * - Set USE_MOCK_DATA = false to use NgRx store
  */
 @Component({
     selector: 'app-stock-adjustment-list',
@@ -55,9 +62,10 @@ import {
         DatePickerModule,
         TagModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        ToastModule
     ],
-    providers: [ConfirmationService],
+    providers: [ConfirmationService, MessageService],
     templateUrl: './stock-adjustment-list.component.html',
     styleUrls: ['./stock-adjustment-list.component.scss']
 })
@@ -65,6 +73,10 @@ export class StockAdjustmentListComponent implements OnInit {
     private store = inject(Store);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
+    private messageService = inject(MessageService);
+
+    // Development mode toggle
+    private readonly USE_MOCK_DATA = true; // Set to false to use NgRx store
 
     // Expose enum to template
     AdjustmentStatus = AdjustmentStatus;
@@ -77,9 +89,17 @@ export class StockAdjustmentListComponent implements OnInit {
     selectedWarehouse: string | null = null;
     selectedUser: string | null = null;
 
-    // Store selectors
-    adjustments$ = this.store.select(selectFilteredAdjustments);
-    loading$ = this.store.select(selectLoading);
+    // Mock data properties
+    private mockAdjustments: StockAdjustmentHeader[] = MOCK_STOCK_ADJUSTMENTS;
+    private filteredMockAdjustments: StockAdjustmentHeader[] = [...this.mockAdjustments];
+
+    // Store selectors (used when USE_MOCK_DATA = false)
+    private storeAdjustments$ = this.store.select(selectFilteredAdjustments);
+    private storeLoading$ = this.store.select(selectLoading);
+
+    // Public observables (switch between mock and store)
+    adjustments$: Observable<StockAdjustmentHeader[]> = of([]);
+    loading$: Observable<boolean> = of(false);
     filters$ = this.store.select(selectFilters);
     pagination$ = this.store.select(selectPagination);
 
@@ -106,46 +126,72 @@ export class StockAdjustmentListComponent implements OnInit {
     canCreate = true;  // TODO: Get from auth service
 
     ngOnInit(): void {
-        // Load all adjustments on init
-        this.store.dispatch(loadAdjustments({ filters: {} }));
-
-        // Load pending approvals if user has approval permission
-        if (this.canApprove) {
-            this.store.dispatch(loadPendingApprovals());
+        if (this.USE_MOCK_DATA) {
+            this.initializeMockData();
+        } else {
+            this.adjustments$ = this.storeAdjustments$;
+            this.loading$ = this.storeLoading$;
+            this.store.dispatch(loadAdjustments({ filters: {} }));
+            if (this.canApprove) {
+                this.store.dispatch(loadPendingApprovals());
+            }
         }
     }
 
-    /**
-     * Handle search input
-     */
+    private initializeMockData(): void {
+        this.filteredMockAdjustments = [...this.mockAdjustments];
+        this.adjustments$ = of(this.filteredMockAdjustments);
+        this.loading$ = of(false);
+    }
+
+    private applyMockFilters(): void {
+        let filtered = [...this.mockAdjustments];
+
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            filtered = filtered.filter(adj =>
+                adj.adjustmentNumber.toLowerCase().includes(query) ||
+                adj.warehouseName.toLowerCase().includes(query) ||
+                adj.submittedByName?.toLowerCase().includes(query) ||
+                adj.notes?.toLowerCase().includes(query)
+            );
+        }
+
+        if (this.selectedStatus) {
+            filtered = filtered.filter(adj => adj.status === this.selectedStatus);
+        }
+
+        if (this.dateFrom) {
+            filtered = filtered.filter(adj => new Date(adj.adjustmentDate) >= this.dateFrom!);
+        }
+
+        if (this.dateTo) {
+            filtered = filtered.filter(adj => new Date(adj.adjustmentDate) <= this.dateTo!);
+        }
+
+        this.filteredMockAdjustments = filtered;
+        this.adjustments$ = of(this.filteredMockAdjustments);
+    }
+
     onSearch(event: Event): void {
         const query = (event.target as HTMLInputElement).value;
         this.searchQuery = query;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle status filter change
-     */
     onStatusChange(status: AdjustmentStatus | null): void {
         this.selectedStatus = status;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle date from filter change
-     */
     onDateFromChange(date: Date | null): void {
         this.dateFrom = date;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle date to filter change
-     */
     onDateToChange(date: Date | null): void {
         this.dateTo = date;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
     /**
@@ -164,9 +210,6 @@ export class StockAdjustmentListComponent implements OnInit {
         this.store.dispatch(setFilters({ filters }));
     }
 
-    /**
-     * Clear all filters
-     */
     onClearFilters(): void {
         this.searchQuery = '';
         this.selectedStatus = null;
@@ -174,7 +217,7 @@ export class StockAdjustmentListComponent implements OnInit {
         this.dateTo = null;
         this.selectedWarehouse = null;
         this.selectedUser = null;
-        this.store.dispatch(setFilters({ filters: {} }));
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.store.dispatch(setFilters({ filters: {} }));
     }
 
     /**

@@ -57,7 +57,7 @@
     </div>
 
     <!-- Table Card -->
-    <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 20rem); overflow-y: auto">
+    <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 25rem); overflow-y: auto">
         <p-table [value]="(adjustments$ | async) || []" [paginator]="true" [rows]="20"
             [loading]="(loading$ | async) || false" [showCurrentPageReport]="true"
             currentPageReportTemplate="{first} - {last} of {totalRecords} adjustments">

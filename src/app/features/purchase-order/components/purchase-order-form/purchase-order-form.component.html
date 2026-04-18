@@ -1,118 +1,119 @@
 <div class="purchase-order-form-container p-4">
     <p-toast></p-toast>
 
-    <div class="mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Create Purchase Order</h2>
-        <p class="text-gray-600">Select an input method and fill in the purchase order details</p>
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold text-gray-900">Create Purchase Order</h2>
+        <p class="text-gray-600 mt-2">Select an input method and fill in the purchase order details</p>
     </div>
 
     <!-- Input Method Selector -->
-    <p-card class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4">
-                <h3 class="text-lg font-semibold">Select Input Method</h3>
-            </div>
-        </ng-template>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div *ngFor="let method of inputMethods"
-                class="input-method-card p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md"
-                [class.border-blue-500]="selectedInputMethod === method.value"
-                [class.bg-blue-50]="selectedInputMethod === method.value"
-                [class.border-gray-300]="selectedInputMethod !== method.value"
-                (click)="onInputMethodChange(method.value)">
-                <div class="flex flex-col items-center text-center">
-                    <i [class]="method.icon + ' text-4xl mb-2'"
-                        [class.text-blue-600]="selectedInputMethod === method.value"
-                        [class.text-gray-600]="selectedInputMethod !== method.value"></i>
-                    <span class="font-semibold">{{ method.label }}</span>
-                </div>
-            </div>
-        </div>
-    </p-card>
+    <div class="mb-6">
+        <app-input-method-selector title="Select Input Method"
+            subtitle="Choose how you want to input your purchase order data" [selectedMethod]="selectedInputMethod"
+            (methodSelected)="onInputMethodChange($event)"></app-input-method-selector>
+    </div>
 
     <!-- Excel Upload Section -->
-    <p-card *ngIf="selectedInputMethod === 'EXCEL'" class="mb-4">
+    <p-card *ngIf="selectedInputMethod === InputMethod.EXCEL" class="mb-6">
         <ng-template pTemplate="header">
             <div class="p-4">
-                <h3 class="text-lg font-semibold">Excel Upload</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Excel Upload</h3>
+                <p class="text-sm text-gray-600 mt-1">Upload your purchase order data from Excel file</p>
             </div>
         </ng-template>
 
         <div class="space-y-4">
-            <div class="flex gap-2">
-                <input type="file" accept=".xlsx,.xls" (change)="onExcelFileSelected($event)" class="flex-1" #fileInput>
-                <p-button label="Download Template" icon="pi pi-download" (onClick)="downloadTemplate()"
-                    [outlined]="true"></p-button>
+            <div class="flex gap-3">
+                <input type="file" accept=".xlsx,.xls" (change)="onExcelFileSelected($event)"
+                    class="flex-1 p-2 border border-gray-300 rounded-md" #fileInput />
+                <button pButton label="Download Template" icon="pi pi-download" (click)="downloadTemplate()"
+                    [outlined]="true" type="button"></button>
             </div>
 
-            <div *ngIf="loading" class="text-center py-4">
-                <i class="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
-                <p class="mt-2 text-gray-600">Parsing Excel file...</p>
+            <div *ngIf="loading" class="text-center py-8">
+                <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+                <p class="mt-3 text-gray-600">Parsing Excel file...</p>
             </div>
 
             <div *ngIf="hasErrors && errorMessages.length > 0" class="mt-4">
-                <p-message severity="error" [text]="'Found ' + errorMessages.length + ' validation errors'"></p-message>
-                <div class="mt-2 max-h-40 overflow-y-auto bg-red-50 p-3 rounded">
-                    <ul class="list-disc list-inside text-sm text-red-700">
-                        <li *ngFor="let error of errorMessages">{{ error }}</li>
-                    </ul>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="pi pi-exclamation-triangle text-red-600 mr-2"></i>
+                        <span class="font-medium text-red-800">Found {{ errorMessages.length }} validation errors</span>
+                    </div>
+                    <div class="max-h-40 overflow-y-auto bg-white p-3 rounded border">
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            <li *ngFor="let error of errorMessages">{{ error }}</li>
+                        </ul>
+                    </div>
+                    <button pButton label="Download Error Report" icon="pi pi-download" (click)="downloadErrorReport()"
+                        severity="danger" [outlined]="true" class="mt-3" type="button"></button>
                 </div>
-                <p-button label="Download Error Report" icon="pi pi-download" (onClick)="downloadErrorReport()"
-                    severity="danger" [outlined]="true" class="mt-2"></p-button>
             </div>
         </div>
     </p-card>
 
     <!-- API Integration Section -->
-    <p-card *ngIf="selectedInputMethod === 'API'" class="mb-4">
+    <p-card *ngIf="selectedInputMethod === InputMethod.API" class="mb-6">
         <ng-template pTemplate="header">
             <div class="p-4">
-                <h3 class="text-lg font-semibold">API Integration</h3>
+                <h3 class="text-lg font-semibold text-gray-900">API Integration</h3>
+                <p class="text-sm text-gray-600 mt-1">Fetch purchase order data from external systems</p>
             </div>
         </ng-template>
 
         <div class="space-y-4">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
+            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center gap-3">
                     <i class="pi pi-circle-fill text-green-500"></i>
-                    <span class="text-sm text-gray-600">API Connected</span>
+                    <div>
+                        <span class="font-medium text-green-900">API Connection Active</span>
+                        <p class="text-sm text-green-700">Ready to fetch data from external systems</p>
+                    </div>
                 </div>
-                <p-button label="Fetch Data" icon="pi pi-cloud-download" (onClick)="fetchFromApi()"
-                    [loading]="loading"></p-button>
+                <button pButton label="Fetch Data" icon="pi pi-cloud-download" (click)="fetchFromApi()"
+                    [loading]="loading" type="button"></button>
             </div>
 
-            <div *ngIf="loading" class="text-center py-4">
-                <i class="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
-                <p class="mt-2 text-gray-600">Fetching data from API...</p>
+            <div *ngIf="loading" class="text-center py-8">
+                <i class="pi pi-spin pi-spinner text-4xl text-blue-600"></i>
+                <p class="mt-3 text-gray-600">Fetching data from API...</p>
             </div>
 
             <div *ngIf="hasErrors && errorMessages.length > 0" class="mt-4">
-                <p-message severity="error" [text]="'API returned ' + errorMessages.length + ' errors'"></p-message>
-                <div class="mt-2 max-h-40 overflow-y-auto bg-red-50 p-3 rounded">
-                    <ul class="list-disc list-inside text-sm text-red-700">
-                        <li *ngFor="let error of errorMessages">{{ error }}</li>
-                    </ul>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="pi pi-exclamation-triangle text-red-600 mr-2"></i>
+                        <span class="font-medium text-red-800">API returned {{ errorMessages.length }} errors</span>
+                    </div>
+                    <div class="max-h-40 overflow-y-auto bg-white p-3 rounded border">
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            <li *ngFor="let error of errorMessages">{{ error }}</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </p-card>
 
     <!-- Preview Panel -->
-    <p-card *ngIf="showPreview && previewData.length > 0" class="mb-4">
+    <p-card *ngIf="showPreview && previewData.length > 0" class="mb-6">
         <ng-template pTemplate="header">
             <div class="p-4 flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Preview Data</h3>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Preview Data</h3>
+                    <p class="text-sm text-gray-600 mt-1">Review the imported data before proceeding</p>
+                </div>
                 <div class="flex gap-2">
-                    <p-button label="Cancel" icon="pi pi-times" (onClick)="cancelPreview()" [outlined]="true"
-                        severity="secondary"></p-button>
-                    <p-button label="Confirm & Load" icon="pi pi-check" (onClick)="confirmPreview()"
-                        [disabled]="hasErrors"></p-button>
+                    <button pButton label="Cancel" icon="pi pi-times" (click)="cancelPreview()" [outlined]="true"
+                        severity="secondary" type="button"></button>
+                    <button pButton label="Confirm & Load" icon="pi pi-check" (click)="confirmPreview()"
+                        [disabled]="hasErrors" type="button"></button>
                 </div>
             </div>
         </ng-template>
 
-        <p-table [value]="previewData" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+        <p-table [value]="previewData" [scrollable]="true" scrollHeight="400px" class="p-datatable-sm">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Line</th>
@@ -143,19 +144,21 @@
     <!-- Purchase Order Form -->
     <form [formGroup]="purchaseOrderForm" (ngSubmit)="onSubmit()">
         <!-- Header Information -->
-        <p-card class="mb-4">
+        <p-card class="mb-6">
             <ng-template pTemplate="header">
                 <div class="p-4">
-                    <h3 class="text-lg font-semibold">Purchase Order Information</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">Purchase Order Information</h3>
+                    <p class="text-sm text-gray-600 mt-1">Enter the basic purchase order details</p>
                 </div>
             </ng-template>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- PO Number -->
                 <div class="flex flex-col">
-                    <label for="poNumber" class="mb-2 font-semibold">PO Number *</label>
+                    <label for="poNumber" class="mb-2 font-semibold text-gray-700">PO Number *</label>
                     <input pInputText id="poNumber" formControlName="poNumber" placeholder="Enter PO number"
-                        [class.ng-invalid]="hasError('poNumber')" [class.ng-dirty]="hasError('poNumber')">
+                        class="w-full" [class.ng-invalid]="hasError('poNumber')"
+                        [class.ng-dirty]="hasError('poNumber')" />
                     <small *ngIf="hasError('poNumber')" class="text-red-600 mt-1">
                         {{ getErrorMessage('poNumber') }}
                     </small>
@@ -163,9 +166,10 @@
 
                 <!-- PO Date -->
                 <div class="flex flex-col">
-                    <label for="poDate" class="mb-2 font-semibold">PO Date *</label>
-                    <p-datepicker id="poDate" formControlName="poDate" dateFormat="yy-mm-dd" iconDisplay="button"
-                        [class.ng-invalid]="hasError('poDate')" [class.ng-dirty]="hasError('poDate')"></p-datepicker>
+                    <label for="poDate" class="mb-2 font-semibold text-gray-700">PO Date *</label>
+                    <p-datepicker id="poDate" formControlName="poDate" dateFormat="dd/mm/yy" [showIcon]="true"
+                        class="w-full" [class.ng-invalid]="hasError('poDate')"
+                        [class.ng-dirty]="hasError('poDate')"></p-datepicker>
                     <small *ngIf="hasError('poDate')" class="text-red-600 mt-1">
                         {{ getErrorMessage('poDate') }}
                     </small>
@@ -173,9 +177,10 @@
 
                 <!-- Supplier -->
                 <div class="flex flex-col">
-                    <label for="supplierId" class="mb-2 font-semibold">Supplier *</label>
-                    <p-select id="supplierId" formControlName="supplierId" [options]="suppliers"
-                        placeholder="Select supplier" [class.ng-invalid]="hasError('supplierId')"
+                    <label for="supplierId" class="mb-2 font-semibold text-gray-700">Supplier *</label>
+                    <p-select id="supplierId" formControlName="supplierId" [options]="suppliers" optionLabel="label"
+                        optionValue="value" placeholder="Select supplier" class="w-full"
+                        [class.ng-invalid]="hasError('supplierId')"
                         [class.ng-dirty]="hasError('supplierId')"></p-select>
                     <small *ngIf="hasError('supplierId')" class="text-red-600 mt-1">
                         {{ getErrorMessage('supplierId') }}
@@ -184,9 +189,10 @@
 
                 <!-- Warehouse -->
                 <div class="flex flex-col">
-                    <label for="warehouseId" class="mb-2 font-semibold">Warehouse *</label>
-                    <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses"
-                        placeholder="Select warehouse" [class.ng-invalid]="hasError('warehouseId')"
+                    <label for="warehouseId" class="mb-2 font-semibold text-gray-700">Warehouse *</label>
+                    <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses" optionLabel="label"
+                        optionValue="value" placeholder="Select warehouse" class="w-full"
+                        [class.ng-invalid]="hasError('warehouseId')"
                         [class.ng-dirty]="hasError('warehouseId')"></p-select>
                     <small *ngIf="hasError('warehouseId')" class="text-red-600 mt-1">
                         {{ getErrorMessage('warehouseId') }}
@@ -195,119 +201,59 @@
 
                 <!-- Delivery Date -->
                 <div class="flex flex-col">
-                    <label for="deliveryDate" class="mb-2 font-semibold">Delivery Date</label>
-                    <p-datepicker id="deliveryDate" formControlName="deliveryDate" dateFormat="yy-mm-dd"
-                        iconDisplay="button"></p-datepicker>
+                    <label for="deliveryDate" class="mb-2 font-semibold text-gray-700">Delivery Date</label>
+                    <p-datepicker id="deliveryDate" formControlName="deliveryDate" dateFormat="dd/mm/yy"
+                        [showIcon]="true" class="w-full"></p-datepicker>
                 </div>
 
                 <!-- Currency -->
                 <div class="flex flex-col">
-                    <label for="currency" class="mb-2 font-semibold">Currency *</label>
-                    <p-select id="currency" formControlName="currency" [options]="currencies"
-                        placeholder="Select currency"></p-select>
+                    <label for="currency" class="mb-2 font-semibold text-gray-700">Currency *</label>
+                    <p-select id="currency" formControlName="currency" [options]="currencies" optionLabel="label"
+                        optionValue="value" placeholder="Select currency" class="w-full"></p-select>
                 </div>
 
                 <!-- Exchange Rate -->
                 <div class="flex flex-col">
-                    <label for="exchangeRate" class="mb-2 font-semibold">Exchange Rate</label>
+                    <label for="exchangeRate" class="mb-2 font-semibold text-gray-700">Exchange Rate</label>
                     <input pInputText id="exchangeRate" formControlName="exchangeRate" type="number"
-                        placeholder="Enter exchange rate">
+                        placeholder="Enter exchange rate" class="w-full" />
                 </div>
 
                 <!-- Payment Terms -->
                 <div class="flex flex-col">
-                    <label for="paymentTerms" class="mb-2 font-semibold">Payment Terms</label>
+                    <label for="paymentTerms" class="mb-2 font-semibold text-gray-700">Payment Terms</label>
                     <input pInputText id="paymentTerms" formControlName="paymentTerms"
-                        placeholder="Enter payment terms">
+                        placeholder="e.g., Net 30, Net 45" class="w-full" />
                 </div>
 
                 <!-- Notes -->
                 <div class="flex flex-col md:col-span-2">
-                    <label for="notes" class="mb-2 font-semibold">Notes</label>
+                    <label for="notes" class="mb-2 font-semibold text-gray-700">Notes</label>
                     <textarea pInputTextarea id="notes" formControlName="notes" rows="3"
-                        placeholder="Enter additional notes"></textarea>
+                        placeholder="Enter additional notes or special instructions" class="w-full"></textarea>
                 </div>
             </div>
         </p-card>
 
         <!-- Line Items -->
-        <p-card class="mb-4" *ngIf="selectedInputMethod === 'MANUAL'">
-            <ng-template pTemplate="header">
-                <div class="p-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold">Line Items</h3>
-                    <p-button label="Add Item" icon="pi pi-plus" (onClick)="addLineItem()" [outlined]="true"></p-button>
-                </div>
-            </ng-template>
-
-            <div *ngIf="details.length === 0" class="text-center py-8 text-gray-500">
-                <i class="pi pi-inbox text-4xl mb-2"></i>
-                <p>No line items added yet. Click "Add Item" to start.</p>
-            </div>
-
-            <div *ngIf="details.length > 0" formArrayName="details">
-                <div *ngFor="let item of details.controls; let i = index" [formGroupName]="i"
-                    class="border rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">Line {{ i + 1 }}</h4>
-                        <p-button icon="pi pi-trash" (onClick)="removeLineItem(i)" severity="danger" [outlined]="true"
-                            [text]="true"></p-button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Item Code *</label>
-                            <input pInputText formControlName="itemCode" placeholder="Item code">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Item Name *</label>
-                            <input pInputText formControlName="itemName" placeholder="Item name">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">HS Code *</label>
-                            <input pInputText formControlName="hsCode" placeholder="HS code">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Quantity *</label>
-                            <input pInputText formControlName="orderedQuantity" type="number" placeholder="Quantity">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Unit *</label>
-                            <input pInputText formControlName="unit" placeholder="Unit">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Unit Price *</label>
-                            <input pInputText formControlName="unitPrice" type="number" placeholder="Unit price">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Delivery Date</label>
-                            <p-datepicker formControlName="deliveryDate" dateFormat="yy-mm-dd"
-                                iconDisplay="button"></p-datepicker>
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Notes</label>
-                            <input pInputText formControlName="notes" placeholder="Notes">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </p-card>
+        <div *ngIf="selectedInputMethod === InputMethod.MANUAL" class="mb-6">
+            <app-line-items-form [formArray]="details" orderType="purchase order"
+                [itemCategory]="ItemCategory.RAW_MATERIAL"
+                (itemsChanged)="onLineItemsChanged($event)"></app-line-items-form>
+        </div>
 
         <!-- Line Items Display (for Excel/API) -->
-        <p-card class="mb-4" *ngIf="selectedInputMethod !== 'MANUAL' && details.length > 0">
+        <p-card class="mb-6" *ngIf="selectedInputMethod !== InputMethod.MANUAL && details.length > 0">
             <ng-template pTemplate="header">
                 <div class="p-4">
-                    <h3 class="text-lg font-semibold">Line Items ({{ details.length }})</h3>
+                    <h3 class="text-lg font-semibold text-gray-900">Line Items ({{ details.length }})</h3>
+                    <p class="text-sm text-gray-600 mt-1">Items imported from {{ selectedInputMethod ===
+                        InputMethod.EXCEL ? 'Excel file' : 'API' }}</p>
                 </div>
             </ng-template>
 
-            <p-table [value]="details.controls" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+            <p-table [value]="details.controls" [scrollable]="true" scrollHeight="400px" class="p-datatable-sm">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Line</th>
@@ -328,20 +274,20 @@
                         <td>{{ item.get('hsCode')?.value }}</td>
                         <td>{{ item.get('orderedQuantity')?.value }}</td>
                         <td>{{ item.get('unit')?.value }}</td>
-                        <td>{{ item.get('unitPrice')?.value | number:'1.2-2' }}</td>
-                        <td>{{ (item.get('orderedQuantity')?.value * item.get('unitPrice')?.value) | number:'1.2-2' }}
-                        </td>
+                        <td>{{ item.get('unitPrice')?.value | currency:'IDR':'symbol':'1.0-0' }}</td>
+                        <td>{{ (item.get('orderedQuantity')?.value * item.get('unitPrice')?.value) |
+                            currency:'IDR':'symbol':'1.0-0' }}</td>
                     </tr>
                 </ng-template>
             </p-table>
         </p-card>
 
         <!-- Form Actions -->
-        <div class="flex justify-end gap-2">
-            <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()" [outlined]="true" severity="secondary"
-                type="button"></p-button>
-            <p-button label="Create Purchase Order" icon="pi pi-check" type="submit" [loading]="saving"
-                [disabled]="saving"></p-button>
+        <div class="flex justify-end gap-3">
+            <button pButton label="Cancel" icon="pi pi-times" (click)="onCancel()" [outlined]="true"
+                severity="secondary" type="button"></button>
+            <button pButton label="Create Purchase Order" icon="pi pi-check" type="submit" [loading]="saving"
+                [disabled]="saving || purchaseOrderForm.invalid"></button>
         </div>
     </form>
 </div>

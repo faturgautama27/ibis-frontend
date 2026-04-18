@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, of } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,12 +9,26 @@ import { CardModule } from 'primeng/card';
 import { TabsModule } from 'primeng/tabs';
 import { TimelineModule } from 'primeng/timeline';
 import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { LucideAngularModule, GitBranch, ArrowRight, ArrowLeft, QrCode, History } from 'lucide-angular';
 import { TraceabilityService } from '../../services/traceability.service';
+import {
+    TraceabilityMovement,
+    ProductionOrder,
+    getMockForwardTrace,
+    getMockBackwardTrace,
+    getMockTraceByRFID,
+    getMockProductionHistory
+} from './traceability-view.mock';
 
 /**
  * Traceability View Component
  * Requirements: 13.1, 13.2, 13.3, 13.6, 13.7, 13.8
+ * 
+ * Development Mode:
+ * - Set USE_MOCK_DATA = true to use mock data
+ * - Set USE_MOCK_DATA = false to use service
  */
 @Component({
     selector: 'app-traceability-view',
@@ -28,8 +43,10 @@ import { TraceabilityService } from '../../services/traceability.service';
         TabsModule,
         TimelineModule,
         TagModule,
+        ToastModule,
         LucideAngularModule
     ],
+    providers: [MessageService],
     template: `
         <div class="main-layout">
             <!-- Page Header -->
@@ -181,6 +198,8 @@ import { TraceabilityService } from '../../services/traceability.service';
                                 </tr>
                             </ng-template>
                         </p-table>
+                        <!-- Toast Notifications -->
+                        <p-toast></p-toast>
                     </div>
                 </p-tabpanel>
             </p-tabs>
@@ -190,12 +209,25 @@ import { TraceabilityService } from '../../services/traceability.service';
             <div *ngIf="searched && traceResults.length === 0 && productionHistory.length === 0" 
                  class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <p class="text-yellow-800">No traceability data found for the specified criteria.</p>
+                <div class="mt-4 text-sm text-yellow-700">
+                    <p><strong>Available test data:</strong></p>
+                    <p>Item IDs: item-001, item-002, item-003</p>
+                    <p>Batch Numbers: BATCH-001, BATCH-002, BATCH-FG-001</p>
+                    <p>RFID Tags: RFID-001-A, RFID-002-X, RFID-003-B</p>
+                </div>
             </div>
         </div>
+
+        <!-- Toast Notifications -->
+        <p-toast></p-toast>
     `
 })
 export class TraceabilityViewComponent implements OnInit {
     private traceabilityService = inject(TraceabilityService);
+    private messageService = inject(MessageService);
+
+    // Development mode toggle
+    private readonly USE_MOCK_DATA = true; // Set to false to use service
 
     // Lucide Icons
     GitBranchIcon = GitBranch;
@@ -207,63 +239,135 @@ export class TraceabilityViewComponent implements OnInit {
     searchItemId = '';
     searchBatchNumber = '';
     searchRFIDValue = '';
-    traceResults: any[] = [];
-    productionHistory: any[] = [];
+    traceResults: TraceabilityMovement[] = [];
+    productionHistory: ProductionOrder[] = [];
     traceDirection: 'forward' | 'backward' = 'forward';
     searched = false;
 
     ngOnInit(): void { }
 
     traceForward(): void {
-        if (!this.searchItemId) return;
+        if (!this.searchItemId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Please enter an Item ID'
+            });
+            return;
+        }
 
         this.traceDirection = 'forward';
         this.searched = true;
         this.productionHistory = [];
 
-        this.traceabilityService.traceForward(
-            this.searchItemId,
-            this.searchBatchNumber || undefined
-        ).subscribe(results => {
-            this.traceResults = results;
-        });
+        if (this.USE_MOCK_DATA) {
+            this.traceResults = getMockForwardTrace(this.searchItemId, this.searchBatchNumber || undefined);
+            if (this.traceResults.length > 0) {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `Found ${this.traceResults.length} forward trace records`
+                });
+            }
+        } else {
+            this.traceabilityService.traceForward(
+                this.searchItemId,
+                this.searchBatchNumber || undefined
+            ).subscribe(results => {
+                this.traceResults = results;
+            });
+        }
     }
 
     traceBackward(): void {
-        if (!this.searchItemId) return;
+        if (!this.searchItemId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Please enter an Item ID'
+            });
+            return;
+        }
 
         this.traceDirection = 'backward';
         this.searched = true;
         this.productionHistory = [];
 
-        this.traceabilityService.traceBackward(
-            this.searchItemId,
-            this.searchBatchNumber || undefined
-        ).subscribe(results => {
-            this.traceResults = results;
-        });
+        if (this.USE_MOCK_DATA) {
+            this.traceResults = getMockBackwardTrace(this.searchItemId, this.searchBatchNumber || undefined);
+            if (this.traceResults.length > 0) {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `Found ${this.traceResults.length} backward trace records`
+                });
+            }
+        } else {
+            this.traceabilityService.traceBackward(
+                this.searchItemId,
+                this.searchBatchNumber || undefined
+            ).subscribe(results => {
+                this.traceResults = results;
+            });
+        }
     }
 
     searchRFID(): void {
-        if (!this.searchRFIDValue) return;
+        if (!this.searchRFIDValue) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Please enter an RFID tag'
+            });
+            return;
+        }
 
         this.searched = true;
         this.productionHistory = [];
 
-        this.traceabilityService.searchByRFID(this.searchRFIDValue).subscribe(results => {
-            this.traceResults = results || [];
-        });
+        if (this.USE_MOCK_DATA) {
+            this.traceResults = getMockTraceByRFID(this.searchRFIDValue);
+            if (this.traceResults.length > 0) {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `Found ${this.traceResults.length} RFID trace records`
+                });
+            }
+        } else {
+            this.traceabilityService.searchByRFID(this.searchRFIDValue).subscribe(results => {
+                this.traceResults = results || [];
+            });
+        }
     }
 
     loadProductionHistory(): void {
-        if (!this.searchItemId) return;
+        if (!this.searchItemId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Please enter an Item ID'
+            });
+            return;
+        }
 
         this.searched = true;
         this.traceResults = [];
 
-        this.traceabilityService.getProductionHistory(this.searchItemId).subscribe(history => {
-            this.productionHistory = history;
-        });
+        if (this.USE_MOCK_DATA) {
+            this.productionHistory = getMockProductionHistory(this.searchItemId);
+            if (this.productionHistory.length > 0) {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `Found ${this.productionHistory.length} production orders`
+                });
+            }
+        } else {
+            this.traceabilityService.getProductionHistory(this.searchItemId).subscribe(history => {
+                this.productionHistory = history;
+            });
+        }
     }
 
     getMovementSeverity(movementType: string): any {

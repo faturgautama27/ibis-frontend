@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, of } from 'rxjs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,7 +12,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { SalesOrderHeader, SOStatus, SOFilters } from '../../models/sales-order.model';
 import {
     loadOrders,
@@ -26,6 +28,7 @@ import {
     selectPagination,
     selectTotalOrderCount
 } from '../../store/sales-order.selectors';
+import { MOCK_SALES_ORDERS } from './sales-order-list.mock';
 
 /**
  * Sales Order List Component
@@ -37,6 +40,10 @@ import {
  * - Search and sort functionality
  * - Action buttons (create, view, edit, delete)
  * - Connected to NgRx store
+ * 
+ * Development Mode:
+ * - Set USE_MOCK_DATA = true to use mock data
+ * - Set USE_MOCK_DATA = false to use NgRx store
  */
 @Component({
     selector: 'app-sales-order-list',
@@ -51,9 +58,10 @@ import {
         DatePickerModule,
         TagModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        ToastModule
     ],
-    providers: [ConfirmationService],
+    providers: [ConfirmationService, MessageService],
     templateUrl: './sales-order-list.component.html',
     styleUrls: ['./sales-order-list.component.scss']
 })
@@ -61,6 +69,10 @@ export class SalesOrderListComponent implements OnInit {
     private store = inject(Store);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
+    private messageService = inject(MessageService);
+
+    // Development mode toggle
+    private readonly USE_MOCK_DATA = true; // Set to false to use NgRx store
 
     // Expose enum to template
     SOStatus = SOStatus;
@@ -71,12 +83,21 @@ export class SalesOrderListComponent implements OnInit {
     dateFrom: Date | null = null;
     dateTo: Date | null = null;
 
-    // Store selectors
-    orders$ = this.store.select(selectFilteredOrders);
-    loading$ = this.store.select(selectLoading);
+    // Mock data properties
+    private mockOrders: SalesOrderHeader[] = MOCK_SALES_ORDERS;
+    private filteredMockOrders: SalesOrderHeader[] = [...this.mockOrders];
+
+    // Store selectors (used when USE_MOCK_DATA = false)
+    private storeOrders$ = this.store.select(selectFilteredOrders);
+    private storeLoading$ = this.store.select(selectLoading);
+    private storeTotalCount$ = this.store.select(selectTotalOrderCount);
+
+    // Public observables (switch between mock and store)
+    orders$: Observable<SalesOrderHeader[]> = of([]);
+    loading$: Observable<boolean> = of(false);
     filters$ = this.store.select(selectFilters);
     pagination$ = this.store.select(selectPagination);
-    totalCount$ = this.store.select(selectTotalOrderCount);
+    totalCount$: Observable<number> = of(0);
 
     // Status options for dropdown
     statusOptions = [
@@ -99,41 +120,72 @@ export class SalesOrderListComponent implements OnInit {
     ];
 
     ngOnInit(): void {
-        // Load all orders on init
-        this.store.dispatch(loadOrders({ filters: {} }));
+        if (this.USE_MOCK_DATA) {
+            this.initializeMockData();
+        } else {
+            this.orders$ = this.storeOrders$;
+            this.loading$ = this.storeLoading$;
+            this.totalCount$ = this.storeTotalCount$;
+            this.store.dispatch(loadOrders({ filters: {} }));
+        }
     }
 
-    /**
-     * Handle search input
-     */
+    private initializeMockData(): void {
+        this.filteredMockOrders = [...this.mockOrders];
+        this.orders$ = of(this.filteredMockOrders);
+        this.loading$ = of(false);
+        this.totalCount$ = of(this.filteredMockOrders.length);
+    }
+
+    private applyMockFilters(): void {
+        let filtered = [...this.mockOrders];
+
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            filtered = filtered.filter(order =>
+                order.soNumber.toLowerCase().includes(query) ||
+                order.customerName.toLowerCase().includes(query) ||
+                order.customerCode.toLowerCase().includes(query) ||
+                order.warehouseName.toLowerCase().includes(query)
+            );
+        }
+
+        if (this.selectedStatus) {
+            filtered = filtered.filter(order => order.status === this.selectedStatus);
+        }
+
+        if (this.dateFrom) {
+            filtered = filtered.filter(order => new Date(order.soDate) >= this.dateFrom!);
+        }
+
+        if (this.dateTo) {
+            filtered = filtered.filter(order => new Date(order.soDate) <= this.dateTo!);
+        }
+
+        this.filteredMockOrders = filtered;
+        this.orders$ = of(this.filteredMockOrders);
+        this.totalCount$ = of(this.filteredMockOrders.length);
+    }
+
     onSearch(event: Event): void {
         const query = (event.target as HTMLInputElement).value;
         this.searchQuery = query;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle status filter change
-     */
     onStatusChange(status: SOStatus | null): void {
         this.selectedStatus = status;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle date from filter change
-     */
     onDateFromChange(date: Date | null): void {
         this.dateFrom = date;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
-    /**
-     * Handle date to filter change
-     */
     onDateToChange(date: Date | null): void {
         this.dateTo = date;
-        this.applyFilters();
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.applyFilters();
     }
 
     /**
@@ -150,15 +202,12 @@ export class SalesOrderListComponent implements OnInit {
         this.store.dispatch(setFilters({ filters }));
     }
 
-    /**
-     * Clear all filters
-     */
     onClearFilters(): void {
         this.searchQuery = '';
         this.selectedStatus = null;
         this.dateFrom = null;
         this.dateTo = null;
-        this.store.dispatch(setFilters({ filters: {} }));
+        this.USE_MOCK_DATA ? this.applyMockFilters() : this.store.dispatch(setFilters({ filters: {} }));
     }
 
     /**
@@ -182,17 +231,26 @@ export class SalesOrderListComponent implements OnInit {
         this.router.navigate(['/sales-orders', order.id, 'edit']);
     }
 
-    /**
-     * Delete sales order with confirmation
-     * Requirements: 5.16, 5.17 - Validates no linked outbound transactions
-     */
     onDeleteOrder(order: SalesOrderHeader): void {
         this.confirmationService.confirm({
             message: `Are you sure you want to delete Sales Order "${order.soNumber}"?`,
             header: 'Confirm Delete',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.store.dispatch(deleteOrder({ orderId: order.id }));
+                if (this.USE_MOCK_DATA) {
+                    const index = this.mockOrders.findIndex(o => o.id === order.id);
+                    if (index > -1) {
+                        this.mockOrders.splice(index, 1);
+                        this.applyMockFilters();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Success',
+                            detail: `Sales Order ${order.soNumber} deleted successfully`
+                        });
+                    }
+                } else {
+                    this.store.dispatch(deleteOrder({ orderId: order.id }));
+                }
             }
         });
     }

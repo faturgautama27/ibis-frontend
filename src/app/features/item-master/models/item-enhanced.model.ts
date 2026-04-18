@@ -1,4 +1,4 @@
-import { Item } from '../../inventory/models/item.model';
+import { Item, ItemType, FacilityStatus } from '../../inventory/models/item.model';
 import { ItemCategory } from './item-category.enum';
 
 /**
@@ -31,10 +31,10 @@ export interface CreateItemEnhancedDto {
     item_code: string;
     item_name: string;
     hs_code: string;
-    item_type: string;
+    item_type: ItemType;
     unit: string;
     is_hazardous: boolean;
-    facility_status: string;
+    facility_status: FacilityStatus;
     active: boolean;
     category: ItemCategory;
     description?: string;
@@ -61,10 +61,10 @@ export interface CreateItemEnhancedDto {
 export interface UpdateItemEnhancedDto {
     item_name?: string;
     hs_code?: string;
-    item_type?: string;
+    item_type?: ItemType;
     unit?: string;
     is_hazardous?: boolean;
-    facility_status?: string;
+    facility_status?: FacilityStatus;
     active?: boolean;
     description?: string;
     category_id?: string;

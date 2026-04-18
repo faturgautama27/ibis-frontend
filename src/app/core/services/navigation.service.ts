@@ -201,51 +201,7 @@ export class NavigationService {
                 id: 'reports',
                 label: 'Reports',
                 icon: lucideIcons.BarChart3,
-                route: '#',
-                children: [
-                    {
-                        id: 'report-inbound',
-                        label: 'Inbound Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/inbound'
-                    },
-                    {
-                        id: 'report-outbound',
-                        label: 'Outbound Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/outbound'
-                    },
-                    {
-                        id: 'report-purchase-order',
-                        label: 'Purchase Order Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/purchase-orders'
-                    },
-                    {
-                        id: 'report-sales-order',
-                        label: 'Sales Order Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/sales-orders'
-                    },
-                    {
-                        id: 'report-stock-opname',
-                        label: 'Stock Opname Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/stock-opname'
-                    },
-                    {
-                        id: 'report-stock-adjustment',
-                        label: 'Stock Adjustment Report',
-                        icon: lucideIcons.FileBarChart,
-                        route: '/reports/stock-adjustment'
-                    },
-                    {
-                        id: 'report-all',
-                        label: 'All Reports',
-                        icon: lucideIcons.FileText,
-                        route: '/reports'
-                    }
-                ]
+                route: '/reports'
             },
             {
                 id: 'audit-trail',
