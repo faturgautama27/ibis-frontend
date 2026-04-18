@@ -1,0 +1,375 @@
+/**
+ * Typography System
+ * Typography utilities and classes for consistent text styling
+ */
+
+/* ===== BASE TYPOGRAPHY ===== */
+body {
+    font-family: var(--font-family);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--gray-900);
+    font-weight: var(--font-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== HEADING STYLES ===== */
+h1,
+.text-h1 {
+    font-size: var(--text-4xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--gray-900);
+    margin-bottom: var(--space-6);
+}
+
+h2,
+.text-h2 {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-bold);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--gray-900);
+    margin-bottom: var(--space-5);
+}
+
+h3,
+.text-h3 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-snug);
+    color: var(--gray-800);
+    margin-bottom: var(--space-4);
+}
+
+h4,
+.text-h4 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    line-height: var(--leading-snug);
+    color: var(--gray-800);
+    margin-bottom: var(--space-3);
+}
+
+h5,
+.text-h5 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-snug);
+    color: var(--gray-700);
+    margin-bottom: var(--space-3);
+}
+
+h6,
+.text-h6 {
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-normal);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+/* ===== BODY TEXT STYLES ===== */
+p,
+.text-body {
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--gray-600);
+    margin-bottom: var(--space-4);
+}
+
+.text-body-large {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--gray-600);
+}
+
+.text-body-small {
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--gray-500);
+}
+
+/* ===== UTILITY TEXT CLASSES ===== */
+.text-xs {
+    font-size: var(--text-xs);
+}
+
+.text-sm {
+    font-size: var(--text-sm);
+}
+
+.text-base {
+    font-size: var(--text-base);
+}
+
+.text-lg {
+    font-size: var(--text-lg);
+}
+
+.text-xl {
+    font-size: var(--text-xl);
+}
+
+.text-2xl {
+    font-size: var(--text-2xl);
+}
+
+.text-3xl {
+    font-size: var(--text-3xl);
+}
+
+.text-4xl {
+    font-size: var(--text-4xl);
+}
+
+.text-5xl {
+    font-size: var(--text-5xl);
+}
+
+/* Font weights */
+.font-normal {
+    font-weight: var(--font-normal);
+}
+
+.font-medium {
+    font-weight: var(--font-medium);
+}
+
+.font-semibold {
+    font-weight: var(--font-semibold);
+}
+
+.font-bold {
+    font-weight: var(--font-bold);
+}
+
+/* Line heights */
+.leading-tight {
+    line-height: var(--leading-tight);
+}
+
+.leading-snug {
+    line-height: var(--leading-snug);
+}
+
+.leading-normal {
+    line-height: var(--leading-normal);
+}
+
+.leading-relaxed {
+    line-height: var(--leading-relaxed);
+}
+
+/* Letter spacing */
+.tracking-tight {
+    letter-spacing: var(--tracking-tight);
+}
+
+.tracking-normal {
+    letter-spacing: var(--tracking-normal);
+}
+
+.tracking-wide {
+    letter-spacing: var(--tracking-wide);
+}
+
+/* ===== TEXT COLORS ===== */
+/* Primary colors */
+.text-primary {
+    color: var(--primary-500);
+}
+
+.text-primary-light {
+    color: var(--primary-400);
+}
+
+.text-primary-dark {
+    color: var(--primary-600);
+}
+
+/* Semantic colors */
+.text-success {
+    color: var(--success-600);
+}
+
+.text-warning {
+    color: var(--warning-600);
+}
+
+.text-error {
+    color: var(--error-600);
+}
+
+.text-info {
+    color: var(--info-600);
+}
+
+/* Neutral colors */
+.text-gray-50 {
+    color: var(--gray-50);
+}
+
+.text-gray-100 {
+    color: var(--gray-100);
+}
+
+.text-gray-200 {
+    color: var(--gray-200);
+}
+
+.text-gray-300 {
+    color: var(--gray-300);
+}
+
+.text-gray-400 {
+    color: var(--gray-400);
+}
+
+.text-gray-500 {
+    color: var(--gray-500);
+}
+
+.text-gray-600 {
+    color: var(--gray-600);
+}
+
+.text-gray-700 {
+    color: var(--gray-700);
+}
+
+.text-gray-800 {
+    color: var(--gray-800);
+}
+
+.text-gray-900 {
+    color: var(--gray-900);
+}
+
+/* ===== SPECIALIZED TEXT STYLES ===== */
+.text-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    line-height: var(--leading-normal);
+}
+
+.text-caption {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    line-height: var(--leading-normal);
+}
+
+.text-overline {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    color: var(--gray-500);
+}
+
+.text-link {
+    color: var(--primary-600);
+    text-decoration: none;
+    font-weight: var(--font-medium);
+    transition: color var(--duration-fast) var(--ease-out);
+
+    &:hover {
+        color: var(--primary-700);
+        text-decoration: underline;
+    }
+
+    &:focus {
+        outline: 2px solid var(--primary-500);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+@media (max-width: 768px) {
+
+    h1,
+    .text-h1 {
+        font-size: var(--text-3xl);
+    }
+
+    h2,
+    .text-h2 {
+        font-size: var(--text-2xl);
+    }
+
+    h3,
+    .text-h3 {
+        font-size: var(--text-xl);
+    }
+
+    h4,
+    .text-h4 {
+        font-size: var(--text-lg);
+    }
+}
+
+/* ===== TEXT ALIGNMENT ===== */
+.text-left {
+    text-align: left;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-justify {
+    text-align: justify;
+}
+
+/* ===== TEXT DECORATION ===== */
+.underline {
+    text-decoration: underline;
+}
+
+.no-underline {
+    text-decoration: none;
+}
+
+.line-through {
+    text-decoration: line-through;
+}
+
+/* ===== TEXT TRANSFORM ===== */
+.uppercase {
+    text-transform: uppercase;
+}
+
+.lowercase {
+    text-transform: lowercase;
+}
+
+.capitalize {
+    text-transform: capitalize;
+}
+
+.normal-case {
+    text-transform: none;
+}
+
+/* ===== TRUNCATION ===== */
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.text-ellipsis {
+    text-overflow: ellipsis;
+}
+
+.text-clip {
+    text-overflow: clip;
+}

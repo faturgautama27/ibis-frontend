@@ -1,205 +1,247 @@
-<div class="stock-adjustment-audit-container">
-    <!-- Header -->
-    <div class="flex justify-content-between align-items-center mb-4">
-        <h2 class="text-2xl font-semibold">Stock Adjustment Audit Trail</h2>
-        <div class="flex gap-2">
-            <p-button [label]="viewMode === 'table' ? 'Timeline View' : 'Table View'"
-                [icon]="viewMode === 'table' ? 'pi pi-clock' : 'pi pi-table'" (onClick)="toggleViewMode()"
-                styleClass="p-button-outlined">
-            </p-button>
-            <p-button label="Export to Excel" icon="pi pi-file-excel" (onClick)="onExportToExcel()" [loading]="loading"
-                styleClass="p-button-success">
-            </p-button>
-        </div>
-    </div>
+<!-- Enhanced Page Header -->
+<app-page-header title="Stock Adjustment Audit Trail"
+    subtitle="Comprehensive audit trail and activity history for stock adjustments" icon="pi pi-history"
+    [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Stock Adjustments', route: '/stock-adjustment' },
+        { label: 'Audit Trail' }
+    ]" [primaryAction]="{
+        label: 'Export to Excel',
+        icon: 'pi pi-file-excel',
+        severity: 'success',
+        loading: loading
+    }" (primaryActionClick)="onExportToExcel()">
 
-    <!-- Filters -->
-    <div class="card mb-4">
-        <div class="grid">
+    <div slot="actions" class="flex gap-2">
+        <button pButton type="button" [label]="viewMode === 'table' ? 'Timeline View' : 'Table View'"
+            [icon]="viewMode === 'table' ? 'pi pi-clock' : 'pi pi-table'" severity="secondary" [outlined]="true"
+            class="enhanced-btn hover-lift" (click)="toggleViewMode()">
+        </button>
+    </div>
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Enhanced Filters Card -->
+    <app-enhanced-card variant="standard" class="mb-6">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-filter text-primary-600"></i>
+                Audit Filters
+            </h3>
+            <p class="card-subtitle">Filter audit records by various criteria</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <!-- Search -->
-            <div class="col-12 md:col-4">
-                <label for="search" class="block mb-2">Search</label>
+            <div class="form-group lg:col-span-2">
+                <label for="search" class="form-label">Search</label>
                 <input id="search" type="text" pInputText [(ngModel)]="searchQuery" (input)="onSearch($event)"
-                    placeholder="Search by user, adjustment ID, or comments..." class="w-full" />
+                    placeholder="Search by user, adjustment ID, or comments..." class="form-input" />
             </div>
 
             <!-- Action Filter -->
-            <div class="col-12 md:col-3">
-                <label for="action" class="block mb-2">Action</label>
+            <div class="form-group">
+                <label for="action" class="form-label">Action</label>
                 <p-select id="action" [(ngModel)]="selectedActions" [options]="actionOptions" optionLabel="label"
                     optionValue="value" placeholder="All Actions" (onChange)="onActionChange($event.value)"
-                    styleClass="w-full">
+                    class="w-full">
                 </p-select>
             </div>
 
             <!-- Date From -->
-            <div class="col-12 md:col-2">
-                <label for="dateFrom" class="block mb-2">Date From</label>
+            <div class="form-group">
+                <label for="dateFrom" class="form-label">Date From</label>
                 <p-datepicker id="dateFrom" [(ngModel)]="dateFrom" (onSelect)="onDateFromChange($event)"
-                    dateFormat="dd/mm/yy" [showIcon]="true" placeholder="From" styleClass="w-full">
+                    dateFormat="dd/mm/yy" [showIcon]="true" placeholder="From" class="w-full">
                 </p-datepicker>
             </div>
 
             <!-- Date To -->
-            <div class="col-12 md:col-2">
-                <label for="dateTo" class="block mb-2">Date To</label>
+            <div class="form-group">
+                <label for="dateTo" class="form-label">Date To</label>
                 <p-datepicker id="dateTo" [(ngModel)]="dateTo" (onSelect)="onDateToChange($event)" dateFormat="dd/mm/yy"
-                    [showIcon]="true" placeholder="To" styleClass="w-full">
+                    [showIcon]="true" placeholder="To" class="w-full">
                 </p-datepicker>
             </div>
+        </div>
 
-            <!-- Clear Filters -->
-            <div class="col-12 md:col-1 flex align-items-end">
-                <p-button label="Clear" icon="pi pi-filter-slash" (onClick)="onClearFilters()"
-                    styleClass="p-button-outlined w-full">
-                </p-button>
+        <div slot="footer">
+            <div class="flex justify-end">
+                <button pButton type="button" label="Clear Filters" icon="pi pi-filter-slash" severity="secondary"
+                    [outlined]="true" size="small" class="enhanced-btn" (click)="onClearFilters()">
+                </button>
             </div>
         </div>
-    </div>
+    </app-enhanced-card>
 
-    <!-- Table View -->
-    <div class="card" *ngIf="viewMode === 'table'">
-        <p-table [value]="filteredAuditTrail" [loading]="loading" [paginator]="true" [rows]="20"
-            [rowsPerPageOptions]="[10, 20, 50, 100]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
-            styleClass="p-datatable-striped" responsiveLayout="scroll">
-
-            <ng-template pTemplate="header">
-                <tr>
-                    <th pSortableColumn="performedAt">
-                        Date & Time
-                        <p-sortIcon field="performedAt"></p-sortIcon>
-                    </th>
-                    <th pSortableColumn="action">
-                        Action
-                        <p-sortIcon field="action"></p-sortIcon>
-                    </th>
-                    <th pSortableColumn="performedByName">
-                        User
-                        <p-sortIcon field="performedByName"></p-sortIcon>
-                    </th>
-                    <th pSortableColumn="adjustmentId">
-                        Adjustment ID
-                        <p-sortIcon field="adjustmentId"></p-sortIcon>
-                    </th>
-                    <th>Before Status</th>
-                    <th>After Status</th>
-                    <th>Quantity Change</th>
-                    <th>Comments</th>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-audit>
-                <tr>
-                    <td>{{ formatDateTime(audit.performedAt) }}</td>
-                    <td>
-                        <p-tag [value]="getActionLabel(audit.action)"
-                            [severity]="audit.action === 'APPROVED' ? 'success' : audit.action === 'REJECTED' ? 'danger' : 'info'">
-                        </p-tag>
-                    </td>
-                    <td>{{ audit.performedByName }}</td>
-                    <td>{{ audit.adjustmentId }}</td>
-                    <td>
-                        <p-tag *ngIf="audit.beforeStatus" [value]="audit.beforeStatus"
-                            [severity]="getStatusSeverity(audit.beforeStatus)">
-                        </p-tag>
-                        <span *ngIf="!audit.beforeStatus">-</span>
-                    </td>
-                    <td>
-                        <p-tag *ngIf="audit.afterStatus" [value]="audit.afterStatus"
-                            [severity]="getStatusSeverity(audit.afterStatus)">
-                        </p-tag>
-                        <span *ngIf="!audit.afterStatus">-</span>
-                    </td>
-                    <td>
-                        <span *ngIf="audit.beforeQuantity !== undefined && audit.afterQuantity !== undefined">
-                            {{ audit.beforeQuantity }} → {{ audit.afterQuantity }}
-                        </span>
-                        <span *ngIf="audit.beforeQuantity === undefined || audit.afterQuantity === undefined">-</span>
-                    </td>
-                    <td>{{ audit.comments || '-' }}</td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="8" class="text-center py-4">
-                        <div class="flex flex-column align-items-center gap-2">
-                            <i class="pi pi-inbox text-4xl text-400"></i>
-                            <p class="text-500">No audit records found</p>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="loadingbody">
-                <tr>
-                    <td colspan="8">
-                        <div class="flex align-items-center justify-content-center py-4">
-                            <i class="pi pi-spin pi-spinner text-2xl"></i>
-                            <span class="ml-2">Loading audit trail...</span>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-
-    <!-- Timeline View -->
-    <div class="card" *ngIf="viewMode === 'timeline'">
-        <p-timeline [value]="filteredAuditTrail" align="left" styleClass="customized-timeline">
-
-            <ng-template pTemplate="marker" let-audit>
-                <span class="custom-marker shadow-2" [style.backgroundColor]="getTimelineColor(audit.action)">
-                    <i [class]="getTimelineIcon(audit.action)"></i>
+    <!-- Enhanced Table View -->
+    <app-enhanced-card variant="standard" *ngIf="viewMode === 'table'">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-table text-primary-600"></i>
+                Audit Records
+                <span
+                    class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                    {{ filteredAuditTrail.length }} records
                 </span>
-            </ng-template>
+            </h3>
+            <p class="card-subtitle">Detailed audit trail in table format</p>
+        </div>
 
-            <ng-template pTemplate="content" let-audit>
-                <div class="timeline-content">
-                    <div class="flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <div class="font-semibold text-lg mb-1">{{ getActionLabel(audit.action) }}</div>
-                            <div class="text-sm text-500">
-                                {{ formatDateTime(audit.performedAt) }} by {{ audit.performedByName }}
+        <app-enhanced-table [data]="filteredAuditTrail" [loading]="loading" [paginator]="true" [rows]="20"
+            [totalRecords]="filteredAuditTrail.length" [searchable]="false" [showHeader]="false"
+            emptyTitle="No Audit Records Found" emptyMessage="No audit records match your current filters"
+            emptyIcon="pi pi-history" [columnCount]="8" class="audit-table">
+
+            <ng-container slot="header">
+                <th class="table-header-cell">Date & Time</th>
+                <th class="table-header-cell">Action</th>
+                <th class="table-header-cell">User</th>
+                <th class="table-header-cell">Adjustment ID</th>
+                <th class="table-header-cell">Before Status</th>
+                <th class="table-header-cell">After Status</th>
+                <th class="table-header-cell text-center">Quantity Change</th>
+                <th class="table-header-cell">Comments</th>
+            </ng-container>
+
+            <ng-container slot="body">
+                <ng-template #bodyTemplate let-audit>
+                    <td class="table-body-cell">
+                        <div class="flex flex-col">
+                            <span class="font-medium">{{ formatDate(audit.performedAt) }}</span>
+                            <span class="text-xs text-gray-500">{{ formatDateTime(audit.performedAt).split(' ')[1]
+                                }}</span>
+                        </div>
+                    </td>
+                    <td class="table-body-cell">
+                        <app-status-badge [label]="getActionLabel(audit.action)"
+                            [severity]="audit.action === 'APPROVED' ? 'success' : audit.action === 'REJECTED' ? 'danger' : 'info'"
+                            size="sm">
+                        </app-status-badge>
+                    </td>
+                    <td class="table-body-cell">
+                        <div class="flex items-center gap-2">
+                            <i class="pi pi-user text-gray-400"></i>
+                            {{ audit.performedByName }}
+                        </div>
+                    </td>
+                    <td class="table-body-cell">
+                        <span class="font-medium text-primary-700">{{ audit.adjustmentId }}</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <app-status-badge *ngIf="audit.beforeStatus" [label]="audit.beforeStatus"
+                            [status]="audit.beforeStatus" [autoSeverity]="true" size="sm">
+                        </app-status-badge>
+                        <span *ngIf="!audit.beforeStatus" class="text-gray-400">-</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <app-status-badge *ngIf="audit.afterStatus" [label]="audit.afterStatus"
+                            [status]="audit.afterStatus" [autoSeverity]="true" size="sm">
+                        </app-status-badge>
+                        <span *ngIf="!audit.afterStatus" class="text-gray-400">-</span>
+                    </td>
+                    <td class="table-body-cell text-center">
+                        <div *ngIf="audit.beforeQuantity !== undefined && audit.afterQuantity !== undefined"
+                            class="flex items-center justify-center gap-2">
+                            <span class="font-medium">{{ audit.beforeQuantity }}</span>
+                            <i class="pi pi-arrow-right text-gray-400"></i>
+                            <span class="font-medium">{{ audit.afterQuantity }}</span>
+                        </div>
+                        <span *ngIf="audit.beforeQuantity === undefined || audit.afterQuantity === undefined"
+                            class="text-gray-400">-</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <span *ngIf="audit.comments" class="text-sm bg-gray-100 px-2 py-1 rounded">{{ audit.comments
+                            }}</span>
+                        <span *ngIf="!audit.comments" class="text-gray-400">-</span>
+                    </td>
+                </ng-template>
+            </ng-container>
+        </app-enhanced-table>
+    </app-enhanced-card>
+
+    <!-- Enhanced Timeline View -->
+    <app-enhanced-card variant="standard" *ngIf="viewMode === 'timeline'">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-clock text-primary-600"></i>
+                Audit Timeline
+                <span
+                    class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                    {{ filteredAuditTrail.length }} events
+                </span>
+            </h3>
+            <p class="card-subtitle">Chronological timeline view of audit events</p>
+        </div>
+
+        <div class="timeline-container">
+            <p-timeline [value]="filteredAuditTrail" align="left" class="enhanced-timeline">
+
+                <ng-template pTemplate="marker" let-audit>
+                    <span class="timeline-marker" [style.backgroundColor]="getTimelineColor(audit.action)">
+                        <i [class]="getTimelineIcon(audit.action)"></i>
+                    </span>
+                </ng-template>
+
+                <ng-template pTemplate="content" let-audit>
+                    <div class="timeline-content-card">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="timeline-action">{{ getActionLabel(audit.action) }}</div>
+                                <div class="timeline-meta">
+                                    <i class="pi pi-clock text-gray-400 mr-1"></i>
+                                    {{ formatDateTime(audit.performedAt) }}
+                                    <span class="mx-2">•</span>
+                                    <i class="pi pi-user text-gray-400 mr-1"></i>
+                                    {{ audit.performedByName }}
+                                </div>
+                            </div>
+                            <app-status-badge [label]="audit.adjustmentId" severity="secondary" size="sm">
+                            </app-status-badge>
+                        </div>
+
+                        <div *ngIf="audit.comments" class="timeline-comments">
+                            <i class="pi pi-comment text-gray-400 mr-2"></i>
+                            <span>{{ audit.comments }}</span>
+                        </div>
+
+                        <div *ngIf="audit.beforeStatus && audit.afterStatus" class="timeline-status-change">
+                            <span class="timeline-label">Status Change:</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <app-status-badge [label]="audit.beforeStatus" [status]="audit.beforeStatus"
+                                    [autoSeverity]="true" size="sm">
+                                </app-status-badge>
+                                <i class="pi pi-arrow-right text-gray-400"></i>
+                                <app-status-badge [label]="audit.afterStatus" [status]="audit.afterStatus"
+                                    [autoSeverity]="true" size="sm">
+                                </app-status-badge>
                             </div>
                         </div>
-                        <p-tag [value]="audit.adjustmentId" severity="secondary">
-                        </p-tag>
-                    </div>
 
-                    <div *ngIf="audit.comments" class="mb-2">
-                        <strong>Comments:</strong> {{ audit.comments }}
-                    </div>
-
-                    <div *ngIf="audit.beforeStatus && audit.afterStatus" class="mb-2">
-                        <strong>Status Change:</strong>
-                        <div class="flex align-items-center gap-2 mt-1">
-                            <p-tag [value]="audit.beforeStatus"
-                                [severity]="getStatusSeverity(audit.beforeStatus)"></p-tag>
-                            <i class="pi pi-arrow-right"></i>
-                            <p-tag [value]="audit.afterStatus"
-                                [severity]="getStatusSeverity(audit.afterStatus)"></p-tag>
+                        <div *ngIf="audit.beforeQuantity !== undefined && audit.afterQuantity !== undefined"
+                            class="timeline-quantity-change">
+                            <span class="timeline-label">Quantity Change:</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="quantity-badge">{{ audit.beforeQuantity }}</span>
+                                <i class="pi pi-arrow-right text-gray-400"></i>
+                                <span class="quantity-badge">{{ audit.afterQuantity }}</span>
+                            </div>
                         </div>
                     </div>
+                </ng-template>
 
-                    <div *ngIf="audit.beforeQuantity !== undefined && audit.afterQuantity !== undefined">
-                        <strong>Quantity Change:</strong>
-                        <span class="ml-2">{{ audit.beforeQuantity }} → {{ audit.afterQuantity }}</span>
-                    </div>
+                <ng-template pTemplate="opposite" let-audit>
+                    <small class="timeline-time">{{ formatDateTime(audit.performedAt) }}</small>
+                </ng-template>
+            </p-timeline>
+
+            <div *ngIf="filteredAuditTrail.length === 0" class="empty-timeline">
+                <div class="empty-state">
+                    <i class="pi pi-history empty-icon"></i>
+                    <h4 class="empty-title">No Audit Records Found</h4>
+                    <p class="empty-description">No audit records match your current filters</p>
                 </div>
-            </ng-template>
-
-            <ng-template pTemplate="opposite" let-audit>
-                <small class="text-500">{{ formatDateTime(audit.performedAt) }}</small>
-            </ng-template>
-        </p-timeline>
-
-        <div *ngIf="filteredAuditTrail.length === 0" class="text-center py-8">
-            <div class="flex flex-column align-items-center gap-2">
-                <i class="pi pi-inbox text-4xl text-400"></i>
-                <p class="text-500">No audit records found</p>
             </div>
         </div>
-    </div>
+    </app-enhanced-card>
 </div>

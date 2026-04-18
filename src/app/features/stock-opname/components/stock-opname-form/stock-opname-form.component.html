@@ -1,0 +1,298 @@
+<!-- Enhanced Page Header -->
+<app-page-header [title]="isEditMode ? 'Edit Stock Opname' : 'Create Stock Opname'"
+    [subtitle]="isEditMode ? 'Edit stock opname session details' : 'Create a new stock opname session'"
+    icon="pi pi-clipboard" [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Stock Opname', route: '/stock-opname' },
+        { label: isEditMode ? 'Edit' : 'Create' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <p-toast></p-toast>
+
+    <form [formGroup]="opnameForm" (ngSubmit)="onSubmit()">
+        <!-- Basic Information Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-info-circle text-primary-600"></i>
+                    Basic Information
+                </h3>
+                <p class="card-subtitle">Enter the basic details for this stock opname session</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="opname_number" class="form-label required">Opname Number</label>
+                    <input id="opname_number" pInputText formControlName="opname_number" class="form-input w-full" />
+                    <small class="form-error" *ngIf="isFieldInvalid('opname_number')">Opname number is required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="opname_date" class="form-label required">Opname Date</label>
+                    <p-datepicker id="opname_date" formControlName="opname_date" dateFormat="dd/mm/yy" [showIcon]="true"
+                        class="w-full">
+                    </p-datepicker>
+                    <small class="form-error" *ngIf="isFieldInvalid('opname_date')">Opname date is required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="opname_type" class="form-label required">Opname Type</label>
+                    <p-select id="opname_type" formControlName="opname_type" [options]="typeOptions"
+                        placeholder="Select type" class="w-full">
+                    </p-select>
+                    <small class="form-error" *ngIf="isFieldInvalid('opname_type')">Opname type is required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="warehouse_name" class="form-label required">Warehouse</label>
+                    <p-select id="warehouse_name" formControlName="warehouse_name" [options]="warehouseOptions"
+                        optionLabel="label" optionValue="value" placeholder="Select Warehouse" [filter]="true"
+                        filterBy="label" class="w-full" appendTo="body" (onChange)="onWarehouseChange($event)">
+                    </p-select>
+                    <small class="form-error" *ngIf="isFieldInvalid('warehouse_name')">Warehouse is required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="warehouse_code" class="form-label">Warehouse Code</label>
+                    <input id="warehouse_code" pInputText formControlName="warehouse_code" class="form-input w-full"
+                        [readonly]="true" />
+                </div>
+
+                <div class="form-group">
+                    <label for="status" class="form-label">Status</label>
+                    <p-select id="status" formControlName="status" [options]="statusOptions" class="w-full"
+                        [disabled]="isEditMode">
+                    </p-select>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Stock Count Details Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="card-title flex items-center gap-2">
+                            <i class="pi pi-list text-primary-600"></i>
+                            Stock Count Details
+                            <span
+                                class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                                {{ details.length }} {{ details.length === 1 ? 'item' : 'items' }}
+                            </span>
+                        </h3>
+                        <p class="card-subtitle">Add items to count and record physical quantities</p>
+                    </div>
+                    <app-enhanced-button label="Add Item" icon="pi pi-plus" variant="primary" size="sm" type="button"
+                        (onClick)="showAddDetailDialog()">
+                    </app-enhanced-button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <p-table [value]="details" [paginator]="false">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="table-header-cell">Item Code</th>
+                            <th class="table-header-cell">Item Name</th>
+                            <th class="table-header-cell">System Qty</th>
+                            <th class="table-header-cell">Physical Qty</th>
+                            <th class="table-header-cell">Difference</th>
+                            <th class="table-header-cell">Unit</th>
+                            <th class="table-header-cell">Batch</th>
+                            <th class="table-header-cell">Reason</th>
+                            <th class="table-header-cell text-center">Actions</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-detail let-rowIndex="rowIndex">
+                        <tr class="table-body-row">
+                            <td class="table-body-cell font-medium text-primary-700">{{ detail.item_code }}</td>
+                            <td class="table-body-cell">
+                                <div class="flex items-center gap-2">
+                                    <i class="pi pi-box text-gray-400"></i>
+                                    {{ detail.item_name }}
+                                </div>
+                            </td>
+                            <td class="table-body-cell">{{ detail.system_quantity }}</td>
+                            <td class="table-body-cell">{{ detail.physical_quantity }}</td>
+                            <td class="table-body-cell" [class]="getDifferenceClass(detail.difference)">
+                                {{ detail.difference || 0 }}
+                            </td>
+                            <td class="table-body-cell">{{ detail.unit }}</td>
+                            <td class="table-body-cell">{{ detail.batch_number || '-' }}</td>
+                            <td class="table-body-cell">{{ detail.adjustment_reason || '-' }}</td>
+                            <td class="table-body-cell text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <app-enhanced-button icon="pi pi-pencil" variant="text" size="sm" type="button"
+                                        (onClick)="showEditDetailDialog(rowIndex)">
+                                    </app-enhanced-button>
+                                    <app-enhanced-button icon="pi pi-trash" variant="danger" size="sm" type="button"
+                                        (onClick)="removeDetail(rowIndex)">
+                                    </app-enhanced-button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="9" class="text-center p-8">
+                                <div class="empty-state">
+                                    <i class="pi pi-inbox empty-icon"></i>
+                                    <h4 class="empty-title">No Items Added</h4>
+                                    <p class="empty-description">Click "Add Item" to start adding items for counting</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Summary Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-chart-bar text-primary-600"></i>
+                    Summary
+                </h3>
+                <p class="card-subtitle">Overview of the stock count results</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-1">Total Items</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ details.length }}</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-1">Items with Differences</p>
+                    <p class="text-2xl font-semibold text-orange-600">{{ getItemsWithDifferences() }}</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <p class="text-sm text-gray-600 mb-1">Total Difference</p>
+                    <p class="text-2xl font-semibold" [class]="getTotalDifferenceClass()">
+                        {{ getTotalDifference() }}
+                    </p>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Notes Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-file-edit text-primary-600"></i>
+                    Notes
+                </h3>
+                <p class="card-subtitle">Add any additional notes for this opname session</p>
+            </div>
+
+            <div class="form-group">
+                <textarea pInputTextarea formControlName="notes" rows="3" class="form-input w-full"
+                    placeholder="Additional notes...">
+                </textarea>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Actions Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" type="button"
+                        (onClick)="onCancel()">
+                    </app-enhanced-button>
+                    <app-enhanced-button [label]="isEditMode ? 'Update Opname' : 'Create Opname'" icon="pi pi-check"
+                        variant="primary" type="submit" [loading]="loading"
+                        [disabled]="opnameForm.invalid || loading || details.length === 0 || hasInvalidDetails()">
+                    </app-enhanced-button>
+                </div>
+            </div>
+        </app-enhanced-card>
+    </form>
+
+    <!-- Add/Edit Item Dialog — kept intact -->
+    <p-dialog [(visible)]="displayDetailDialog" [header]="isEditingDetail ? 'Edit Item' : 'Add Item'" [modal]="true"
+        [style]="{width: '700px'}" [draggable]="false">
+
+        <form [formGroup]="detailForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Item Selection -->
+                <div class="form-group md:col-span-2">
+                    <label class="form-label required">Item</label>
+                    <p-select formControlName="item_id" [options]="itemOptions" optionLabel="label" optionValue="value"
+                        placeholder="Select Item" [filter]="true" filterBy="label" class="w-full" appendTo="body"
+                        (onChange)="onItemSelect($event)">
+                    </p-select>
+                </div>
+
+                <!-- Item Code (readonly) -->
+                <div class="form-group">
+                    <label class="form-label">Item Code</label>
+                    <input pInputText formControlName="item_code" class="form-input w-full" [readonly]="true" />
+                </div>
+
+                <!-- Item Name (readonly) -->
+                <div class="form-group">
+                    <label class="form-label">Item Name</label>
+                    <input pInputText formControlName="item_name" class="form-input w-full" [readonly]="true" />
+                </div>
+
+                <!-- System Quantity -->
+                <div class="form-group">
+                    <label class="form-label required">System Quantity</label>
+                    <p-inputNumber formControlName="system_quantity" [min]="0" class="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Physical Quantity -->
+                <div class="form-group">
+                    <label class="form-label required">Physical Quantity</label>
+                    <p-inputNumber formControlName="physical_quantity" [min]="0" class="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Difference (readonly) -->
+                <div class="form-group">
+                    <label class="form-label">Difference</label>
+                    <p-inputNumber formControlName="difference" [readonly]="true" class="w-full">
+                    </p-inputNumber>
+                </div>
+
+                <!-- Unit (readonly) -->
+                <div class="form-group">
+                    <label class="form-label">Unit</label>
+                    <input pInputText formControlName="unit" class="form-input w-full" [readonly]="true" />
+                </div>
+
+                <!-- Batch Number -->
+                <div class="form-group">
+                    <label class="form-label">Batch Number</label>
+                    <input pInputText formControlName="batch_number" class="form-input w-full" />
+                </div>
+
+                <!-- Adjustment Reason -->
+                <div class="form-group md:col-span-2">
+                    <label class="form-label">
+                        Adjustment Reason
+                        <span *ngIf="detailForm.get('difference')?.value !== 0" class="text-red-500">*</span>
+                    </label>
+                    <textarea pInputTextarea formControlName="adjustment_reason" rows="2" class="form-input w-full"
+                        placeholder="Required when there is a difference...">
+                    </textarea>
+                </div>
+            </div>
+        </form>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-3">
+                <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" type="button"
+                    (onClick)="displayDetailDialog = false">
+                </app-enhanced-button>
+                <app-enhanced-button [label]="isEditingDetail ? 'Update' : 'Add'" icon="pi pi-check" variant="primary"
+                    type="button" [disabled]="detailForm.invalid" (onClick)="saveDetail()">
+                </app-enhanced-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+</div>

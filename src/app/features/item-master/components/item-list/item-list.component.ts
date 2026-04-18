@@ -9,6 +9,8 @@ import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+
+// Enhanced Components
 import { ItemEnhanced } from '../../models/item-enhanced.model';
 import { ItemCategory } from '../../models/item-category.enum';
 import { ItemActions } from '../../../../store/item/item.actions';
@@ -19,6 +21,7 @@ import {
     selectRawMaterialCount,
     selectFinishedGoodCount
 } from '../../../../store/item/item.selectors';
+import { EnhancedCardComponent, EnhancedTableComponent, PageHeaderComponent, StatusBadgeComponent } from '@app/shared/components';
 
 /**
  * Item List Component
@@ -39,7 +42,12 @@ import {
         InputTextModule,
         TabsModule,
         TagModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        StatusBadgeComponent,
+        EnhancedTableComponent
+
     ],
     providers: [ConfirmationService],
     templateUrl: './item-list.component.html',
@@ -194,5 +202,46 @@ export class ItemListComponent implements OnInit {
         this.searchQuery.set('');
         this.activeTabIndex.set(0);
         this.store.dispatch(ItemActions.clearFilters());
+    }
+
+    /**
+     * Get table title based on active tab
+     */
+    getTableTitle(): string {
+        const tabIndex = this.activeTabIndex();
+        if (tabIndex === 1) {
+            return 'Raw Materials';
+        } else if (tabIndex === 2) {
+            return 'Finished Goods';
+        }
+        return 'All Items';
+    }
+
+    /**
+     * Get table subtitle with item count
+     */
+    getTableSubtitle(): string {
+        // This would need to be implemented based on your store selectors
+        return 'Manage your inventory items';
+    }
+
+    /**
+     * Get empty message based on active tab
+     */
+    getEmptyMessage(): string {
+        const tabIndex = this.activeTabIndex();
+        if (tabIndex === 1) {
+            return 'No raw materials found. Create your first raw material item.';
+        } else if (tabIndex === 2) {
+            return 'No finished goods found. Create your first finished goods item.';
+        }
+        return 'No items found. Create your first item to get started.';
+    }
+
+    /**
+     * Get category icon
+     */
+    getCategoryIcon(category: ItemCategory): string {
+        return category === ItemCategory.RAW_MATERIAL ? 'pi pi-circle' : 'pi pi-check-circle';
     }
 }

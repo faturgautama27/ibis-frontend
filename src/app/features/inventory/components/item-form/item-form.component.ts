@@ -18,6 +18,8 @@ import { ToastModule } from 'primeng/toast';
 // Lucide icons
 import { LucideAngularModule, Save, X, Upload, Package } from 'lucide-angular';
 
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 // Services
 import { InventoryDemoService } from '../../services/inventory-demo.service';
 
@@ -47,23 +49,27 @@ import { Item, ItemType, FacilityStatus, CreateItemDto, UpdateItemDto } from '..
     FileUploadModule,
     CardModule,
     ToastModule,
-    LucideAngularModule
+    LucideAngularModule,
+    PageHeaderComponent
   ],
   providers: [MessageService],
   template: `
-    <div class="main-layout overflow-hidden">
-      <!-- Page Header -->
-      <div class="mb-6">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="PackageIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-          <h1 class="text-2xl font-semibold text-gray-900">
-            {{ pageTitle }}
-          </h1>
-        </div>
-        <p class="text-sm text-gray-600">
-          {{ pageDescription }}
-        </p>
-      </div>
+    <div class="item-form-container">
+      <!-- Enhanced Page Header -->
+      <app-page-header
+        [title]="pageTitle"
+        [subtitle]="pageDescription"
+        icon="pi pi-box"
+        [showBackButton]="true"
+        [primaryAction]="{
+          label: submitButtonLabel,
+          icon: 'pi pi-check',
+          loading: loading,
+          disabled: itemForm.invalid || loading
+        }"
+        (back)="onCancel()"
+        (primaryActionClick)="onSubmit()">
+      </app-page-header>
 
       <!-- Form Card -->
       <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 13rem); overflow-x: auto">
@@ -835,6 +841,26 @@ export class ItemFormComponent implements OnInit {
     if (file) {
       this.convertImageToDataUrl(file);
     }
+  }
+
+  /**
+   * Get HS code error message based on error type
+   */
+  getHsCodeErrorMessage(): string {
+    if (this.hasHsCodeRequiredError) {
+      return 'HS Code is required';
+    }
+    if (this.hasHsCodePatternError) {
+      return 'HS Code must be exactly 10 digits';
+    }
+    return '';
+  }
+
+  /**
+   * Remove uploaded image
+   */
+  removeImage(): void {
+    this.itemForm.patchValue({ image_url: '' });
   }
 
   /**

@@ -1,0 +1,154 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Table Styling */
+.table-header-cell {
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-xs);
+}
+
+.table-body-cell {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+    vertical-align: middle;
+}
+
+/* Enhanced Button Styling */
+.enhanced-btn {
+    transition: all var(--duration-fast) var(--ease-out);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+}
+
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Card Enhancements */
+::ng-deep app-enhanced-card {
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin: 0 0 var(--space-1) 0;
+    }
+
+    .card-subtitle {
+        font-size: var(--text-sm);
+        color: var(--gray-600);
+        margin: 0;
+    }
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+
+    /* Button Enhancements */
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+        border-width: 2px;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    /* Table Enhancements */
+    .p-datatable {
+        border: none;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+
+        .p-datatable-thead>tr>th {
+            background: var(--gray-50);
+            border-bottom: var(--table-header-border-width) solid var(--gray-200);
+            padding: var(--padding-md) var(--padding-lg);
+            font-weight: var(--font-semibold);
+            color: var(--gray-700);
+            font-size: var(--text-sm);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .p-datatable-tbody>tr {
+            border-bottom: var(--table-border-width) solid var(--gray-100);
+            transition: all var(--duration-fast) var(--ease-out);
+
+            &:hover {
+                background: var(--gray-50) !important;
+                transform: translateX(2px);
+            }
+
+            &:nth-child(even) {
+                background: var(--gray-25);
+            }
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: var(--padding-md) var(--padding-lg);
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            vertical-align: middle;
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .table-header-cell,
+    .table-body-cell {
+        padding: var(--padding-sm);
+        font-size: var(--text-xs);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    ::ng-deep .p-datatable .p-datatable-thead>tr>th {
+        border-bottom-width: 2px;
+        border-bottom-color: var(--gray-900);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .main-layout {
+        background: white;
+    }
+
+    .enhanced-btn,
+    ::ng-deep .p-button {
+        display: none;
+    }
+}

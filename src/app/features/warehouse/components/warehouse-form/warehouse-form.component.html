@@ -1,0 +1,240 @@
+<!-- Enhanced Page Header -->
+<app-page-header [title]="isEditMode ? 'Edit Warehouse' : 'Create Warehouse'"
+    [subtitle]="isEditMode ? 'Update warehouse information' : 'Add a new warehouse to the system'" icon="pi pi-building"
+    [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Warehouses', route: '/warehouses' },
+        { label: isEditMode ? 'Edit' : 'Create' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Error Message -->
+    @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-2">
+            <i class="pi pi-exclamation-triangle text-red-600"></i>
+            <p class="text-sm text-red-800">{{ error }}</p>
+        </div>
+    </div>
+    }
+
+    <form [formGroup]="warehouseForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+        <!-- Basic Information Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-info-circle text-primary-600"></i>
+                    Basic Information
+                </h3>
+                <p class="card-subtitle">Enter the basic details for this warehouse</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Warehouse Code -->
+                <div class="form-group">
+                    <label for="warehouse_code" class="form-label required">Warehouse Code</label>
+                    <input pInputText id="warehouse_code" formControlName="warehouse_code"
+                        placeholder="e.g., WH-RAW-001" class="form-input w-full"
+                        [class.ng-invalid]="isFieldInvalid('warehouse_code')"
+                        [class.ng-dirty]="warehouseForm.get('warehouse_code')?.dirty" />
+                    @if (isFieldInvalid('warehouse_code')) {
+                    <small class="form-error">Warehouse code is required</small>
+                    }
+                </div>
+
+                <!-- Warehouse Name -->
+                <div class="form-group">
+                    <label for="warehouse_name" class="form-label required">Warehouse Name</label>
+                    <input pInputText id="warehouse_name" formControlName="warehouse_name"
+                        placeholder="e.g., Raw Material Warehouse A" class="form-input w-full"
+                        [class.ng-invalid]="isFieldInvalid('warehouse_name')"
+                        [class.ng-dirty]="warehouseForm.get('warehouse_name')?.dirty" />
+                    @if (isFieldInvalid('warehouse_name')) {
+                    <small class="form-error">Warehouse name is required</small>
+                    }
+                </div>
+
+                <!-- Warehouse Type -->
+                <div class="form-group">
+                    <label for="warehouse_type" class="form-label required">Warehouse Type</label>
+                    <p-select id="warehouse_type" formControlName="warehouse_type" [options]="warehouseTypeOptions"
+                        placeholder="Select type" class="w-full">
+                    </p-select>
+                    @if (isFieldInvalid('warehouse_type')) {
+                    <small class="form-error">Warehouse type is required</small>
+                    }
+                </div>
+
+                <!-- Location -->
+                <div class="form-group">
+                    <label for="location" class="form-label required">Location</label>
+                    <input pInputText id="location" formControlName="location" placeholder="e.g., Building A, Floor 1"
+                        class="form-input w-full" [class.ng-invalid]="isFieldInvalid('location')"
+                        [class.ng-dirty]="warehouseForm.get('location')?.dirty" />
+                    @if (isFieldInvalid('location')) {
+                    <small class="form-error">Location is required</small>
+                    }
+                </div>
+
+                <!-- Address -->
+                <div class="form-group md:col-span-2">
+                    <label for="address" class="form-label">Full Address</label>
+                    <textarea pInputTextarea id="address" formControlName="address" placeholder="Enter full address"
+                        rows="2" class="form-input w-full">
+                    </textarea>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <input pInputText id="phone" formControlName="phone" placeholder="e.g., +62 21 1234567"
+                        class="form-input w-full" />
+                </div>
+
+                <!-- Manager ID -->
+                <div class="form-group">
+                    <label for="manager_id" class="form-label">Manager ID</label>
+                    <input pInputText id="manager_id" formControlName="manager_id" placeholder="Enter manager ID"
+                        class="form-input w-full" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Capacity Information Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-chart-bar text-primary-600"></i>
+                    Capacity Information
+                </h3>
+                <p class="card-subtitle">Set the storage capacity and current utilization</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Capacity -->
+                <div class="form-group">
+                    <label for="capacity" class="form-label">Total Capacity</label>
+                    <p-inputNumber inputId="capacity" formControlName="capacity" placeholder="Enter capacity" [min]="0"
+                        [showButtons]="true" class="w-full">
+                    </p-inputNumber>
+                    <small class="text-gray-500 mt-1 block">Maximum storage capacity</small>
+                </div>
+
+                <!-- Current Utilization -->
+                <div class="form-group">
+                    <label for="current_utilization" class="form-label">Current Utilization</label>
+                    <p-inputNumber inputId="current_utilization" formControlName="current_utilization"
+                        placeholder="Enter current utilization" [min]="0" [showButtons]="true" class="w-full">
+                    </p-inputNumber>
+                    <small class="text-gray-500 mt-1 block">Current storage usage</small>
+                </div>
+
+                <!-- Utilization Display -->
+                @if (warehouseForm.get('capacity')?.value && warehouseForm.get('capacity')?.value > 0) {
+                <div class="md:col-span-2 bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Utilization</span>
+                        <span class="text-sm font-semibold text-gray-900">
+                            {{ getUtilizationPercentage() }}%
+                        </span>
+                    </div>
+                    <p-progressBar [value]="getUtilizationPercentage()" [showValue]="false" [style]="{'height': '8px'}">
+                    </p-progressBar>
+                </div>
+                }
+            </div>
+        </app-enhanced-card>
+
+        <!-- Bonded Warehouse Information Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-shield text-primary-600"></i>
+                    Bonded Warehouse Information
+                </h3>
+                <p class="card-subtitle">Configure bonded warehouse license details</p>
+            </div>
+
+            <!-- Is Bonded Checkbox -->
+            <div class="flex items-center gap-2 mb-4">
+                <p-checkbox inputId="is_bonded" formControlName="is_bonded" [binary]="true">
+                </p-checkbox>
+                <label for="is_bonded" class="text-sm font-medium text-gray-700 cursor-pointer">
+                    This is a bonded warehouse
+                </label>
+            </div>
+
+            <!-- License Information (shown only if bonded) -->
+            @if (warehouseForm.get('is_bonded')?.value) {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-4 bg-blue-50 rounded-lg">
+                <!-- License Number -->
+                <div class="form-group">
+                    <label for="license_number" class="form-label required">License Number</label>
+                    <input pInputText id="license_number" formControlName="license_number"
+                        placeholder="e.g., KB-001-2024" class="form-input w-full"
+                        [class.ng-invalid]="isFieldInvalid('license_number')"
+                        [class.ng-dirty]="warehouseForm.get('license_number')?.dirty" />
+                    @if (isFieldInvalid('license_number')) {
+                    <small class="form-error">License number is required for bonded warehouses</small>
+                    }
+                </div>
+
+                <!-- License Expiry -->
+                <div class="form-group">
+                    <label for="license_expiry" class="form-label required">License Expiry Date</label>
+                    <p-datepicker inputId="license_expiry" formControlName="license_expiry"
+                        placeholder="Select expiry date" [showIcon]="true" dateFormat="dd/mm/yy" class="w-full">
+                    </p-datepicker>
+                    @if (isFieldInvalid('license_expiry')) {
+                    <small class="form-error">License expiry date is required for bonded warehouses</small>
+                    }
+                    @if (isLicenseExpiringSoon()) {
+                    <small class="text-orange-600 mt-1 flex items-center gap-1">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        License expires within 30 days
+                    </small>
+                    }
+                </div>
+            </div>
+            }
+        </app-enhanced-card>
+
+        <!-- Status Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-check-circle text-primary-600"></i>
+                    Status
+                </h3>
+                <p class="card-subtitle">Set the active status of this warehouse</p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <p-checkbox inputId="active" formControlName="active" [binary]="true">
+                </p-checkbox>
+                <label for="active" class="text-sm font-medium text-gray-700 cursor-pointer">
+                    Active
+                </label>
+            </div>
+            <small class="text-gray-500 mt-1 block">Inactive warehouses cannot be used for transactions</small>
+        </app-enhanced-card>
+
+        <!-- Form Actions -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" type="button"
+                        (onClick)="onCancel()">
+                    </app-enhanced-button>
+                    <app-enhanced-button [label]="isEditMode ? 'Update Warehouse' : 'Create Warehouse'"
+                        icon="pi pi-check" variant="primary" type="submit" [loading]="loading"
+                        [disabled]="warehouseForm.invalid || loading">
+                    </app-enhanced-button>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+    </form>
+</div>

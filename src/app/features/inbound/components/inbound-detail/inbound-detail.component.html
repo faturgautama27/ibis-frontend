@@ -1,229 +1,288 @@
-<div class="main-layout">
-    <!-- Page Header -->
-    <div class="mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <lucide-icon [img]="PackageCheckIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-                <h1 class="text-2xl font-semibold text-gray-900">Inbound Receipt Details</h1>
-            </div>
-            <button pButton label="Back to List" icon="pi pi-arrow-left" class="p-button-text"
-                (click)="goBack()"></button>
+<div class="min-h-screen bg-gray-50">
+    <!-- Enhanced Page Header -->
+    <app-page-header title="Inbound Receipt Details" subtitle="View detailed information about this inbound receipt"
+        icon="pi pi-box" [breadcrumbs]="breadcrumbs">
+    </app-page-header>
+
+    <!-- Main Content -->
+    <div class="p-6 space-y-6">
+        @if (loading) {
+        <div class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
         </div>
-    </div>
+        }
 
-    @if (loading) {
-    <div class="flex justify-center items-center py-12">
-        <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
-    </div>
-    }
+        @if (error) {
+        <app-enhanced-card variant="standard" state="error">
+            <div class="flex items-center">
+                <i class="pi pi-exclamation-triangle text-red-500 mr-3 text-xl"></i>
+                <span class="text-red-700">{{ error }}</span>
+            </div>
+        </app-enhanced-card>
+        }
 
-    @if (error) {
-    <div class="p-4 bg-red-50 border border-red-200 rounded text-red-700">
-        <i class="pi pi-exclamation-triangle mr-2"></i>
-        {{ error }}
-    </div>
-    }
-
-    @if (inbound && !loading) {
-    <!-- Header Information Card -->
-    <p-card class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4 border-b">
+        @if (inbound && !loading) {
+        <!-- Header Information Card -->
+        <app-enhanced-card variant="stats" [header]="true">
+            <ng-container slot="header">
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl font-semibold text-gray-900">{{ inbound.inbound_number }}</h2>
-                        <p class="text-sm text-gray-600">{{ formatDate(inbound.inbound_date) }}</p>
+                        <p class="text-sm text-gray-600 mt-1">{{ formatDate(inbound.inbound_date) }}</p>
                     </div>
-                    <p-tag [value]="inbound.status" [severity]="getStatusSeverity(inbound.status)" />
+                    <app-status-badge [status]="inbound.status" [label]="inbound.status" type="inbound">
+                    </app-status-badge>
+                </div>
+            </ng-container>
+
+            <!-- PO Reference Section -->
+            @if (inbound.purchase_order_id) {
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                            <i class="pi pi-link"></i>
+                            Linked Purchase Order
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <p class="text-xs text-gray-600">PO Number</p>
+                                <p class="text-sm font-semibold text-gray-900">{{ inbound.purchase_order_number }}</p>
+                            </div>
+                            @if (inbound.auto_populated_from_po) {
+                            <div>
+                                <p class="text-xs text-gray-600">Auto-populated</p>
+                                <app-status-badge status="info" label="Yes" type="info"></app-status-badge>
+                            </div>
+                            }
+                            @if (inbound.po_link_date) {
+                            <div>
+                                <p class="text-xs text-gray-600">Linked Date</p>
+                                <p class="text-sm text-gray-900">{{ formatDate(inbound.po_link_date) }}</p>
+                            </div>
+                            }
+                            @if (inbound.po_link_by) {
+                            <div>
+                                <p class="text-xs text-gray-600">Linked By</p>
+                                <p class="text-sm text-gray-900">{{ inbound.po_link_by }}</p>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    <button pButton label="View PO" icon="pi pi-external-link" class="p-button-sm p-button-outlined"
+                        (click)="viewPurchaseOrder()"></button>
                 </div>
             </div>
-        </ng-template>
+            }
 
-        <!-- PO Reference Section (Requirements: 4.8) -->
-        @if (inbound.purchase_order_id) {
-        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <h3 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
-                        <i class="pi pi-link"></i>
-                        Linked Purchase Order
+            <!-- Basic Information Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">BC Document Number</p>
+                    <p class="text-sm font-semibold text-gray-900">{{ inbound.bc_document_number }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Receipt Number</p>
+                    <p class="text-sm text-gray-900">{{ inbound.receipt_number || '-' }}</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Receipt Date</p>
+                    <p class="text-sm text-gray-900">{{ formatDate(inbound.receipt_date) }}</p>
+                </div>
+            </div>
+
+            <!-- Supplier & Warehouse Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+                    <h3 class="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+                        <i class="pi pi-building mr-2"></i>
+                        Supplier Information
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="space-y-2">
                         <div>
-                            <p class="text-xs text-gray-600">PO Number</p>
-                            <p class="text-sm font-semibold text-gray-900">{{ inbound.purchase_order_number }}</p>
+                            <p class="text-xs text-blue-600 font-medium">Supplier Name</p>
+                            <p class="text-sm text-blue-900 font-semibold">{{ inbound.supplier_name }}</p>
                         </div>
-                        @if (inbound.auto_populated_from_po) {
                         <div>
-                            <p class="text-xs text-gray-600">Auto-populated</p>
-                            <p-tag value="Yes" severity="info" [rounded]="true" />
+                            <p class="text-xs text-blue-600 font-medium">Supplier Code</p>
+                            <p class="text-sm text-blue-900">{{ inbound.supplier_code }}</p>
                         </div>
-                        }
-                        @if (inbound.po_link_date) {
-                        <div>
-                            <p class="text-xs text-gray-600">Linked Date</p>
-                            <p class="text-sm text-gray-900">{{ formatDate(inbound.po_link_date) }}</p>
-                        </div>
-                        }
-                        @if (inbound.po_link_by) {
-                        <div>
-                            <p class="text-xs text-gray-600">Linked By</p>
-                            <p class="text-sm text-gray-900">{{ inbound.po_link_by }}</p>
-                        </div>
-                        }
                     </div>
                 </div>
-                <button pButton label="View PO" icon="pi pi-external-link" class="p-button-sm p-button-outlined"
-                    (click)="viewPurchaseOrder()"></button>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+                    <h3 class="text-sm font-semibold text-green-900 mb-3 flex items-center">
+                        <i class="pi pi-home mr-2"></i>
+                        Warehouse Information
+                    </h3>
+                    <div class="space-y-2">
+                        <div>
+                            <p class="text-xs text-green-600 font-medium">Warehouse Name</p>
+                            <p class="text-sm text-green-900 font-semibold">{{ inbound.warehouse_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-green-600 font-medium">Warehouse Code</p>
+                            <p class="text-sm text-green-900">{{ inbound.warehouse_code }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        }
 
-        <p-divider />
-
-        <!-- Basic Information -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-                <p class="text-xs text-gray-600 mb-1">BC Document Number</p>
-                <p class="text-sm font-semibold text-gray-900">{{ inbound.bc_document_number }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-gray-600 mb-1">Receipt Number</p>
-                <p class="text-sm text-gray-900">{{ inbound.receipt_number || '-' }}</p>
-            </div>
-            <div>
-                <p class="text-xs text-gray-600 mb-1">Receipt Date</p>
-                <p class="text-sm text-gray-900">{{ formatDate(inbound.receipt_date) }}</p>
-            </div>
-        </div>
-
-        <p-divider />
-
-        <!-- Supplier & Warehouse -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-                <h3 class="text-sm font-semibold text-gray-900 mb-2">Supplier Information</h3>
-                <div class="space-y-2">
+            <!-- Vehicle Information -->
+            @if (inbound.vehicle_number || inbound.driver_name) {
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="pi pi-car mr-2"></i>
+                    Vehicle Information
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <p class="text-xs text-gray-600">Supplier Name</p>
-                        <p class="text-sm text-gray-900">{{ inbound.supplier_name }}</p>
+                        <p class="text-xs text-gray-600 font-medium">Vehicle Number</p>
+                        <p class="text-sm text-gray-900">{{ inbound.vehicle_number || '-' }}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-600">Supplier Code</p>
-                        <p class="text-sm text-gray-900">{{ inbound.supplier_code }}</p>
+                        <p class="text-xs text-gray-600 font-medium">Driver Name</p>
+                        <p class="text-sm text-gray-900">{{ inbound.driver_name || '-' }}</p>
                     </div>
                 </div>
             </div>
-            <div>
-                <h3 class="text-sm font-semibold text-gray-900 mb-2">Warehouse Information</h3>
-                <div class="space-y-2">
-                    <div>
-                        <p class="text-xs text-gray-600">Warehouse Name</p>
-                        <p class="text-sm text-gray-900">{{ inbound.warehouse_name }}</p>
+            }
+
+            <!-- Summary Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-6 border border-purple-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="pi pi-list text-2xl text-purple-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-xs font-medium text-purple-600 uppercase tracking-wide">Total Items</p>
+                            <p class="text-2xl font-bold text-purple-900">{{ inbound.total_items }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-600">Warehouse Code</p>
-                        <p class="text-sm text-gray-900">{{ inbound.warehouse_code }}</p>
+                </div>
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-6 border border-indigo-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="pi pi-box text-2xl text-indigo-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-xs font-medium text-indigo-600 uppercase tracking-wide">Total Quantity</p>
+                            <p class="text-2xl font-bold text-indigo-900">{{ inbound.total_quantity }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-6 border border-emerald-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="pi pi-dollar text-2xl text-emerald-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-xs font-medium text-emerald-600 uppercase tracking-wide">Total Value</p>
+                            <p class="text-2xl font-bold text-emerald-900">{{ formatCurrency(inbound.total_value) }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <p-divider />
-
-        <!-- Vehicle Information -->
-        @if (inbound.vehicle_number || inbound.driver_name) {
-        <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-900 mb-2">Vehicle Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <p class="text-xs text-gray-600">Vehicle Number</p>
-                    <p class="text-sm text-gray-900">{{ inbound.vehicle_number || '-' }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-600">Driver Name</p>
-                    <p class="text-sm text-gray-900">{{ inbound.driver_name || '-' }}</p>
-                </div>
+            @if (inbound.notes) {
+            <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h3 class="text-sm font-semibold text-yellow-900 mb-2 flex items-center">
+                    <i class="pi pi-comment mr-2"></i>
+                    Notes
+                </h3>
+                <p class="text-sm text-yellow-800">{{ inbound.notes }}</p>
             </div>
-        </div>
-        <p-divider />
-        }
+            }
+        </app-enhanced-card>
 
-        <!-- Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-gray-50 rounded-lg p-4">
-                <p class="text-xs text-gray-600 mb-1">Total Items</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ inbound.total_items }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <p class="text-xs text-gray-600 mb-1">Total Quantity</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ inbound.total_quantity }}</p>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-4">
-                <p class="text-xs text-gray-600 mb-1">Total Value</p>
-                <p class="text-2xl font-semibold text-gray-900">{{ formatCurrency(inbound.total_value) }}</p>
-            </div>
-        </div>
-
-        @if (inbound.notes) {
-        <p-divider />
-        <div>
-            <h3 class="text-sm font-semibold text-gray-900 mb-2">Notes</h3>
-            <p class="text-sm text-gray-700">{{ inbound.notes }}</p>
-        </div>
-        }
-    </p-card>
-
-    <!-- Line Items Table -->
-    <p-card>
-        <ng-template pTemplate="header">
-            <div class="p-4 border-b">
+        <!-- Line Items Table -->
+        <app-enhanced-card variant="standard" [header]="true">
+            <ng-container slot="header">
                 <h2 class="text-lg font-semibold text-gray-900">Line Items</h2>
-            </div>
-        </ng-template>
+            </ng-container>
 
-        <p-table [value]="details" [paginator]="true" [rows]="10">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Line</th>
-                    <th>Item Code</th>
-                    <th>Item Name</th>
-                    <th>Ordered Qty</th>
-                    <th>Received Qty</th>
-                    <th>Accepted Qty</th>
-                    <th>Unit</th>
-                    <th>Unit Cost</th>
-                    <th>Total Cost</th>
-                    <th>Quality</th>
-                    <th>Batch</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-detail>
-                <tr>
-                    <td>{{ detail.line_number }}</td>
-                    <td>{{ detail.item_code }}</td>
-                    <td>{{ detail.item_name }}</td>
-                    <td>{{ detail.ordered_quantity }}</td>
-                    <td>{{ detail.received_quantity }}</td>
-                    <td>{{ detail.accepted_quantity }}</td>
-                    <td>{{ detail.unit }}</td>
-                    <td>{{ formatCurrency(detail.unit_cost) }}</td>
-                    <td>{{ formatCurrency(detail.total_cost) }}</td>
-                    <td>
-                        <p-tag [value]="detail.quality_status"
-                            [severity]="getQualityStatusSeverity(detail.quality_status)" />
-                    </td>
-                    <td>{{ detail.batch_number || '-' }}</td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="11" class="text-center py-4 text-gray-500">
-                        No line items found
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </p-card>
-    }
+            <div class="overflow-hidden">
+                <p-table [value]="details" [paginator]="true" [rows]="10" styleClass="enhanced-table"
+                    responsiveLayout="scroll">
+                    <ng-template pTemplate="header">
+                        <tr class="bg-gray-50">
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Line</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Item Code</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Item Name</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Ordered Qty</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Received Qty</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Accepted Qty</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Unit</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Unit Cost</th>
+                            <th
+                                class="px-6 py-4 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Total Cost</th>
+                            <th
+                                class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Quality</th>
+                            <th
+                                class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-b-2 border-gray-200">
+                                Batch</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-detail let-rowIndex="rowIndex">
+                        <tr class="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100"
+                            [class.bg-gray-25]="rowIndex % 2 === 1">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{
+                                detail.line_number }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{
+                                detail.item_code }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ detail.item_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{
+                                detail.ordered_quantity }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{
+                                detail.received_quantity }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{
+                                detail.accepted_quantity }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ detail.unit }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{
+                                formatCurrency(detail.unit_cost) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{{
+                                formatCurrency(detail.total_cost) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <app-status-badge [status]="detail.quality_status" [label]="detail.quality_status"
+                                    type="quality">
+                                </app-status-badge>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ detail.batch_number || '-'
+                                }}</td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="11" class="p-0">
+                                <app-empty-state icon="package" title="No Line Items Found"
+                                    message="No line items are available for this inbound receipt.">
+                                </app-empty-state>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </app-enhanced-card>
+        }
+    </div>
 </div>

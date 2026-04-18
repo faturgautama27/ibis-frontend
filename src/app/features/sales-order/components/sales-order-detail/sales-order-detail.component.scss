@@ -1,0 +1,47 @@
+@import '../../../../../styles/design-system/index.scss';
+
+.sales-order-detail-container {
+    min-height: 100vh;
+    background-color: var(--gray-50);
+
+    // Custom timeline styling
+    :host ::ng-deep .custom-timeline {
+        .p-timeline-event-marker {
+            border: none;
+            box-shadow: none;
+        }
+
+        .p-timeline-event-connector {
+            background-color: var(--gray-200);
+            width: 2px;
+        }
+
+        .p-timeline-event-content {
+            padding-bottom: 1rem;
+        }
+    }
+
+    :host ::ng-deep .p-datatable {
+        .p-datatable-tbody>tr:last-child>td {
+            border-bottom: none;
+        }
+    }
+
+    @media print {
+        .sales-order-detail-container {
+            background-color: white;
+
+            app-page-header {
+                display: none;
+            }
+
+            .lg\:col-span-2 {
+                grid-column: 1 / -1;
+            }
+
+            .space-y-6>*:last-child {
+                display: none;
+            }
+        }
+    }
+}

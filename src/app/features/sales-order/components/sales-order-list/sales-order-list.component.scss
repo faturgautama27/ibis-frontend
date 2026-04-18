@@ -1,41 +1,114 @@
-// Sales Order List Component Styles
-// Inherits most styles from PrimeNG and Tailwind CSS
+@import '../../../../../styles/design-system/index.scss';
 
-.card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
+.sales-order-list-container {
+    min-height: 100vh;
+    background-color: var(--gray-50);
 
-// Custom table styles
-::ng-deep {
-    .p-datatable {
-        .p-datatable-thead>tr>th {
-            background-color: #f9fafb;
-            color: #374151;
-            font-weight: 600;
-            border-bottom: 2px solid #e5e7eb;
+    // Enhanced input styling
+    .enhanced-input {
+        transition: all 200ms;
+        border: 2px solid var(--gray-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+
+        &:hover {
+            border-color: var(--gray-300);
         }
 
-        .p-datatable-tbody>tr {
-            transition: background-color 0.2s;
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 2px var(--primary-100);
+            outline: none;
+        }
+    }
 
-            &:hover {
-                background-color: #f9fafb;
+    .enhanced-select {
+        :host ::ng-deep .p-select {
+            width: 100%;
+
+            .p-select-label {
+                padding: 0.5rem 0.75rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 0.5rem;
+                transition: all 200ms;
+
+                &:hover {
+                    border-color: var(--gray-300);
+                }
+
+                &:focus {
+                    border-color: var(--primary-500);
+                    box-shadow: 0 0 0 2px var(--primary-100);
+                }
+            }
+        }
+
+        :host ::ng-deep .p-datepicker {
+            .p-inputtext {
+                padding: 0.5rem 0.75rem;
+                border: 2px solid var(--gray-200);
+                border-radius: 0.5rem;
+                transition: all 200ms;
+
+                &:hover {
+                    border-color: var(--gray-300);
+                }
+
+                &:focus {
+                    border-color: var(--primary-500);
+                    box-shadow: 0 0 0 2px var(--primary-100);
+                }
             }
         }
     }
 
-    // Status tag customization
-    .p-tag {
-        font-weight: 500;
-        padding: 0.25rem 0.75rem;
-    }
+    .sales-order-table {
+        .table-header-cell {
+            background-color: var(--gray-50);
+            font-weight: 600;
+            color: var(--gray-700);
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 2px solid var(--gray-200);
+        }
 
-    // Button customization
-    .p-button-rounded {
-        width: 2rem;
-        height: 2rem;
+        .table-body-cell {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        // Action buttons
+        .action-button {
+            transition: all 200ms;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+
+            &.view-button {
+                color: #2563eb;
+
+                &:hover {
+                    color: #1d4ed8;
+                    background-color: #eff6ff;
+                }
+            }
+
+            &.edit-button {
+                color: #16a34a;
+
+                &:hover {
+                    color: #15803d;
+                    background-color: #f0fdf4;
+                }
+            }
+
+            &.delete-button {
+                color: #dc2626;
+
+                &:hover {
+                    color: #b91c1c;
+                    background-color: #fef2f2;
+                }
+            }
+        }
     }
 }

@@ -1,4 +1,12 @@
 <!-- PrimeNG Toast for notifications -->
 <p-toast />
 
-<router-outlet />
+<!-- Page transition wrapper -->
+<div class="page-container" [class]="transitionClass" [class.transitioning]="isTransitioning">
+    <router-outlet />
+</div>
+
+<!-- Loading overlay for transitions -->
+<div class="transition-loading" *ngIf="isTransitioning">
+    <div class="loading-spinner"></div>
+</div>

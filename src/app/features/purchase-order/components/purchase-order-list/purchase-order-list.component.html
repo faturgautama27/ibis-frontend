@@ -1,118 +1,139 @@
-<div class="main-layout">
-    <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                <i class="pi pi-shopping-cart text-sky-600"></i>
-                Purchase Orders
-            </h1>
-            <p class="text-sm text-gray-600 mt-1">Manage purchase orders and supplier deliveries</p>
+<div class="purchase-order-list-container">
+    <!-- Enhanced Page Header -->
+    <app-page-header title="Purchase Orders" subtitle="Manage purchase orders and supplier deliveries"
+        icon="pi pi-shopping-cart">
+        <div slot="actions">
+            <app-enhanced-button label="Create Purchase Order" icon="pi pi-plus" variant="primary" size="md"
+                (onClick)="onCreateOrder()">
+            </app-enhanced-button>
         </div>
-        <button pButton type="button" label="Create Purchase Order" icon="pi pi-plus" class="p-button-primary"
-            (click)="onCreateOrder()"></button>
-    </div>
+    </app-page-header>
 
-    <!-- Filters Card -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+    <!-- Enhanced Filters Card -->
+    <app-enhanced-card variant="standard" title="Filters" [header]="true" customClass="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Search -->
             <div class="col-span-1">
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search</label>
                 <input id="search" type="text" pInputText placeholder="Search PO number, supplier..."
-                    [(ngModel)]="searchQuery" (input)="onSearch($event)" class="w-full" />
+                    [(ngModel)]="searchQuery" (input)="onSearch($event)" class="w-full enhanced-input" />
             </div>
 
             <!-- Status Filter -->
             <div class="col-span-1">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
                 <p-select id="status" [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label"
                     optionValue="value" placeholder="Select Status" (onChange)="onStatusChange($event.value)"
-                    class="w-full" />
+                    class="w-full enhanced-select" />
             </div>
 
             <!-- Date From -->
             <div class="col-span-1">
-                <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+                <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
                 <p-datepicker id="dateFrom" [(ngModel)]="dateFrom" (onSelect)="onDateFromChange($event)"
-                    dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Select date" class="w-full" />
+                    dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Select date"
+                    class="w-full enhanced-datepicker" />
             </div>
 
             <!-- Date To -->
             <div class="col-span-1">
-                <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-2">Date To</label>
                 <p-datepicker id="dateTo" [(ngModel)]="dateTo" (onSelect)="onDateToChange($event)" dateFormat="dd/mm/yy"
-                    [showIcon]="true" placeholder="Select date" class="w-full" />
+                    [showIcon]="true" placeholder="Select date" class="w-full enhanced-datepicker" />
             </div>
         </div>
 
-        <!-- Clear Filters Button -->
-        <div class="flex justify-end mt-3">
-            <button pButton type="button" label="Clear Filters" icon="pi pi-filter-slash"
-                class="p-button-outlined p-button-sm" (click)="onClearFilters()"></button>
+        <div slot="footer">
+            <div class="flex justify-end">
+                <app-enhanced-button label="Clear Filters" icon="pi pi-filter-slash" variant="secondary" size="sm"
+                    (onClick)="onClearFilters()">
+                </app-enhanced-button>
+            </div>
         </div>
-    </div>
+    </app-enhanced-card>
 
-    <!-- Table Card -->
-    <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 20rem); overflow-y: auto">
-        <p-table [value]="(orders$ | async) || []" [paginator]="true" [rows]="20"
-            [loading]="(loading$ | async) || false" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} - {last} of {totalRecords} purchase orders" [lazy]="true"
-            (onLazyLoad)="onLazyLoad($event)" [totalRecords]="(totalCount$ | async) || 0">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>PO Number</th>
-                    <th>PO Date</th>
-                    <th>Supplier</th>
-                    <th>Warehouse</th>
-                    <th>Total Items</th>
-                    <th>Total Qty</th>
-                    <th>Total Value</th>
-                    <th>Status</th>
-                    <th>Input Method</th>
-                    <th>Actions</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-order>
-                <tr>
-                    <td>{{ order.poNumber }}</td>
-                    <td>{{ formatDate(order.poDate) }}</td>
-                    <td>{{ order.supplierName }}</td>
-                    <td>{{ order.warehouseName }}</td>
-                    <td>{{ order.totalItems }}</td>
-                    <td>{{ order.totalQuantity | number: '1.0-0' }}</td>
-                    <td>{{ formatCurrency(order.totalValue, order.currency) }}</td>
-                    <td>
-                        <p-tag [value]="getStatusLabel(order.status)" [severity]="getStatusSeverity(order.status)" />
-                    </td>
-                    <td>
-                        <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700">
-                            {{ order.inputMethod }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="flex gap-1">
-                            <button pButton icon="pi pi-eye" class="p-button-text p-button-sm"
-                                (click)="onViewOrder(order)" pTooltip="View Details"></button>
-                            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
-                                (click)="onEditOrder(order)" pTooltip="Edit"></button>
-                            <button pButton icon="pi pi-trash" class="p-button-text p-button-danger p-button-sm"
-                                (click)="onDeleteOrder(order)" pTooltip="Delete"></button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="10" class="text-center py-8">
-                        <div class="flex flex-col items-center gap-2">
-                            <i class="pi pi-inbox text-4xl text-gray-400"></i>
-                            <p class="text-gray-500">No purchase orders found</p>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+    <!-- Enhanced Table -->
+    <app-enhanced-table title="Purchase Orders" [data]="(orders$ | async) || []" [loading]="(loading$ | async) || false"
+        [totalRecords]="(totalCount$ | async) || 0" [paginator]="true" [rows]="20" [lazy]="true" [searchable]="false"
+        [rowClickable]="true" variant="default" emptyTitle="No Purchase Orders Found"
+        emptyMessage="No purchase orders match your current filters. Try adjusting your search criteria or create a new purchase order."
+        emptyIcon="pi pi-shopping-cart" (onLazyLoad)="onLazyLoad($event)" (rowClick)="onViewOrder($event.data)"
+        customClass="purchase-order-table">
+
+        <!-- Table Header -->
+        <ng-container slot="header">
+            <th class="table-header-cell">PO Number</th>
+            <th class="table-header-cell">PO Date</th>
+            <th class="table-header-cell">Supplier</th>
+            <th class="table-header-cell">Warehouse</th>
+            <th class="table-header-cell text-center">Total Items</th>
+            <th class="table-header-cell text-right">Total Qty</th>
+            <th class="table-header-cell text-right">Total Value</th>
+            <th class="table-header-cell text-center">Status</th>
+            <th class="table-header-cell text-center">Input Method</th>
+            <th class="table-header-cell text-center">Actions</th>
+        </ng-container>
+
+        <!-- Table Body -->
+        <ng-template #bodyTemplate let-order>
+            <td class="table-body-cell">
+                <div class="font-medium text-gray-900">{{ order.poNumber }}</div>
+            </td>
+            <td class="table-body-cell">
+                <div class="text-gray-600">{{ formatDate(order.poDate) }}</div>
+            </td>
+            <td class="table-body-cell">
+                <div class="font-medium text-gray-900">{{ order.supplierName }}</div>
+            </td>
+            <td class="table-body-cell">
+                <div class="text-gray-600">{{ order.warehouseName }}</div>
+            </td>
+            <td class="table-body-cell text-center">
+                <div
+                    class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                    {{ order.totalItems }}
+                </div>
+            </td>
+            <td class="table-body-cell text-right">
+                <div class="font-medium text-gray-900">{{ order.totalQuantity | number: '1.0-0' }}</div>
+            </td>
+            <td class="table-body-cell text-right">
+                <div class="font-semibold text-gray-900">{{ formatCurrency(order.totalValue, order.currency) }}</div>
+            </td>
+            <td class="table-body-cell text-center">
+                <app-status-badge [status]="order.status" [label]="getStatusLabel(order.status)"
+                    [severity]="getStatusSeverity(order.status)">
+                </app-status-badge>
+            </td>
+            <td class="table-body-cell text-center">
+                <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {{ order.inputMethod }}
+                </span>
+            </td>
+            <td class="table-body-cell text-center">
+                <div class="flex items-center justify-center gap-1">
+                    <app-enhanced-button icon="pi pi-eye" variant="text" size="sm" (onClick)="onViewOrder(order)"
+                        [customClass]="'action-button view-button'" pTooltip="View Details">
+                    </app-enhanced-button>
+                    <app-enhanced-button icon="pi pi-pencil" variant="text" size="sm" (onClick)="onEditOrder(order)"
+                        [customClass]="'action-button edit-button'" pTooltip="Edit">
+                    </app-enhanced-button>
+                    <app-enhanced-button icon="pi pi-trash" variant="text" size="sm" (onClick)="onDeleteOrder(order)"
+                        [customClass]="'action-button delete-button text-red-600 hover:text-red-700 hover:bg-red-50'"
+                        pTooltip="Delete">
+                    </app-enhanced-button>
+                </div>
+            </td>
+        </ng-template>
+
+        <!-- Empty State Actions -->
+        <div slot="empty-actions" class="mt-4">
+            <app-enhanced-button label="Create First Purchase Order" icon="pi pi-plus" variant="primary" size="md"
+                (onClick)="onCreateOrder()">
+            </app-enhanced-button>
+        </div>
+    </app-enhanced-table>
 </div>
 
 <!-- Confirmation Dialog -->

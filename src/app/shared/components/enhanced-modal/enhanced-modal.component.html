@@ -1,0 +1,51 @@
+<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="dialogStyle" [draggable]="draggable"
+    [resizable]="resizable" [closable]="closable" [closeOnEscape]="closeOnEscape" [dismissableMask]="dismissableMask"
+    [maximizable]="maximizable" [baseZIndex]="baseZIndex" [autoZIndex]="autoZIndex" [showHeader]="showHeader"
+    [blockScroll]="blockScroll" [styleClass]="'enhanced-modal ' + customStyleClass" (onShow)="onModalShow()"
+    (onHide)="onModalHide()" (onMaximize)="onModalMaximize($event)" (onMaskClick)="onMaskClick()">
+
+    <!-- Custom Header Template -->
+    <ng-template pTemplate="header" *ngIf="showCustomHeader">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <i *ngIf="headerIcon" [class]="headerIcon" class="text-primary-600 text-xl animate-pulse"></i>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-0 tracking-tight">{{ title }}</h3>
+                    <p *ngIf="subtitle" class="text-sm text-gray-600 mb-0 mt-1 font-medium">{{ subtitle }}</p>
+                </div>
+            </div>
+            <div *ngIf="headerActions" class="flex items-center gap-2">
+                <ng-content select="[slot=header-actions]"></ng-content>
+            </div>
+        </div>
+    </ng-template>
+
+    <!-- Content -->
+    <ng-template pTemplate="content">
+        <div [class]="contentClass" class="animate-fade-in">
+            <ng-content></ng-content>
+        </div>
+    </ng-template>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer" *ngIf="showFooter">
+        <div class="flex justify-end gap-3 animate-slide-up">
+            <ng-content select="[slot=footer]"></ng-content>
+
+            <!-- Default Footer Buttons -->
+            <div *ngIf="showDefaultFooter" class="flex gap-3">
+                <p-button *ngIf="showCancelButton" [label]="cancelLabel" icon="pi pi-times" severity="secondary"
+                    [outlined]="true"
+                    styleClass="hover:bg-gray-50 hover:shadow-md hover:scale-105 transition-all duration-200 border-2"
+                    (onClick)="onCancel()">
+                </p-button>
+
+                <p-button *ngIf="showConfirmButton" [label]="confirmLabel" [icon]="confirmIcon"
+                    [severity]="confirmSeverity" [loading]="confirmLoading" [disabled]="confirmDisabled"
+                    styleClass="shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-200 font-semibold"
+                    (onClick)="onConfirm()">
+                </p-button>
+            </div>
+        </div>
+    </ng-template>
+</p-dialog>

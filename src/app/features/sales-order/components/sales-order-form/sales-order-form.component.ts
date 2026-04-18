@@ -9,6 +9,14 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TextareaModule } from 'primeng/textarea';
 import { CardModule } from 'primeng/card';
+
+// Enhanced Components
+import {
+    EnhancedButtonComponent,
+    EnhancedCardComponent,
+    EnhancedFormFieldComponent,
+    PageHeaderComponent
+} from '../../../../shared/components';
 import { InputMethod } from '../../models/sales-order.model';
 import { createOrder, updateOrder } from '../../store/sales-order.actions';
 
@@ -16,7 +24,10 @@ import { createOrder, updateOrder } from '../../store/sales-order.actions';
  * Sales Order Form Component
  * Multi-method input selector (Excel/API/Manual) with dynamic form
  * 
- * Requirements: 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.12
+ * Requirements:
+ * - 18.2: Apply enhanced styling to Sales Order Form page
+ * - 18.4: Apply consistent styling patterns across sales order workflows
+ * - 18.5: Maintain all existing functionality in the Sales Order module
  * - Implements input method selection (Excel/API/Manual)
  * - Dynamic form based on selected method
  * - Preview panel for Excel/API data
@@ -34,7 +45,12 @@ import { createOrder, updateOrder } from '../../store/sales-order.actions';
         SelectModule,
         DatePickerModule,
         TextareaModule,
-        CardModule
+        CardModule,
+        // Enhanced Components
+        EnhancedButtonComponent,
+        EnhancedCardComponent,
+        EnhancedFormFieldComponent,
+        PageHeaderComponent
     ],
     templateUrl: './sales-order-form.component.html',
     styleUrls: ['./sales-order-form.component.scss']

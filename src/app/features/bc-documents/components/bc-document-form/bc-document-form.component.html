@@ -1,0 +1,246 @@
+<!-- Enhanced Page Header -->
+<app-page-header [title]="isEditMode ? 'Edit BC Document' : 'Create BC Document'"
+    [subtitle]="isEditMode ? 'Update BC document information' : 'Create a new BC document'" icon="pi pi-file"
+    [showBackButton]="true" [breadcrumbs]="[
+        { label: 'BC Documents', route: '/bc-documents' },
+        { label: isEditMode ? 'Edit' : 'Create' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <form [formGroup]="documentForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+        <!-- Document Information -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-file-edit text-primary-600"></i>
+                    Document Information
+                </h3>
+                <p class="card-subtitle">Basic document details and classification</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Document Number <span class="text-red-500">*</span>
+                    </label>
+                    <input pInputText formControlName="doc_number" class="w-full" />
+                    @if (isFieldInvalid('doc_number')) {
+                    <small class="form-error">Document number is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Document Type <span class="text-red-500">*</span>
+                    </label>
+                    <p-select formControlName="doc_type" [options]="typeOptions" placeholder="Select type"
+                        class="w-full" />
+                    @if (isFieldInvalid('doc_type')) {
+                    <small class="form-error">Document type is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Document Date <span class="text-red-500">*</span>
+                    </label>
+                    <p-datepicker formControlName="doc_date" dateFormat="dd/mm/yy" [showIcon]="true" class="w-full" />
+                    @if (isFieldInvalid('doc_date')) {
+                    <small class="form-error">Document date is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Status</label>
+                    <p-select formControlName="status" [options]="statusOptions" class="w-full"
+                        [disabled]="isEditMode" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Partner Information -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-building text-primary-600"></i>
+                    Partner Information
+                </h3>
+                <p class="card-subtitle">Counterparty details for this document</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Partner Name <span class="text-red-500">*</span>
+                    </label>
+                    <input pInputText formControlName="partner_name" class="w-full" />
+                    @if (isFieldInvalid('partner_name')) {
+                    <small class="form-error">Partner name is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Partner NPWP <span class="text-red-500">*</span>
+                    </label>
+                    <input pInputText formControlName="partner_npwp" class="w-full" />
+                    @if (isFieldInvalid('partner_npwp')) {
+                    <small class="form-error">Partner NPWP is required</small>
+                    }
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Invoice & Shipping Information -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-truck text-primary-600"></i>
+                    Invoice &amp; Shipping Information
+                </h3>
+                <p class="card-subtitle">Invoice and bill of lading details</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label">Invoice Number</label>
+                    <input pInputText formControlName="invoice_number" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Invoice Date</label>
+                    <p-datepicker formControlName="invoice_date" dateFormat="dd/mm/yy" [showIcon]="true"
+                        class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">BL/AWB Number</label>
+                    <input pInputText formControlName="bl_awb_number" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">BL/AWB Date</label>
+                    <p-datepicker formControlName="bl_awb_date" dateFormat="dd/mm/yy" [showIcon]="true"
+                        class="w-full" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Customs Office -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-map-marker text-primary-600"></i>
+                    Customs Office
+                </h3>
+                <p class="card-subtitle">Customs office processing this document</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label">Customs Office Code</label>
+                    <input pInputText formControlName="customs_office_code" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Customs Office Name</label>
+                    <input pInputText formControlName="customs_office_name" class="w-full" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Value Information -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-dollar text-primary-600"></i>
+                    Value Information
+                </h3>
+                <p class="card-subtitle">Financial values and currency details</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label">
+                        Total Value <span class="text-red-500">*</span>
+                    </label>
+                    <p-inputnumber formControlName="total_value" mode="decimal" [minFractionDigits]="0"
+                        [maxFractionDigits]="2" class="w-full" />
+                    @if (isFieldInvalid('total_value')) {
+                    <small class="form-error">Total value is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Currency</label>
+                    <p-select formControlName="currency" [options]="currencyOptions" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Exchange Rate</label>
+                    <p-inputnumber formControlName="exchange_rate" mode="decimal" [minFractionDigits]="0"
+                        [maxFractionDigits]="4" class="w-full" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- File Attachments -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-paperclip text-primary-600"></i>
+                    File Attachments
+                </h3>
+                <p class="card-subtitle">Supporting documents and files</p>
+            </div>
+
+            <p-fileupload mode="basic" chooseLabel="Upload File" [auto]="true" [maxFileSize]="10000000"
+                (onSelect)="onFileSelect($event)" accept=".pdf,.jpg,.jpeg,.png" />
+
+            @if (uploadedFiles.length > 0) {
+            <div class="mt-4 space-y-2">
+                @for (file of uploadedFiles; track file) {
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-file text-gray-400"></i>
+                        <span class="text-sm text-gray-700">{{ file }}</span>
+                    </div>
+                    <button pButton icon="pi pi-times" class="p-button-text p-button-sm p-button-danger"
+                        (click)="removeFile(file)" type="button"></button>
+                </div>
+                }
+            </div>
+            }
+        </app-enhanced-card>
+
+        <!-- Notes -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-comment text-primary-600"></i>
+                    Notes
+                </h3>
+                <p class="card-subtitle">Additional remarks or instructions</p>
+            </div>
+
+            <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"
+                placeholder="Additional notes..."></textarea>
+        </app-enhanced-card>
+
+        <!-- Actions -->
+        <app-enhanced-card variant="standard">
+            <div class="flex justify-end gap-3">
+                <app-enhanced-button type="button" label="Cancel" icon="pi pi-times" variant="secondary" size="md"
+                    (onClick)="onCancel()"></app-enhanced-button>
+                <app-enhanced-button type="submit" [label]="isEditMode ? 'Update' : 'Create'" icon="pi pi-check"
+                    variant="primary" size="md" [loading]="loading"
+                    [disabled]="documentForm.invalid || loading"></app-enhanced-button>
+            </div>
+        </app-enhanced-card>
+
+    </form>
+</div>
+
+<p-toast />

@@ -1,12 +1,19 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 import { AuditLogService } from '../../services/audit-log.service';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 
 /**
  * Audit Trail View Component
@@ -18,144 +25,20 @@ import { AuditLogService } from '../../services/audit-log.service';
     imports: [
         CommonModule,
         FormsModule,
-        TableModule,
         ButtonModule,
         DatePickerModule,
         InputTextModule,
-        SelectModule
+        SelectModule,
+        TooltipModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        EnhancedButtonComponent,
+        StatusBadgeComponent
     ],
-    template: `
-        <div class="main-layout">
-            <!-- Page Header -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-history text-sky-600"></i>
-                        Audit Trail
-                    </h1>
-                    <p class="text-sm text-gray-600 mt-1">Track and monitor all system changes</p>
-                </div>
-            </div>
-
-            <!-- Table Card -->
-            <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 13rem); overflow-y: auto">
-                <!-- Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                        <p-datepicker 
-                            [(ngModel)]="startDate"
-                            dateFormat="dd/mm/yy"
-                            [showIcon]="true"
-                            class="w-full"
-                        ></p-datepicker>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                        <p-datepicker 
-                            [(ngModel)]="endDate"
-                            dateFormat="dd/mm/yy"
-                            [showIcon]="true"
-                            class="w-full"
-                        ></p-datepicker>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">User</label>
-                        <input 
-                            pInputText 
-                            [(ngModel)]="userFilter"
-                            placeholder="Filter by user"
-                            class="w-full"
-                        />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Action</label>
-                        <p-select 
-                            [(ngModel)]="actionFilter"
-                            [options]="actionOptions"
-                            placeholder="All Actions"
-                            [showClear]="true"
-                            class="w-full"
-                        ></p-select>
-                    </div>
-                </div>
-
-                <div class="flex gap-3 mb-6">
-                    <button 
-                        pButton 
-                        label="Search" 
-                        icon="pi pi-search"
-                        (click)="loadAuditLogs()"
-                        class="p-button-primary"
-                    ></button>
-                    <button 
-                        pButton 
-                        label="Export" 
-                        icon="pi pi-download"
-                        (click)="exportLogs()"
-                        class="p-button-secondary"
-                    ></button>
-                </div>
-
-                <!-- Audit Logs Table -->
-                <p-table 
-                    [value]="auditLogs" 
-                    [paginator]="true" 
-                    [rows]="20"
-                    [showCurrentPageReport]="true"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Timestamp</th>
-                            <th>User</th>
-                            <th>Action</th>
-                            <th>Table</th>
-                            <th>Record ID</th>
-                            <th>Changes</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-log>
-                        <tr>
-                            <td>{{ log.timestamp | date:'short' }}</td>
-                            <td>{{ log.user_name }}</td>
-                            <td>
-                                <span 
-                                    class="px-2 py-1 rounded text-xs font-semibold"
-                                    [class.bg-green-100]="log.action === 'INSERT'"
-                                    [class.text-green-800]="log.action === 'INSERT'"
-                                    [class.bg-blue-100]="log.action === 'UPDATE'"
-                                    [class.text-blue-800]="log.action === 'UPDATE'"
-                                    [class.bg-red-100]="log.action === 'DELETE'"
-                                    [class.text-red-800]="log.action === 'DELETE'"
-                                >
-                                    {{ log.action }}
-                                </span>
-                            </td>
-                            <td>{{ log.table_name }}</td>
-                            <td>{{ log.record_id }}</td>
-                            <td>
-                                <button 
-                                    pButton 
-                                    icon="pi pi-eye"
-                                    class="p-button-sm p-button-text"
-                                    (click)="viewChanges(log)"
-                                    pTooltip="View Changes"
-                                ></button>
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage">
-                        <tr>
-                            <td colspan="6" class="text-center text-gray-500 py-4">
-                                No audit logs found
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-        </div>
-    `
+    templateUrl: './audit-trail-view.component.html',
+    styleUrls: ['./audit-trail-view.component.scss']
 })
 export class AuditTrailViewComponent implements OnInit {
     private auditLogService = inject(AuditLogService);
@@ -203,5 +86,14 @@ export class AuditTrailViewComponent implements OnInit {
             link.click();
             window.URL.revokeObjectURL(url);
         });
+    }
+
+    getActionSeverity(action: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        switch (action) {
+            case 'INSERT': return 'success';
+            case 'UPDATE': return 'info';
+            case 'DELETE': return 'danger';
+            default: return 'secondary';
+        }
     }
 }

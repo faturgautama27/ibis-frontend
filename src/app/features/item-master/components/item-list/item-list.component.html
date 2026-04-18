@@ -1,114 +1,154 @@
-<div class="item-list-container p-4">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">Item Master</h2>
-        <p-button label="Create Item" icon="pi pi-plus" (onClick)="onCreateItem()" severity="primary">
-        </p-button>
-    </div>
+<div class="item-master-container">
+    <!-- Enhanced Page Header -->
+    <app-page-header title="Item Master" subtitle="Manage raw materials and finished goods inventory"
+        icon="pi pi-database" [primaryAction]="{
+            label: 'Create Item',
+            icon: 'pi pi-plus',
+            severity: 'primary'
+        }" (primaryActionClick)="onCreateItem()">
+    </app-page-header>
 
-    <!-- Search Bar -->
-    <div class="mb-4">
-        <span class="p-input-icon-left w-full md:w-96">
-            <i class="pi pi-search"></i>
-            <input pInputText type="text" [value]="searchQuery()" (input)="onSearch($event)"
-                placeholder="Search by item code or name..." class="w-full" />
-        </span>
-    </div>
+    <!-- Search and Filters Card -->
+    <app-enhanced-card variant="standard" customClass="mb-6">
+        <div slot="header" class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 m-0">Search & Filter</h3>
+            <p-button label="Clear Filters" icon="pi pi-filter-slash" severity="secondary" [text]="true" size="small"
+                (onClick)="onClearFilters()">
+            </p-button>
+        </div>
 
-    <!-- Category Tabs -->
-    <p-tabs [value]="activeTabIndex().toString()" (onChange)="onTabChange($event)">
-        <p-tablist>
-            <p-tab value="0">All Items</p-tab>
-            <p-tab value="1">
-                Raw Materials
-                <p-tag [value]="((rawMaterialCount$ | async) || 0).toString()" severity="info" class="ml-2">
-                </p-tag>
-            </p-tab>
-            <p-tab value="2">
-                Finished Goods
-                <p-tag [value]="((finishedGoodCount$ | async) || 0).toString()" severity="success" class="ml-2">
-                </p-tag>
-            </p-tab>
-        </p-tablist>
+        <div class="flex flex-col gap-4">
+            <!-- Search Bar -->
+            <div class="w-full">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">Search Items</label>
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" [value]="searchQuery()" (input)="onSearch($event)"
+                        placeholder="Search by item code or name..." class="w-full" />
+                </span>
+            </div>
 
-        <p-tabpanels>
-            <!-- All Items Tab -->
-            <p-tabpanel value="0">
-                <ng-container *ngTemplateOutlet="itemTable"></ng-container>
-            </p-tabpanel>
+            <!-- Category Tabs -->
+            <div class="w-full">
+                <label class="text-sm font-medium text-gray-700 mb-2 block">Category Filter</label>
+                <p-tabs [value]="activeTabIndex().toString()" (onChange)="onTabChange($event)">
+                    <p-tablist>
+                        <p-tab value="0" class="enhanced-tab">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-list text-gray-600"></i>
+                                <span>All Items</span>
+                            </div>
+                        </p-tab>
+                        <p-tab value="1" class="enhanced-tab">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-circle text-blue-600"></i>
+                                <span>Raw Materials</span>
+                                <app-status-badge [label]="((rawMaterialCount$ | async) || 0).toString()"
+                                    severity="info" size="sm">
+                                </app-status-badge>
+                            </div>
+                        </p-tab>
+                        <p-tab value="2" class="enhanced-tab">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-check-circle text-green-600"></i>
+                                <span>Finished Goods</span>
+                                <app-status-badge [label]="((finishedGoodCount$ | async) || 0).toString()"
+                                    severity="success" size="sm">
+                                </app-status-badge>
+                            </div>
+                        </p-tab>
+                    </p-tablist>
+                </p-tabs>
+            </div>
+        </div>
+    </app-enhanced-card>
 
-            <!-- Raw Materials Tab -->
-            <p-tabpanel value="1">
-                <ng-container *ngTemplateOutlet="itemTable"></ng-container>
-            </p-tabpanel>
+    <!-- Enhanced Data Table -->
+    <app-enhanced-table [data]="(items$ | async) || []" [loading]="(loading$ | async) || false"
+        [title]="getTableTitle()" [subtitle]="getTableSubtitle()" [searchable]="false" [paginator]="true" [rows]="25"
+        [totalRecords]="((items$ | async) || []).length" [emptyTitle]="'No items found'"
+        [emptyMessage]="getEmptyMessage()" [emptyIcon]="'pi pi-database'" [columnCount]="7" variant="default"
+        customClass="item-master-table">
 
-            <!-- Finished Goods Tab -->
-            <p-tabpanel value="2">
-                <ng-container *ngTemplateOutlet="itemTable"></ng-container>
-            </p-tabpanel>
-        </p-tabpanels>
-    </p-tabs>
+        <!-- Table Header -->
+        <ng-container slot="header">
+            <th class="text-left font-semibold">Item Code</th>
+            <th class="text-left font-semibold">Item Name</th>
+            <th class="text-left font-semibold">HS Code</th>
+            <th class="text-left font-semibold">Category</th>
+            <th class="text-left font-semibold">Unit</th>
+            <th class="text-center font-semibold">Status</th>
+            <th class="text-center font-semibold">Actions</th>
+        </ng-container>
+
+        <!-- Table Body -->
+        <ng-container slot="body">
+            <ng-template #bodyTemplate let-item>
+                <td class="font-medium text-gray-900">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                            {{ item.item_code }}
+                        </span>
+                    </div>
+                </td>
+
+                <td>
+                    <div class="font-medium text-gray-900">{{ item.item_name }}</div>
+                    <div *ngIf="item.description" class="text-xs text-gray-500 mt-1 line-clamp-2">
+                        {{ item.description }}
+                    </div>
+                </td>
+
+                <td>
+                    <span class="font-mono text-sm text-gray-700 bg-gray-50 px-2 py-1 rounded">
+                        {{ item.hs_code }}
+                    </span>
+                </td>
+
+                <td>
+                    <app-status-badge [label]="getCategoryLabel(item.category)"
+                        [severity]="getCategorySeverity(item.category)" [icon]="getCategoryIcon(item.category)">
+                    </app-status-badge>
+                </td>
+
+                <td class="text-gray-700 font-medium">
+                    {{ item.unit }}
+                </td>
+
+                <td class="text-center">
+                    <app-status-badge [label]="getStatusLabel(item.active)" [severity]="getStatusSeverity(item.active)"
+                        [icon]="item.active ? 'pi pi-check-circle' : 'pi pi-times-circle'">
+                    </app-status-badge>
+                </td>
+
+                <td class="text-center">
+                    <div class="flex items-center justify-center gap-1">
+                        <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" size="small"
+                            pTooltip="View Details" tooltipPosition="top"
+                            styleClass="hover:scale-110 transition-transform duration-200" (onClick)="onViewItem(item)">
+                        </p-button>
+                        <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true" size="small"
+                            pTooltip="Edit Item" tooltipPosition="top"
+                            styleClass="hover:scale-110 transition-transform duration-200" (onClick)="onEditItem(item)">
+                        </p-button>
+                        <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small"
+                            pTooltip="Delete Item" tooltipPosition="top"
+                            styleClass="hover:scale-110 transition-transform duration-200"
+                            (onClick)="onDeleteItem(item)">
+                        </p-button>
+                    </div>
+                </td>
+            </ng-template>
+        </ng-container>
+
+        <!-- Empty State Actions -->
+        <ng-container slot="empty-actions">
+            <p-button label="Create First Item" icon="pi pi-plus" severity="primary" (onClick)="onCreateItem()">
+            </p-button>
+        </ng-container>
+    </app-enhanced-table>
 </div>
 
-<!-- Item Table Template -->
-<ng-template #itemTable>
-    <p-table [value]="(items$ | async) || []" [loading]="(loading$ | async) || false" [paginator]="true" [rows]="10"
-        [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
-        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items" styleClass="p-datatable-sm"
-        [tableStyle]="{ 'min-width': '60rem' }">
-
-        <ng-template pTemplate="header">
-            <tr>
-                <th *ngFor="let col of columns">{{ col.header }}</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-item>
-            <tr>
-                <td>{{ item.item_code }}</td>
-                <td>{{ item.item_name }}</td>
-                <td>{{ item.hs_code }}</td>
-                <td>
-                    <p-tag [value]="getCategoryLabel(item.category)" [severity]="getCategorySeverity(item.category)">
-                    </p-tag>
-                </td>
-                <td>{{ item.unit }}</td>
-                <td>
-                    <p-tag [value]="getStatusLabel(item.active)" [severity]="getStatusSeverity(item.active)">
-                    </p-tag>
-                </td>
-                <td class="text-center">
-                    <div class="flex gap-2 justify-center">
-                        <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
-                            (onClick)="onViewItem(item)" pTooltip="View Details" tooltipPosition="top">
-                        </p-button>
-                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="secondary"
-                            (onClick)="onEditItem(item)" pTooltip="Edit Item" tooltipPosition="top">
-                        </p-button>
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                            (onClick)="onDeleteItem(item)" pTooltip="Delete Item" tooltipPosition="top">
-                        </p-button>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-            <tr>
-                <td [attr.colspan]="columns.length + 1" class="text-center py-8">
-                    <div class="flex flex-col items-center gap-2">
-                        <i class="pi pi-inbox text-4xl text-gray-400"></i>
-                        <p class="text-gray-500">No items found</p>
-                        <p-button label="Clear Filters" icon="pi pi-filter-slash" [text]="true"
-                            (onClick)="onClearFilters()">
-                        </p-button>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</ng-template>
-
 <!-- Confirmation Dialog -->
-<p-confirmDialog></p-confirmDialog>
+<p-confirmDialog styleClass="enhanced-confirm-dialog">
+</p-confirmDialog>

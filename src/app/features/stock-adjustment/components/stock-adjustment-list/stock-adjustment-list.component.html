@@ -1,113 +1,145 @@
-<div class="main-layout">
-    <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                <i class="pi pi-sliders-h text-sky-600"></i>
-                Stock Adjustments
-            </h1>
-            <p class="text-sm text-gray-600 mt-1">Manage stock adjustments and inventory corrections</p>
-        </div>
-        <div class="flex gap-2">
-            <button *ngIf="canApprove" pButton type="button" label="Pending Approvals" icon="pi pi-check-circle"
-                class="p-button-outlined" (click)="onNavigateToApprovals()"></button>
-            <button *ngIf="canCreate" pButton type="button" label="Create Adjustment" icon="pi pi-plus"
-                class="p-button-primary" (click)="onCreateAdjustment()"></button>
-        </div>
-    </div>
+<!-- Enhanced Page Header -->
+<app-page-header title="Stock Adjustments" subtitle="Manage stock adjustments and inventory corrections"
+    icon="pi pi-sliders-h" [primaryAction]="{
+        label: 'Create Adjustment',
+        icon: 'pi pi-plus',
+        severity: 'primary'
+    }" [secondaryActions]="headerActions" (primaryActionClick)="onCreateAdjustment()">
 
-    <!-- Filters Card -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div slot="actions" class="flex gap-2">
+        <button *ngIf="canApprove" pButton type="button" label="Pending Approvals" icon="pi pi-check-circle"
+            severity="secondary" [outlined]="true" class="enhanced-btn hover-lift" (click)="onNavigateToApprovals()">
+        </button>
+    </div>
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Enhanced Filters Card -->
+    <app-enhanced-card variant="standard" class="mb-6">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-filter text-primary-600"></i>
+                Filters
+            </h3>
+            <p class="card-subtitle">Filter stock adjustments by various criteria</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Search -->
-            <div class="col-span-1">
-                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div class="form-group">
+                <label for="search" class="form-label">Search</label>
                 <input id="search" type="text" pInputText placeholder="Search adjustment number..."
-                    [(ngModel)]="searchQuery" (input)="onSearch($event)" class="w-full" />
+                    [(ngModel)]="searchQuery" (input)="onSearch($event)" class="form-input" />
             </div>
 
             <!-- Status Filter -->
-            <div class="col-span-1">
-                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <div class="form-group">
+                <label for="status" class="form-label">Status</label>
                 <p-select id="status" [(ngModel)]="selectedStatus" [options]="statusOptions" optionLabel="label"
                     optionValue="value" placeholder="Select Status" (onChange)="onStatusChange($event.value)"
                     class="w-full" />
             </div>
 
             <!-- Date From -->
-            <div class="col-span-1">
-                <label for="dateFrom" class="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+            <div class="form-group">
+                <label for="dateFrom" class="form-label">Date From</label>
                 <p-datepicker id="dateFrom" [(ngModel)]="dateFrom" (onSelect)="onDateFromChange($event)"
                     dateFormat="dd/mm/yy" [showIcon]="true" placeholder="Select date" class="w-full" />
             </div>
 
             <!-- Date To -->
-            <div class="col-span-1">
-                <label for="dateTo" class="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+            <div class="form-group">
+                <label for="dateTo" class="form-label">Date To</label>
                 <p-datepicker id="dateTo" [(ngModel)]="dateTo" (onSelect)="onDateToChange($event)" dateFormat="dd/mm/yy"
                     [showIcon]="true" placeholder="Select date" class="w-full" />
             </div>
         </div>
 
-        <!-- Clear Filters Button -->
-        <div class="flex justify-end mt-3">
-            <button pButton type="button" label="Clear Filters" icon="pi pi-filter-slash"
-                class="p-button-outlined p-button-sm" (click)="onClearFilters()"></button>
+        <div slot="footer">
+            <div class="flex justify-end">
+                <button pButton type="button" label="Clear Filters" icon="pi pi-filter-slash" severity="secondary"
+                    [outlined]="true" size="small" class="enhanced-btn" (click)="onClearFilters()">
+                </button>
+            </div>
         </div>
-    </div>
+    </app-enhanced-card>
 
-    <!-- Table Card -->
-    <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 20rem); overflow-y: auto">
-        <p-table [value]="(adjustments$ | async) || []" [paginator]="true" [rows]="20"
-            [loading]="(loading$ | async) || false" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first} - {last} of {totalRecords} adjustments">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Adjustment Number</th>
-                    <th>Date</th>
-                    <th>Warehouse</th>
-                    <th>Total Items</th>
-                    <th>Status</th>
-                    <th>Submitted By</th>
-                    <th>Submitted At</th>
-                    <th>Actions</th>
-                </tr>
+    <!-- Enhanced Table -->
+    <app-enhanced-table [data]="(adjustments$ | async) || []" [loading]="(loading$ | async) || false"
+        title="Stock Adjustments" subtitle="All stock adjustment records" [paginator]="true" [rows]="20"
+        [totalRecords]="((adjustments$ | async) || []).length" [searchable]="false" [showHeader]="false"
+        emptyTitle="No Stock Adjustments Found"
+        emptyMessage="No stock adjustments match your current filters. Try adjusting your search criteria."
+        emptyIcon="pi pi-sliders-h" [columnCount]="8" class="enhanced-table-container">
+
+        <ng-container slot="header">
+            <th class="table-header-cell">Adjustment Number</th>
+            <th class="table-header-cell">Date</th>
+            <th class="table-header-cell">Warehouse</th>
+            <th class="table-header-cell">Total Items</th>
+            <th class="table-header-cell">Status</th>
+            <th class="table-header-cell">Submitted By</th>
+            <th class="table-header-cell">Submitted At</th>
+            <th class="table-header-cell text-center">Actions</th>
+        </ng-container>
+
+        <ng-container slot="body">
+            <ng-template #bodyTemplate let-adjustment>
+                <td class="table-body-cell font-medium text-primary-700">
+                    {{ adjustment.adjustmentNumber }}
+                </td>
+                <td class="table-body-cell">
+                    {{ formatDate(adjustment.adjustmentDate) }}
+                </td>
+                <td class="table-body-cell">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-building text-gray-400"></i>
+                        {{ adjustment.warehouseName }}
+                    </div>
+                </td>
+                <td class="table-body-cell">
+                    <span
+                        class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium">
+                        <i class="pi pi-box text-xs"></i>
+                        {{ adjustment.totalItems }}
+                    </span>
+                </td>
+                <td class="table-body-cell">
+                    <app-status-badge [label]="getStatusLabel(adjustment.status)" [status]="adjustment.status"
+                        [autoSeverity]="true" size="sm">
+                    </app-status-badge>
+                </td>
+                <td class="table-body-cell">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-user text-gray-400"></i>
+                        {{ adjustment.submittedByName || adjustment.submittedBy }}
+                    </div>
+                </td>
+                <td class="table-body-cell text-sm text-gray-500">
+                    {{ formatDateTime(adjustment.submittedAt) }}
+                </td>
+                <td class="table-body-cell">
+                    <div class="flex items-center justify-center gap-1">
+                        <button pButton icon="pi pi-eye" severity="secondary" [text]="true" size="small"
+                            class="enhanced-btn hover-lift" (click)="onViewAdjustment(adjustment)"
+                            pTooltip="View Details" tooltipPosition="top">
+                        </button>
+                        <button *ngIf="canApproveAdjustment(adjustment)" pButton icon="pi pi-check" severity="success"
+                            [text]="true" size="small" class="enhanced-btn hover-lift"
+                            (click)="onApproveAdjustment(adjustment)" pTooltip="Approve/Reject" tooltipPosition="top">
+                        </button>
+                    </div>
+                </td>
             </ng-template>
-            <ng-template pTemplate="body" let-adjustment>
-                <tr>
-                    <td>{{ adjustment.adjustmentNumber }}</td>
-                    <td>{{ formatDate(adjustment.adjustmentDate) }}</td>
-                    <td>{{ adjustment.warehouseName }}</td>
-                    <td>{{ adjustment.totalItems }}</td>
-                    <td>
-                        <p-tag [value]="getStatusLabel(adjustment.status)"
-                            [severity]="getStatusSeverity(adjustment.status)" />
-                    </td>
-                    <td>{{ adjustment.submittedByName || adjustment.submittedBy }}</td>
-                    <td>{{ formatDateTime(adjustment.submittedAt) }}</td>
-                    <td>
-                        <div class="flex gap-1">
-                            <button pButton icon="pi pi-eye" class="p-button-text p-button-sm"
-                                (click)="onViewAdjustment(adjustment)" pTooltip="View Details"></button>
-                            <button *ngIf="canApproveAdjustment(adjustment)" pButton icon="pi pi-check"
-                                class="p-button-text p-button-success p-button-sm"
-                                (click)="onApproveAdjustment(adjustment)" pTooltip="Approve/Reject"></button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="8" class="text-center py-8">
-                        <div class="flex flex-col items-center gap-2">
-                            <i class="pi pi-inbox text-4xl text-gray-400"></i>
-                            <p class="text-gray-500">No stock adjustments found</p>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+        </ng-container>
+
+        <ng-container slot="empty-actions">
+            <button *ngIf="canCreate" pButton label="Create First Adjustment" icon="pi pi-plus" severity="primary"
+                class="enhanced-btn hover-lift" (click)="onCreateAdjustment()">
+            </button>
+        </ng-container>
+    </app-enhanced-table>
 </div>
 
 <!-- Confirmation Dialog -->

@@ -1,0 +1,105 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Stock Mutation / Transfer" subtitle="Transfer stock between warehouses" icon="pi pi-arrows-h"
+    [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Stock Balance', route: '/stock-balance' },
+        { label: 'Stock Mutation' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <p-toast></p-toast>
+
+    <form [formGroup]="mutationForm" (ngSubmit)="onSubmit()">
+        <!-- Item Selection Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-box text-primary-600"></i>
+                    Item Selection
+                </h3>
+                <p class="card-subtitle">Select the item to transfer between warehouses</p>
+            </div>
+
+            <div class="form-group">
+                <label for="item_id" class="form-label required">Item</label>
+                <p-select id="item_id" formControlName="item_id" [options]="items" optionLabel="name" optionValue="id"
+                    placeholder="Select Item" class="w-full">
+                </p-select>
+                <small class="form-error" *ngIf="isFieldInvalid('item_id')">Item is required</small>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Warehouse Transfer Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-building text-primary-600"></i>
+                    Warehouse Transfer
+                </h3>
+                <p class="card-subtitle">Select the source and destination warehouses</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group">
+                    <label for="from_warehouse_id" class="form-label required">From Warehouse</label>
+                    <p-select id="from_warehouse_id" formControlName="from_warehouse_id" [options]="warehouses"
+                        optionLabel="name" optionValue="id" placeholder="Select Warehouse" class="w-full">
+                    </p-select>
+                    <small class="form-error" *ngIf="isFieldInvalid('from_warehouse_id')">From warehouse is
+                        required</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="to_warehouse_id" class="form-label required">To Warehouse</label>
+                    <p-select id="to_warehouse_id" formControlName="to_warehouse_id" [options]="warehouses"
+                        optionLabel="name" optionValue="id" placeholder="Select Warehouse" class="w-full">
+                    </p-select>
+                    <small class="form-error" *ngIf="isFieldInvalid('to_warehouse_id')">To warehouse is required</small>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Transfer Details Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-list text-primary-600"></i>
+                    Transfer Details
+                </h3>
+                <p class="card-subtitle">Specify the quantity and reason for this transfer</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <div class="form-group">
+                    <label for="quantity" class="form-label required">Quantity</label>
+                    <p-inputNumber id="quantity" formControlName="quantity" [min]="1" [showButtons]="true"
+                        class="w-full">
+                    </p-inputNumber>
+                    <small class="form-error" *ngIf="isFieldInvalid('quantity')">Quantity must be at least 1</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason" class="form-label required">Reason</label>
+                    <textarea id="reason" pInputTextarea formControlName="reason" rows="3" class="form-input"
+                        placeholder="Enter reason for transfer...">
+                    </textarea>
+                    <small class="form-error" *ngIf="isFieldInvalid('reason')">Reason is required</small>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Actions Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" type="button"
+                        (onClick)="onCancel()">
+                    </app-enhanced-button>
+                    <app-enhanced-button label="Submit Transfer" icon="pi pi-check" variant="primary" type="submit"
+                        [loading]="loading" [disabled]="mutationForm.invalid || loading">
+                    </app-enhanced-button>
+                </div>
+            </div>
+        </app-enhanced-card>
+    </form>
+</div>

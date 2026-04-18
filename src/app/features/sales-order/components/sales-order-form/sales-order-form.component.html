@@ -1,121 +1,153 @@
-<div class="card">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
-        {{ isEditMode ? 'Edit Sales Order' : 'Create Sales Order' }}
-    </h2>
+<div class="sales-order-form-container">
+    <!-- Enhanced Page Header -->
+    <app-page-header [title]="isEditMode ? 'Edit Sales Order' : 'Create Sales Order'"
+        [subtitle]="isEditMode ? 'Update sales order information and line items' : 'Create a new sales order for customer shipments'"
+        icon="pi pi-shopping-bag">
+        <div slot="actions">
+            <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" size="md" (onClick)="onCancel()">
+            </app-enhanced-button>
+        </div>
+    </app-page-header>
 
-    <!-- Input Method Selector -->
-    <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Select Input Method</label>
+    <!-- Input Method Selector Card -->
+    <app-enhanced-card variant="standard" title="Input Method" [header]="true" customClass="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div *ngFor="let method of inputMethodOptions"
-                class="border-2 rounded-lg p-4 cursor-pointer transition-all hover:border-blue-500"
-                [class.border-blue-500]="selectedInputMethod === method.value"
-                [class.bg-blue-50]="selectedInputMethod === method.value" (click)="onInputMethodChange(method.value)">
+                class="input-method-card border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 hover:border-primary-500 hover:shadow-md"
+                [class.border-primary-500]="selectedInputMethod === method.value"
+                [class.bg-primary-50]="selectedInputMethod === method.value"
+                [class.border-gray-200]="selectedInputMethod !== method.value"
+                (click)="onInputMethodChange(method.value)">
                 <div class="flex items-center gap-3">
-                    <i [class]="method.icon" class="text-2xl"
-                        [class.text-blue-600]="selectedInputMethod === method.value"></i>
-                    <span class="font-medium" [class.text-blue-600]="selectedInputMethod === method.value">
+                    <i [class]="method.icon" class="text-2xl transition-colors duration-200"
+                        [class.text-primary-600]="selectedInputMethod === method.value"
+                        [class.text-gray-400]="selectedInputMethod !== method.value"></i>
+                    <span class="font-medium transition-colors duration-200"
+                        [class.text-primary-700]="selectedInputMethod === method.value"
+                        [class.text-gray-700]="selectedInputMethod !== method.value">
                         {{ method.label }}
                     </span>
                 </div>
             </div>
         </div>
-    </div>
+    </app-enhanced-card>
 
     <!-- Dynamic Content Based on Input Method -->
     <div class="mt-6">
         <!-- Excel Upload -->
         <div *ngIf="selectedInputMethod === InputMethod.EXCEL">
-            <p class="text-gray-600 mb-4">Excel upload component will be integrated here</p>
-            <!-- TODO: Integrate ExcelUploadComponent -->
+            <app-enhanced-card variant="standard" title="Excel Upload" [header]="true" customClass="mb-6">
+                <div class="text-center py-8">
+                    <i class="pi pi-file-excel text-4xl text-green-500 mb-4"></i>
+                    <p class="text-gray-600 mb-4">Excel upload component will be integrated here</p>
+                    <p class="text-sm text-gray-500">Upload your sales order data using Excel templates</p>
+                </div>
+                <!-- TODO: Integrate ExcelUploadComponent -->
+            </app-enhanced-card>
         </div>
 
         <!-- API Integration -->
         <div *ngIf="selectedInputMethod === InputMethod.API">
-            <p class="text-gray-600 mb-4">API integration component will be integrated here</p>
-            <!-- TODO: Integrate ApiIntegrationComponent -->
+            <app-enhanced-card variant="standard" title="API Integration" [header]="true" customClass="mb-6">
+                <div class="text-center py-8">
+                    <i class="pi pi-cloud text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-gray-600 mb-4">API integration component will be integrated here</p>
+                    <p class="text-sm text-gray-500">Import sales order data from external systems</p>
+                </div>
+                <!-- TODO: Integrate ApiIntegrationComponent -->
+            </app-enhanced-card>
         </div>
 
         <!-- Manual Entry -->
         <div *ngIf="selectedInputMethod === InputMethod.MANUAL">
             <form [formGroup]="salesOrderForm" (ngSubmit)="onSubmit()">
                 <!-- Header Information -->
-                <p-card header="Sales Order Information" styleClass="mb-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">SO Number *</label>
-                            <input pInputText formControlName="soNumber" class="w-full" placeholder="Enter SO Number" />
-                        </div>
+                <app-enhanced-card variant="standard" title="Sales Order Information" [header]="true"
+                    customClass="mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <app-enhanced-form-field label="SO Number" [required]="true"
+                            [hasError]="!!(salesOrderForm.get('soNumber')?.invalid && salesOrderForm.get('soNumber')?.touched)">
+                            <input pInputText formControlName="soNumber" class="w-full enhanced-input"
+                                placeholder="Enter SO Number" />
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">SO Date *</label>
-                            <p-datepicker formControlName="soDate" dateFormat="dd/mm/yy" styleClass="w-full">
+                        <app-enhanced-form-field label="SO Date" [required]="true"
+                            [hasError]="!!(salesOrderForm.get('soDate')?.invalid && salesOrderForm.get('soDate')?.touched)">
+                            <p-datepicker formControlName="soDate" dateFormat="dd/mm/yy" [showIcon]="true"
+                                class="w-full enhanced-datepicker" placeholder="Select SO Date">
                             </p-datepicker>
-                        </div>
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-                            <input pInputText formControlName="customerId" class="w-full"
+                        <app-enhanced-form-field label="Customer" [required]="true"
+                            [hasError]="!!(salesOrderForm.get('customerId')?.invalid && salesOrderForm.get('customerId')?.touched)">
+                            <input pInputText formControlName="customerId" class="w-full enhanced-input"
                                 placeholder="Select Customer" />
-                        </div>
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Warehouse *</label>
-                            <input pInputText formControlName="warehouseId" class="w-full"
+                        <app-enhanced-form-field label="Warehouse" [required]="true"
+                            [hasError]="!!(salesOrderForm.get('warehouseId')?.invalid && salesOrderForm.get('warehouseId')?.touched)">
+                            <input pInputText formControlName="warehouseId" class="w-full enhanced-input"
                                 placeholder="Select Warehouse" />
-                        </div>
+                        </app-enhanced-form-field>
 
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shipping Address *</label>
-                            <textarea pInputTextarea formControlName="shippingAddress" rows="3" class="w-full"
-                                placeholder="Enter shipping address"></textarea>
+                            <app-enhanced-form-field label="Shipping Address" [required]="true"
+                                [hasError]="!!(salesOrderForm.get('shippingAddress')?.invalid && salesOrderForm.get('shippingAddress')?.touched)">
+                                <textarea pInputTextarea formControlName="shippingAddress" rows="3"
+                                    class="w-full enhanced-textarea" placeholder="Enter shipping address"></textarea>
+                            </app-enhanced-form-field>
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shipping Method</label>
-                            <input pInputText formControlName="shippingMethod" class="w-full"
+                        <app-enhanced-form-field label="Shipping Method">
+                            <input pInputText formControlName="shippingMethod" class="w-full enhanced-input"
                                 placeholder="Enter shipping method" />
-                        </div>
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
-                            <p-datepicker formControlName="deliveryDate" dateFormat="dd/mm/yy" styleClass="w-full">
+                        <app-enhanced-form-field label="Delivery Date">
+                            <p-datepicker formControlName="deliveryDate" dateFormat="dd/mm/yy" [showIcon]="true"
+                                class="w-full enhanced-datepicker" placeholder="Select Delivery Date">
                             </p-datepicker>
-                        </div>
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Currency *</label>
-                            <input pInputText formControlName="currency" class="w-full" placeholder="IDR" />
-                        </div>
+                        <app-enhanced-form-field label="Currency" [required]="true"
+                            [hasError]="!!(salesOrderForm.get('currency')?.invalid && salesOrderForm.get('currency')?.touched)">
+                            <input pInputText formControlName="currency" class="w-full enhanced-input"
+                                placeholder="IDR" />
+                        </app-enhanced-form-field>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
-                            <input pInputText formControlName="paymentTerms" class="w-full"
+                        <app-enhanced-form-field label="Payment Terms">
+                            <input pInputText formControlName="paymentTerms" class="w-full enhanced-input"
                                 placeholder="Enter payment terms" />
-                        </div>
+                        </app-enhanced-form-field>
 
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                            <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"
-                                placeholder="Enter notes"></textarea>
+                            <app-enhanced-form-field label="Notes">
+                                <textarea pInputTextarea formControlName="notes" rows="3"
+                                    class="w-full enhanced-textarea" placeholder="Enter notes"></textarea>
+                            </app-enhanced-form-field>
                         </div>
                     </div>
-                </p-card>
+                </app-enhanced-card>
 
                 <!-- Line Items Section -->
-                <p-card header="Line Items" styleClass="mb-4">
-                    <p class="text-gray-600">Manual entry component for line items will be integrated here</p>
+                <app-enhanced-card variant="standard" title="Line Items" [header]="true" customClass="mb-6">
+                    <div class="text-center py-8">
+                        <i class="pi pi-list text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-4">Manual entry component for line items will be integrated here</p>
+                        <p class="text-sm text-gray-500">Add and manage sales order line items</p>
+                    </div>
                     <!-- TODO: Integrate ManualEntryComponent -->
-                </p-card>
+                </app-enhanced-card>
 
                 <!-- Form Actions -->
                 <div class="flex justify-end gap-3">
-                    <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()"
-                        styleClass="p-button-outlined p-button-secondary">
-                    </p-button>
-                    <p-button label="{{ isEditMode ? 'Update' : 'Create' }}" icon="pi pi-check" type="submit"
-                        styleClass="p-button-primary">
-                    </p-button>
+                    <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" size="md"
+                        (onClick)="onCancel()">
+                    </app-enhanced-button>
+                    <app-enhanced-button [label]="isEditMode ? 'Update Sales Order' : 'Create Sales Order'"
+                        icon="pi pi-check" variant="primary" size="md" type="submit"
+                        [disabled]="salesOrderForm.invalid">
+                    </app-enhanced-button>
                 </div>
             </form>
         </div>

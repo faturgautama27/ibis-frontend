@@ -1,0 +1,125 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="BC Documents" subtitle="Manage customs documents" icon="pi pi-file">
+    <div slot="actions">
+        <app-enhanced-button label="Create Document" icon="pi pi-plus" variant="primary" size="md"
+            (onClick)="onCreate()"></app-enhanced-button>
+    </div>
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <!-- Filters Card -->
+    <app-enhanced-card variant="standard" class="mb-6">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-filter text-primary-600"></i>
+                Filters
+            </h3>
+            <p class="card-subtitle">Search and filter BC documents</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex flex-col">
+                <label class="text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input pInputText type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
+                    placeholder="Search by document number, partner name..." class="w-full" />
+            </div>
+            <div class="flex flex-col">
+                <label class="text-sm font-medium text-gray-700 mb-1">Document Type</label>
+                <p-select [(ngModel)]="selectedType" [options]="typeOptions" placeholder="All Types"
+                    (onChange)="onFilterChange()" [showClear]="true" class="w-full" />
+            </div>
+            <div class="flex flex-col">
+                <label class="text-sm font-medium text-gray-700 mb-1">Status</label>
+                <p-select [(ngModel)]="selectedStatus" [options]="statusOptions" placeholder="All Status"
+                    (onChange)="onFilterChange()" [showClear]="true" class="w-full" />
+            </div>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Documents Table -->
+    <app-enhanced-card variant="standard">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-file text-primary-600"></i>
+                BC Documents
+                <span
+                    class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                    {{ filteredDocuments.length }} documents
+                </span>
+            </h3>
+            <p class="card-subtitle">All customs documents in the system</p>
+        </div>
+
+        <app-enhanced-table [data]="filteredDocuments" [loading]="loading" [paginator]="true" [rows]="20"
+            [searchable]="false" [showHeader]="false" emptyTitle="No BC Documents Found"
+            emptyMessage="No BC documents match your current filters. Try adjusting your search criteria."
+            emptyIcon="pi pi-file" [columnCount]="7">
+            <ng-container slot="header">
+                <th class="table-header-cell">Document Number</th>
+                <th class="table-header-cell">Type</th>
+                <th class="table-header-cell">Date</th>
+                <th class="table-header-cell">Partner</th>
+                <th class="table-header-cell">Total Value</th>
+                <th class="table-header-cell">Status</th>
+                <th class="table-header-cell text-center">Actions</th>
+            </ng-container>
+
+            <ng-container slot="body">
+                <ng-template #bodyTemplate let-doc>
+                    <td class="table-body-cell">
+                        <div class="font-medium text-primary-700">{{ doc.doc_number }}</div>
+                        @if (doc.ceisa_response_number) {
+                        <div class="text-xs text-gray-500 mt-0.5">CEISA: {{ doc.ceisa_response_number }}</div>
+                        }
+                    </td>
+                    <td class="table-body-cell">
+                        <span class="text-sm text-gray-700">{{ getBCDocTypeLabel(doc.doc_type) }}</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <span class="text-sm text-gray-700">{{ doc.doc_date | date: 'dd MMM yyyy' }}</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <div class="text-sm font-medium text-gray-800">{{ doc.partner_name }}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ doc.partner_npwp }}</div>
+                    </td>
+                    <td class="table-body-cell">
+                        <span class="text-sm font-semibold text-gray-800">{{ doc.total_value | number: '1.0-0' }} {{
+                            doc.currency }}</span>
+                    </td>
+                    <td class="table-body-cell">
+                        <app-status-badge [label]="getBCDocStatusLabel(doc.status)"
+                            [severity]="getStatusSeverity(doc.status)"></app-status-badge>
+                    </td>
+                    <td class="table-body-cell">
+                        <div class="flex items-center justify-center gap-1">
+                            @if (doc.status === 'DRAFT') {
+                            <button pButton type="button" icon="pi pi-send"
+                                class="p-button-rounded p-button-text p-button-sm enhanced-btn hover-lift"
+                                (click)="onSubmit(doc)" pTooltip="Submit" tooltipPosition="top"></button>
+                            }
+                            @if (doc.status === 'SUBMITTED') {
+                            <button pButton type="button" icon="pi pi-check"
+                                class="p-button-rounded p-button-text p-button-success p-button-sm enhanced-btn hover-lift"
+                                (click)="onApprove(doc)" pTooltip="Approve" tooltipPosition="top"></button>
+                            <button pButton type="button" icon="pi pi-times"
+                                class="p-button-rounded p-button-text p-button-danger p-button-sm enhanced-btn hover-lift"
+                                (click)="onReject(doc)" pTooltip="Reject" tooltipPosition="top"></button>
+                            }
+                            <button pButton type="button" icon="pi pi-pencil"
+                                class="p-button-rounded p-button-text p-button-sm enhanced-btn hover-lift"
+                                (click)="onEdit(doc)" pTooltip="Edit" tooltipPosition="top"
+                                [disabled]="doc.status === 'APPROVED'"></button>
+                            <button pButton type="button" icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-danger p-button-sm enhanced-btn hover-lift"
+                                (click)="onDelete(doc)" pTooltip="Delete" tooltipPosition="top"
+                                [disabled]="doc.status === 'APPROVED'"></button>
+                        </div>
+                    </td>
+                </ng-template>
+            </ng-container>
+        </app-enhanced-table>
+    </app-enhanced-card>
+</div>
+
+<p-confirmDialog />
+<p-toast />

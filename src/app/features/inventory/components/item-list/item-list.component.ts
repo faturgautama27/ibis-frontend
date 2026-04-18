@@ -62,45 +62,62 @@ import { Item, ItemType } from '../../models/item.model';
   ],
   providers: [ConfirmationService, MessageService],
   template: `
-    <div class="">
-      <!-- Page Header -->
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-            <lucide-icon [img]="PackageIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-            {{ pageTitle }}
-          </h1>
-          <p class="text-sm text-gray-600 mt-1">{{ pageSubtitle }}</p>
-          <button
-            *ngIf="categoryFilter"
-            pButton
-            type="button"
-            label="Back to Dashboard"
-            icon="pi pi-arrow-left"
-            class="p-button-text p-button-sm mt-2"
-            (click)="router.navigate(['/dashboard'])"
-          ></button>
+    <div class="inventory-list-container">
+      <!-- Enhanced Page Header -->
+      <div class="page-header-enhanced">
+        <div class="header-content">
+          <div class="header-title-section">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="icon-container">
+                <lucide-icon [img]="PackageIcon" class="w-8 h-8 text-primary-600"></lucide-icon>
+              </div>
+              <div>
+                <h1 class="page-title">{{ pageTitle }}</h1>
+                <p class="page-subtitle">{{ pageSubtitle }}</p>
+              </div>
+            </div>
+            <p-button
+              *ngIf="categoryFilter"
+              label="Back to Dashboard"
+              icon="pi pi-arrow-left"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              class="mt-2"
+              (onClick)="onBackToDashboard()">
+            </p-button>
+          </div>
+          <div class="header-actions">
+            <p-button
+              label="Add Item"
+              icon="pi pi-plus"
+              severity="primary"
+              class="enhanced-button"
+              (onClick)="onCreateItem()">
+            </p-button>
+          </div>
         </div>
-        <button
-          pButton
-          type="button"
-          label="Add Item"
-          icon="pi pi-plus"
-          class="p-button-primary"
-          (click)="onCreateItem()"
-        ></button>
       </div>
 
-      <div
-        class="flex flex-col w-full bg-white rounded-lg shadow-sm p-6"
-        style="max-height: calc(100vh - 13rem); overflow-x: auto"
-      >
-        <!-- Filters Section -->
-        <div class="mb-4">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Enhanced Filters Card -->
+      <div class="enhanced-card mb-6">
+        <div class="card-header">
+          <h3 class="card-title">Filters</h3>
+          <p-button
+            label="Clear All"
+            icon="pi pi-filter-slash"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            (onClick)="onClearFilters()"
+            [disabled]="!hasActiveFilters">
+          </p-button>
+        </div>
+        <div class="card-content">
+          <div class="filter-grid">
             <!-- Search -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div class="filter-field">
+              <label class="field-label">Search Items</label>
               <p-iconfield>
                 <p-inputicon class="pi pi-search" />
                 <input
@@ -109,41 +126,48 @@ import { Item, ItemType } from '../../models/item.model';
                   placeholder="Search by code, name, or HS code..."
                   [(ngModel)]="searchQuery"
                   (input)="onSearchChange()"
-                  class="w-full"
-                />
+                  class="enhanced-input" />
               </p-iconfield>
             </div>
 
             <!-- Item Type Filter -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Item Type</label>
+            <div class="filter-field">
+              <label class="field-label">Item Type</label>
               <p-select
                 [options]="itemTypeOptions"
                 [(ngModel)]="selectedItemType"
                 (onChange)="onFilterChange()"
                 placeholder="All Types"
                 [showClear]="true"
-                styleClass="w-full"
-              ></p-select>
+                styleClass="enhanced-select">
+              </p-select>
             </div>
 
             <!-- Hazardous Filter -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Hazardous</label>
+            <div class="filter-field">
+              <label class="field-label">Material Type</label>
               <p-select
                 [options]="hazardousOptions"
                 [(ngModel)]="selectedHazardous"
                 (onChange)="onFilterChange()"
-                placeholder="All Items"
+                placeholder="All Materials"
                 [showClear]="true"
-                styleClass="w-full"
-              ></p-select>
+                styleClass="enhanced-select">
+              </p-select>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Data Table -->
-        <div class="">
+      <!-- Enhanced Data Table -->
+      <div class="enhanced-card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Inventory Items</h3>
+            <p class="card-subtitle">{{ getTableSubtitle() }}</p>
+          </div>
+        </div>
+        <div class="card-content p-0">
           <p-table
             [value]="filteredItems"
             [loading]="loading"
@@ -152,108 +176,114 @@ import { Item, ItemType } from '../../models/item.model';
             [rowsPerPageOptions]="[10, 25, 50, 100]"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Showing {first} to {last} of {totalRecords} items"
-            [globalFilterFields]="['item_code', 'item_name', 'hs_code']"
-            styleClass="p-datatable-sm"
-            responsiveLayout="scroll"
-          >
+            styleClass="enhanced-table"
+            responsiveLayout="scroll">
+
             <ng-template pTemplate="header">
               <tr>
-                <th class="text-left">Item Code</th>
-                <th class="text-left">Item Name</th>
-                <th class="text-left">HS Code</th>
-                <th class="text-left">Type</th>
-                <th class="text-left">Unit</th>
-                <th class="text-center">Hazardous</th>
-                <th class="text-center">Status</th>
-                <th class="text-center">Actions</th>
+                <th class="table-header">Item Code</th>
+                <th class="table-header">Item Name</th>
+                <th class="table-header">HS Code</th>
+                <th class="table-header">Type</th>
+                <th class="table-header">Unit</th>
+                <th class="table-header text-center">Hazardous</th>
+                <th class="table-header text-center">Status</th>
+                <th class="table-header text-center">Actions</th>
               </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-item>
-              <tr class="hover:bg-gray-50">
+              <tr class="table-row">
                 <!-- Item Code -->
-                <td class="font-medium text-gray-900">
-                  {{ item.item_code }}
+                <td class="table-cell">
+                  <div class="flex items-center gap-2">
+                    <span class="item-code-badge">{{ item.item_code }}</span>
+                  </div>
                 </td>
 
                 <!-- Item Name -->
-                <td>
-                  <div class="flex items-center gap-2">
-                    <span class="text-gray-900">{{ item.item_name }}</span>
+                <td class="table-cell">
+                  <div class="flex items-start gap-2">
+                    <div class="flex-1">
+                      <div class="item-name">{{ item.item_name }}</div>
+                      <div *ngIf="item.description" class="item-description">
+                        {{ item.description }}
+                      </div>
+                    </div>
                     <lucide-icon
                       *ngIf="item.is_hazardous"
                       [img]="AlertTriangleIcon"
-                      class="w-4 h-4 text-orange-500"
+                      class="hazard-icon"
                       pTooltip="Hazardous Material"
-                      tooltipPosition="top"
-                    ></lucide-icon>
-                  </div>
-                  <div *ngIf="item.description" class="text-xs text-gray-500 mt-1">
-                    {{ item.description }}
+                      tooltipPosition="top">
+                    </lucide-icon>
                   </div>
                 </td>
 
                 <!-- HS Code -->
-                <td class="font-mono text-sm text-gray-700">
-                  {{ item.hs_code }}
+                <td class="table-cell">
+                  <span class="hs-code-badge">{{ item.hs_code }}</span>
                 </td>
 
                 <!-- Type -->
-                <td>
+                <td class="table-cell">
                   <p-tag
-                    [value]="item.item_type"
+                    [value]="getItemTypeLabel(item.item_type)"
                     [severity]="getItemTypeSeverity(item.item_type)"
-                  ></p-tag>
+                    [icon]="getItemTypeIcon(item.item_type)">
+                  </p-tag>
                 </td>
 
                 <!-- Unit -->
-                <td class="text-gray-700">
-                  {{ item.unit }}
+                <td class="table-cell">
+                  <span class="unit-text">{{ item.unit }}</span>
                 </td>
 
                 <!-- Hazardous -->
-                <td class="text-center">
-                  <span
-                    *ngIf="item.is_hazardous"
-                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100"
-                  >
+                <td class="table-cell text-center">
+                  <div *ngIf="item.is_hazardous" class="hazard-indicator">
                     <lucide-icon
                       [img]="AlertTriangleIcon"
-                      class="w-4 h-4 text-orange-600"
-                    ></lucide-icon>
-                  </span>
-                  <span *ngIf="!item.is_hazardous" class="text-gray-400">-</span>
+                      class="w-4 h-4 text-orange-600">
+                    </lucide-icon>
+                  </div>
+                  <span *ngIf="!item.is_hazardous" class="text-gray-400 text-sm">—</span>
                 </td>
 
                 <!-- Status -->
-                <td class="text-center">
+                <td class="table-cell text-center">
                   <p-tag
                     [value]="item.active ? 'Active' : 'Inactive'"
                     [severity]="item.active ? 'success' : 'danger'"
-                  ></p-tag>
+                    [icon]="item.active ? 'pi pi-check-circle' : 'pi pi-times-circle'">
+                  </p-tag>
                 </td>
 
                 <!-- Actions -->
-                <td class="text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <button
-                      pButton
-                      type="button"
+                <td class="table-cell text-center">
+                  <div class="action-buttons">
+                    <p-button
                       icon="pi pi-pencil"
-                      class="p-button-text p-button-sm p-button-info"
-                      pTooltip="Edit"
+                      severity="info"
+                      [text]="true"
+                      [rounded]="true"
+                      size="small"
+                      pTooltip="Edit Item"
                       tooltipPosition="top"
-                      (click)="onEditItem(item)"
-                    ></button>
-                    <button
-                      pButton
-                      type="button"
+                      class="action-button"
+                      (onClick)="onEditItem(item)">
+                    </p-button>
+                    <p-button
                       icon="pi pi-trash"
-                      class="p-button-text p-button-sm p-button-danger"
-                      pTooltip="Delete"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      size="small"
+                      pTooltip="Delete Item"
                       tooltipPosition="top"
-                      (click)="onDeleteItem(item)"
-                    ></button>
+                      class="action-button"
+                      (onClick)="onDeleteItem(item)">
+                    </p-button>
                   </div>
                 </td>
               </tr>
@@ -261,18 +291,16 @@ import { Item, ItemType } from '../../models/item.model';
 
             <ng-template pTemplate="emptymessage">
               <tr>
-                <td colspan="8" class="text-center py-8">
-                  <div class="flex flex-col items-center gap-2">
-                    <lucide-icon [img]="PackageIcon" class="w-12 h-12 text-gray-400"></lucide-icon>
-                    <p class="text-gray-600">No items found</p>
-                    <button
-                      pButton
-                      type="button"
+                <td colspan="8" class="empty-state">
+                  <div class="empty-content">
+                    <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
+                    <h4 class="empty-title">{{ getEmptyMessage() }}</h4>
+                    <p-button
                       label="Add First Item"
                       icon="pi pi-plus"
-                      class="p-button-sm"
-                      (click)="onCreateItem()"
-                    ></button>
+                      severity="primary"
+                      (onClick)="onCreateItem()">
+                    </p-button>
                   </div>
                 </td>
               </tr>
@@ -282,11 +310,113 @@ import { Item, ItemType } from '../../models/item.model';
       </div>
 
       <!-- Confirmation Dialog -->
-      <p-confirmDialog></p-confirmDialog>
+      <p-confirmDialog styleClass="enhanced-dialog"></p-confirmDialog>
       
-      <p-toast />
+      <!-- Toast Notifications -->
+      <p-toast position="top-right" styleClass="enhanced-toast"></p-toast>
     </div>
   `,
+  styles: [`
+    .inventory-list-container {
+      padding: var(--space-6);
+      min-height: 100vh;
+      background: var(--gray-50);
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Enhanced table styling */
+    :host ::ng-deep .inventory-table .p-datatable-tbody > tr:hover {
+      background: var(--primary-50) !important;
+      transform: translateX(2px);
+      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+    }
+
+    /* Enhanced dialog styling */
+    :host ::ng-deep .enhanced-confirm-dialog {
+      border-radius: var(--radius-xl);
+      box-shadow: var(--modal-shadow);
+      border: 1px solid var(--gray-200);
+    }
+
+    :host ::ng-deep .enhanced-confirm-dialog .p-dialog-header {
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+
+    :host ::ng-deep .enhanced-confirm-dialog .p-dialog-content {
+      padding: var(--padding-lg);
+    }
+
+    :host ::ng-deep .enhanced-confirm-dialog .p-dialog-footer {
+      background: var(--gray-50);
+      border-top: 1px solid var(--gray-200);
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+      padding: var(--padding-md) var(--padding-lg);
+    }
+
+    /* Enhanced toast styling */
+    :host ::ng-deep .enhanced-toast .p-toast-message {
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--gray-200);
+    }
+
+    :host ::ng-deep .enhanced-toast .p-toast-message-success {
+      background: var(--success-50);
+      border-color: var(--success-200);
+      color: var(--success-800);
+    }
+
+    :host ::ng-deep .enhanced-toast .p-toast-message-error {
+      background: var(--error-50);
+      border-color: var(--error-200);
+      color: var(--error-800);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .inventory-list-container {
+        padding: var(--space-4);
+      }
+
+      .grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: var(--space-3);
+      }
+    }
+
+    /* Animation enhancements */
+    .inventory-list-container > * {
+      animation: slideInUp 0.3s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Focus enhancements */
+    :host ::ng-deep .p-button:focus {
+      box-shadow: 0 0 0 var(--button-focus-ring-width) var(--focus-ring-primary);
+    }
+
+    :host ::ng-deep .p-inputtext:focus {
+      box-shadow: 0 0 0 var(--form-focus-ring-width) var(--focus-ring-primary);
+    }
+  `]
 })
 export class ItemListComponent implements OnInit {
   private inventoryService = inject(InventoryDemoService);
@@ -351,6 +481,89 @@ export class ItemListComponent implements OnInit {
     this.loadItems();
   }
 
+  /**
+   * Get table subtitle with item count
+   */
+  getTableSubtitle(): string {
+    const count = this.filteredItems.length;
+    const total = this.items.length;
+    if (count === total) {
+      return `${count} items total`;
+    }
+    return `${count} of ${total} items`;
+  }
+
+  /**
+   * Get empty message based on filters
+   */
+  getEmptyMessage(): string {
+    if (this.hasActiveFilters) {
+      return 'No items match your current filters. Try adjusting your search criteria.';
+    }
+    return 'No items have been added yet. Create your first item to get started.';
+  }
+
+  /**
+   * Check if there are active filters
+   */
+  get hasActiveFilters(): boolean {
+    return !!(this.searchQuery || this.selectedItemType || this.selectedHazardous !== null);
+  }
+
+  /**
+   * Get item type label for display
+   */
+  getItemTypeLabel(itemType: ItemType): string {
+    switch (itemType) {
+      case ItemType.RAW:
+        return 'Raw Material';
+      case ItemType.WIP:
+        return 'Work In Progress';
+      case ItemType.FG:
+        return 'Finished Goods';
+      case ItemType.ASSET:
+        return 'Asset';
+      default:
+        return itemType;
+    }
+  }
+
+  /**
+   * Get item type icon
+   */
+  getItemTypeIcon(itemType: ItemType): string {
+    switch (itemType) {
+      case ItemType.RAW:
+        return 'pi pi-circle';
+      case ItemType.WIP:
+        return 'pi pi-cog';
+      case ItemType.FG:
+        return 'pi pi-check-circle';
+      case ItemType.ASSET:
+        return 'pi pi-building';
+      default:
+        return 'pi pi-circle';
+    }
+  }
+
+  /**
+   * Handle back to dashboard navigation
+   */
+  onBackToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  /**
+   * Clear all filters
+   */
+  onClearFilters(): void {
+    this.searchQuery = '';
+    this.selectedItemType = this.categoryFilter === 'RAW_MATERIAL' ? ItemType.RAW :
+      this.categoryFilter === 'FINISHED_GOOD' ? ItemType.FG : null;
+    this.selectedHazardous = null;
+    this.applyFilters();
+  }
+
   loadItems(): void {
     this.loading = true;
     this.inventoryService.getAll().subscribe({
@@ -402,13 +615,6 @@ export class ItemListComponent implements OnInit {
     this.applyFilters();
   }
 
-  onClearFilters(): void {
-    this.searchQuery = '';
-    this.selectedItemType = null;
-    this.selectedHazardous = null;
-    this.applyFilters();
-  }
-
   onCreateItem(): void {
     this.router.navigate(['/inventory/items/new']);
   }
@@ -447,12 +653,12 @@ export class ItemListComponent implements OnInit {
     });
   }
 
-  getItemTypeSeverity(itemType: ItemType): any {
+  getItemTypeSeverity(itemType: ItemType): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (itemType) {
       case ItemType.RAW:
         return 'info';
       case ItemType.WIP:
-        return 'warning';
+        return 'warn';
       case ItemType.FG:
         return 'success';
       case ItemType.ASSET:

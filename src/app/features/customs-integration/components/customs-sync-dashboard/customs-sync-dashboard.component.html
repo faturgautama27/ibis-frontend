@@ -1,0 +1,144 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Customs Integration Dashboard" subtitle="Monitor and manage customs synchronization"
+    icon="pi pi-refresh">
+</app-page-header>
+
+<div class="main-layout px-6 py-6 space-y-6">
+
+    <!-- Summary Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <app-enhanced-card variant="stats" customClass="stat-card stat-card--blue">
+            <div class="stat-content">
+                <div class="stat-label">Pending Sync</div>
+                <div class="stat-value">{{ pendingCount }}</div>
+            </div>
+        </app-enhanced-card>
+
+        <app-enhanced-card variant="stats" customClass="stat-card stat-card--green">
+            <div class="stat-content">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value">{{ completedCount }}</div>
+            </div>
+        </app-enhanced-card>
+
+        <app-enhanced-card variant="stats" customClass="stat-card stat-card--red">
+            <div class="stat-content">
+                <div class="stat-label">Failed</div>
+                <div class="stat-value">{{ failedCount }}</div>
+            </div>
+        </app-enhanced-card>
+
+        <app-enhanced-card variant="stats" customClass="stat-card stat-card--yellow">
+            <div class="stat-content">
+                <div class="stat-label">In Progress</div>
+                <div class="stat-value">{{ inProgressCount }}</div>
+            </div>
+        </app-enhanced-card>
+    </div>
+
+    <!-- Action Buttons Card -->
+    <app-enhanced-card variant="standard">
+        <div class="flex flex-wrap gap-3">
+            <app-enhanced-button label="Process Queue" icon="pi pi-play" variant="primary" (onClick)="processQueue()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Refresh" icon="pi pi-refresh" variant="secondary" (onClick)="loadData()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Clear Completed" icon="pi pi-trash" variant="secondary"
+                (onClick)="clearCompleted()">
+            </app-enhanced-button>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Tables Card -->
+    <app-enhanced-card variant="standard">
+        <p-tabs>
+            <p-tabpanel header="Sync Queue">
+                <div class="py-4">
+                    <app-enhanced-table [data]="syncQueue" [paginator]="true" [rows]="10" [searchable]="false"
+                        [showHeader]="false" [columnCount]="8" emptyTitle="No Items in Queue"
+                        emptyMessage="The sync queue is currently empty" emptyIcon="pi pi-inbox">
+
+                        <ng-container slot="header">
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Entity</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Retry Count</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </ng-container>
+
+                        <ng-container slot="body">
+                            <ng-template #bodyTemplate let-item>
+                                <td>{{ item.id }}</td>
+                                <td>
+                                    <app-status-badge [label]="item.sync_type" severity="info">
+                                    </app-status-badge>
+                                </td>
+                                <td>{{ item.entity_type }}</td>
+                                <td>
+                                    <app-status-badge [label]="item.priority"
+                                        [severity]="getPrioritySeverity(item.priority)">
+                                    </app-status-badge>
+                                </td>
+                                <td>
+                                    <app-status-badge [label]="item.status" [severity]="getStatusSeverity(item.status)">
+                                    </app-status-badge>
+                                </td>
+                                <td>{{ item.retry_count }} / {{ item.max_retries }}</td>
+                                <td>{{ item.created_at | date:'short' }}</td>
+                                <td>
+                                    <button pButton icon="pi pi-replay" class="p-button-sm p-button-text"
+                                        (click)="retrySync(item.id)" [disabled]="item.status !== 'FAILED'"
+                                        pTooltip="Retry">
+                                    </button>
+                                </td>
+                            </ng-template>
+                        </ng-container>
+                    </app-enhanced-table>
+                </div>
+            </p-tabpanel>
+
+            <p-tabpanel header="CEISA Status">
+                <div class="py-4">
+                    <app-enhanced-table [data]="ceisaStatuses" [paginator]="true" [rows]="10" [searchable]="false"
+                        [showHeader]="false" [columnCount]="7" emptyTitle="No CEISA Submissions"
+                        emptyMessage="No CEISA submissions found" emptyIcon="pi pi-inbox">
+
+                        <ng-container slot="header">
+                            <th>CEISA Reference</th>
+                            <th>Document Number</th>
+                            <th>Document Type</th>
+                            <th>Status</th>
+                            <th>Submission Date</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </ng-container>
+
+                        <ng-container slot="body">
+                            <ng-template #bodyTemplate let-status>
+                                <td>{{ status.ceisa_reference }}</td>
+                                <td>{{ status.document_number }}</td>
+                                <td>{{ status.document_type }}</td>
+                                <td>
+                                    <app-status-badge [label]="status.status"
+                                        [severity]="getCEISAStatusSeverity(status.status)">
+                                    </app-status-badge>
+                                </td>
+                                <td>{{ status.submission_date | date:'short' }}</td>
+                                <td>{{ status.last_updated | date:'short' }}</td>
+                                <td>
+                                    <button pButton icon="pi pi-refresh" class="p-button-sm p-button-text"
+                                        (click)="checkStatus(status.ceisa_reference)" pTooltip="Check Status">
+                                    </button>
+                                </td>
+                            </ng-template>
+                        </ng-container>
+                    </app-enhanced-table>
+                </div>
+            </p-tabpanel>
+        </p-tabs>
+    </app-enhanced-card>
+
+</div>

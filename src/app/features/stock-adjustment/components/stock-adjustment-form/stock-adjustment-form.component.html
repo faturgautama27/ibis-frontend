@@ -1,239 +1,283 @@
-<div class="stock-adjustment-form-container">
+<!-- Enhanced Page Header -->
+<app-page-header title="Create Stock Adjustment" subtitle="Create a new stock adjustment for inventory corrections"
+    icon="pi pi-plus-circle" [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Stock Adjustments', route: '/stock-adjustment' },
+        { label: 'Create' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
     <p-toast></p-toast>
 
-    <div class="grid">
-        <div class="col-12">
-            <p-card>
-                <ng-template pTemplate="header">
-                    <div class="flex justify-content-between align-items-center p-3">
-                        <h2 class="m-0">Create Stock Adjustment</h2>
-                        <p-button icon="pi pi-times" [text]="true" severity="secondary" (onClick)="onCancel()">
-                        </p-button>
-                    </div>
-                </ng-template>
+    <form [formGroup]="adjustmentForm" (ngSubmit)="onSubmit()">
+        <!-- Header Information Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-info-circle text-primary-600"></i>
+                    Adjustment Information
+                </h3>
+                <p class="card-subtitle">Enter the basic information for this stock adjustment</p>
+            </div>
 
-                <form [formGroup]="adjustmentForm" (ngSubmit)="onSubmit()">
-                    <!-- Header Information -->
-                    <div class="grid">
-                        <div class="col-12 md:col-4">
-                            <label for="adjustmentDate" class="block mb-2">
-                                Adjustment Date <span class="text-red-500">*</span>
-                            </label>
-                            <p-datepicker id="adjustmentDate" formControlName="adjustmentDate" dateFormat="dd/mm/yy"
-                                [showIcon]="true" [iconDisplay]="'input'" styleClass="w-full"
-                                [class.ng-invalid]="hasError('adjustmentDate')">
-                            </p-datepicker>
-                            <small class="text-red-500" *ngIf="hasError('adjustmentDate')">
-                                {{ getErrorMessage('adjustmentDate') }}
-                            </small>
-                        </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="form-group">
+                    <label for="adjustmentDate" class="form-label required">Adjustment Date</label>
+                    <p-datepicker id="adjustmentDate" formControlName="adjustmentDate" dateFormat="dd/mm/yy"
+                        [showIcon]="true" [iconDisplay]="'input'" class="w-full"
+                        [class.error]="hasError('adjustmentDate')">
+                    </p-datepicker>
+                    <small class="form-error" *ngIf="hasError('adjustmentDate')">
+                        {{ getErrorMessage('adjustmentDate') }}
+                    </small>
+                </div>
 
-                        <div class="col-12 md:col-4">
-                            <label for="warehouseId" class="block mb-2">
-                                Warehouse <span class="text-red-500">*</span>
-                            </label>
-                            <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses"
-                                optionLabel="label" optionValue="value" placeholder="Select warehouse"
-                                styleClass="w-full" [class.ng-invalid]="hasError('warehouseId')">
-                            </p-select>
-                            <small class="text-red-500" *ngIf="hasError('warehouseId')">
-                                Warehouse is required
-                            </small>
-                        </div>
+                <div class="form-group">
+                    <label for="warehouseId" class="form-label required">Warehouse</label>
+                    <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses" optionLabel="label"
+                        optionValue="value" placeholder="Select warehouse" class="w-full"
+                        [class.error]="hasError('warehouseId')">
+                    </p-select>
+                    <small class="form-error" *ngIf="hasError('warehouseId')">
+                        Warehouse is required
+                    </small>
+                </div>
 
-                        <div class="col-12 md:col-4">
-                            <label class="block mb-2">&nbsp;</label>
-                            <p-button label="Add Item" icon="pi pi-plus" (onClick)="openItemLookup()"
-                                styleClass="w-full">
-                            </p-button>
-                        </div>
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button pButton type="button" label="Add Item" icon="pi pi-plus" severity="primary"
+                        class="w-full enhanced-btn hover-lift" (click)="openItemLookup()">
+                    </button>
+                </div>
 
-                        <div class="col-12">
-                            <label for="notes" class="block mb-2">Notes</label>
-                            <textarea id="notes" pTextarea formControlName="notes" rows="3" class="w-full"
-                                placeholder="Enter any additional notes...">
-                            </textarea>
-                            <small class="text-gray-500">Maximum 500 characters</small>
-                        </div>
-                    </div>
+                <div class="form-group md:col-span-3">
+                    <label for="notes" class="form-label">Notes</label>
+                    <textarea id="notes" pTextarea formControlName="notes" rows="3" class="form-input"
+                        placeholder="Enter any additional notes...">
+                    </textarea>
+                    <small class="form-help">Maximum 500 characters</small>
+                </div>
+            </div>
+        </app-enhanced-card>
 
-                    <!-- Adjustment Details Table -->
-                    <div class="mt-4" *ngIf="details.length > 0">
-                        <h3 class="mb-3">Adjustment Items</h3>
+        <!-- Enhanced Adjustment Details Table -->
+        <app-enhanced-card variant="standard" class="mb-6" *ngIf="details.length > 0">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-list text-primary-600"></i>
+                    Adjustment Items
+                    <span
+                        class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                        {{ details.length }} {{ details.length === 1 ? 'item' : 'items' }}
+                    </span>
+                </h3>
+                <p class="card-subtitle">Review and modify the items to be adjusted</p>
+            </div>
 
-                        <p-table [value]="details.controls" styleClass="p-datatable-sm" [scrollable]="true"
-                            scrollHeight="400px">
+            <div class="overflow-x-auto">
+                <p-table [value]="details.controls" [scrollable]="true" scrollHeight="400px"
+                    class="enhanced-details-table">
 
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th style="width: 50px">#</th>
-                                    <th style="width: 120px">Item Code</th>
-                                    <th style="width: 200px">Item Name</th>
-                                    <th style="width: 100px">Current Stock</th>
-                                    <th style="width: 120px">Type <span class="text-red-500">*</span></th>
-                                    <th style="width: 120px">Quantity <span class="text-red-500">*</span></th>
-                                    <th style="width: 100px">After</th>
-                                    <th style="width: 150px">Reason Category <span class="text-red-500">*</span></th>
-                                    <th style="width: 250px">Reason <span class="text-red-500">*</span></th>
-                                    <th style="width: 200px">Notes</th>
-                                    <th style="width: 80px">Actions</th>
-                                </tr>
-                            </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="table-header-cell text-center" style="width: 50px">#</th>
+                            <th class="table-header-cell" style="width: 120px">Item Code</th>
+                            <th class="table-header-cell" style="width: 200px">Item Name</th>
+                            <th class="table-header-cell text-center" style="width: 100px">Current Stock</th>
+                            <th class="table-header-cell" style="width: 120px">Type <span class="text-red-500">*</span>
+                            </th>
+                            <th class="table-header-cell" style="width: 120px">Quantity <span
+                                    class="text-red-500">*</span></th>
+                            <th class="table-header-cell text-center" style="width: 100px">After</th>
+                            <th class="table-header-cell" style="width: 150px">Reason Category <span
+                                    class="text-red-500">*</span></th>
+                            <th class="table-header-cell" style="width: 250px">Reason <span
+                                    class="text-red-500">*</span></th>
+                            <th class="table-header-cell" style="width: 200px">Notes</th>
+                            <th class="table-header-cell text-center" style="width: 80px">Actions</th>
+                        </tr>
+                    </ng-template>
 
-                            <ng-template pTemplate="body" let-detail let-i="rowIndex">
-                                <tr [formGroup]="detail">
-                                    <td>{{ i + 1 }}</td>
+                    <ng-template pTemplate="body" let-detail let-i="rowIndex">
+                        <tr [formGroup]="detail" class="table-body-row">
+                            <td class="table-body-cell text-center font-semibold text-gray-700">{{ i + 1 }}</td>
 
-                                    <td>
-                                        {{ detail.get('itemCode')?.value }}
-                                    </td>
+                            <td class="table-body-cell">
+                                <span class="font-medium text-primary-700">{{ detail.get('itemCode')?.value }}</span>
+                            </td>
 
-                                    <td>
-                                        {{ detail.get('itemName')?.value }}
-                                    </td>
+                            <td class="table-body-cell">
+                                <div class="flex items-center gap-2">
+                                    <i class="pi pi-box text-gray-400"></i>
+                                    {{ detail.get('itemName')?.value }}
+                                </div>
+                            </td>
 
-                                    <td class="text-right">
-                                        {{ detail.get('currentStock')?.value }} {{ detail.get('unit')?.value }}
-                                    </td>
+                            <td class="table-body-cell text-center">
+                                <span
+                                    class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium">
+                                    {{ detail.get('currentStock')?.value }} {{ detail.get('unit')?.value }}
+                                </span>
+                            </td>
 
-                                    <td>
-                                        <p-select formControlName="adjustmentType" [options]="adjustmentTypes"
-                                            optionLabel="label" optionValue="value" styleClass="w-full"
-                                            [class.ng-invalid]="hasDetailError(detail, 'adjustmentType')">
-                                        </p-select>
-                                    </td>
+                            <td class="table-body-cell">
+                                <p-select formControlName="adjustmentType" [options]="adjustmentTypes"
+                                    optionLabel="label" optionValue="value" class="w-full"
+                                    [class.error]="hasDetailError(detail, 'adjustmentType')">
+                                </p-select>
+                            </td>
 
-                                    <td>
-                                        <p-inputnumber formControlName="quantity" [min]="0" [showButtons]="true"
-                                            buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
-                                            decrementButtonIcon="pi pi-minus" styleClass="w-full"
-                                            [class.ng-invalid]="hasDetailError(detail, 'quantity') || hasStockError(detail)">
-                                        </p-inputnumber>
-                                        <small class="text-red-500" *ngIf="hasDetailError(detail, 'quantity')">
-                                            {{ getDetailErrorMessage(detail, 'quantity') }}
-                                        </small>
-                                        <small class="text-red-500" *ngIf="hasStockError(detail)">
-                                            {{ getStockErrorMessage(detail) }}
-                                        </small>
-                                    </td>
+                            <td class="table-body-cell">
+                                <p-inputnumber formControlName="quantity" [min]="0" [showButtons]="true"
+                                    buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
+                                    decrementButtonIcon="pi pi-minus" class="w-full"
+                                    [class.error]="hasDetailError(detail, 'quantity') || hasStockError(detail)">
+                                </p-inputnumber>
+                                <small class="form-error" *ngIf="hasDetailError(detail, 'quantity')">
+                                    {{ getDetailErrorMessage(detail, 'quantity') }}
+                                </small>
+                                <small class="form-error" *ngIf="hasStockError(detail)">
+                                    {{ getStockErrorMessage(detail) }}
+                                </small>
+                            </td>
 
-                                    <td class="text-right" [class.text-red-500]="hasStockError(detail)">
-                                        <strong>{{ getAfterQuantity(detail) }}</strong> {{ detail.get('unit')?.value }}
-                                    </td>
+                            <td class="table-body-cell text-center" [class.text-red-600]="hasStockError(detail)">
+                                <span class="font-bold text-lg">{{ getAfterQuantity(detail) }}</span>
+                                <span class="text-sm text-gray-500 ml-1">{{ detail.get('unit')?.value }}</span>
+                            </td>
 
-                                    <td>
-                                        <p-select formControlName="reasonCategory" [options]="reasonCategories"
-                                            optionLabel="label" optionValue="value" styleClass="w-full"
-                                            [class.ng-invalid]="hasDetailError(detail, 'reasonCategory')">
-                                        </p-select>
-                                    </td>
+                            <td class="table-body-cell">
+                                <p-select formControlName="reasonCategory" [options]="reasonCategories"
+                                    optionLabel="label" optionValue="value" class="w-full"
+                                    [class.error]="hasDetailError(detail, 'reasonCategory')">
+                                </p-select>
+                            </td>
 
-                                    <td>
-                                        <textarea pTextarea formControlName="reason" rows="2" class="w-full"
-                                            placeholder="Enter reason (min 10 chars)"
-                                            [class.ng-invalid]="hasDetailError(detail, 'reason')">
-                                        </textarea>
-                                        <small class="text-red-500" *ngIf="hasDetailError(detail, 'reason')">
-                                            {{ getDetailErrorMessage(detail, 'reason') }}
-                                        </small>
-                                    </td>
+                            <td class="table-body-cell">
+                                <textarea pTextarea formControlName="reason" rows="2" class="form-input"
+                                    placeholder="Enter reason (min 10 chars)"
+                                    [class.error]="hasDetailError(detail, 'reason')">
+                                </textarea>
+                                <small class="form-error" *ngIf="hasDetailError(detail, 'reason')">
+                                    {{ getDetailErrorMessage(detail, 'reason') }}
+                                </small>
+                            </td>
 
-                                    <td>
-                                        <textarea pTextarea formControlName="notes" rows="2" class="w-full"
-                                            placeholder="Optional notes">
-                                        </textarea>
-                                    </td>
+                            <td class="table-body-cell">
+                                <textarea pTextarea formControlName="notes" rows="2" class="form-input"
+                                    placeholder="Optional notes">
+                                </textarea>
+                            </td>
 
-                                    <td class="text-center">
-                                        <p-button icon="pi pi-trash" severity="danger" [text]="true"
-                                            (onClick)="removeDetail(i)">
-                                        </p-button>
-                                    </td>
-                                </tr>
-                            </ng-template>
+                            <td class="table-body-cell text-center">
+                                <button pButton type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                                    size="small" class="enhanced-btn hover-lift" (click)="removeDetail(i)"
+                                    pTooltip="Remove Item" tooltipPosition="top">
+                                </button>
+                            </td>
+                        </tr>
+                    </ng-template>
 
-                            <ng-template pTemplate="emptymessage">
-                                <tr>
-                                    <td colspan="11" class="text-center p-4">
-                                        <div class="text-gray-500">
-                                            <i class="pi pi-inbox text-4xl mb-3"></i>
-                                            <p>No items added yet. Click "Add Item" to start.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-table>
-                    </div>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="11" class="text-center p-8">
+                                <div class="empty-state">
+                                    <i class="pi pi-inbox empty-icon"></i>
+                                    <h4 class="empty-title">No Items Added</h4>
+                                    <p class="empty-description">Click "Add Item" to start adding items for adjustment
+                                    </p>
+                                    <button pButton type="button" label="Add First Item" icon="pi pi-plus"
+                                        severity="primary" class="enhanced-btn hover-lift mt-4"
+                                        (click)="openItemLookup()">
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </app-enhanced-card>
 
-                    <!-- Form Actions -->
-                    <div class="flex justify-content-end gap-2 mt-4">
-                        <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()">
-                        </p-button>
-                        <p-button label="Submit for Approval" icon="pi pi-check" type="submit"
-                            [disabled]="adjustmentForm.invalid || details.length === 0 || (saving$ | async)"
-                            [loading]="saving$ | async">
-                        </p-button>
-                    </div>
-                </form>
-            </p-card>
-        </div>
-    </div>
+        <!-- Form Actions -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true"
+                        class="enhanced-btn" (click)="onCancel()">
+                    </button>
+                    <button pButton type="submit" label="Submit for Approval" icon="pi pi-check" severity="primary"
+                        class="enhanced-btn hover-lift"
+                        [disabled]="adjustmentForm.invalid || details.length === 0 || (saving$ | async)"
+                        [loading]="(saving$ | async) || false">
+                    </button>
+                </div>
+            </div>
+        </app-enhanced-card>
+    </form>
 
-    <!-- Item Lookup Dialog -->
-    <p-dialog [(visible)]="showItemLookup" [modal]="true" [style]="{width: '800px'}" [draggable]="false"
-        [resizable]="false" header="Select Item">
+    <!-- Enhanced Item Lookup Dialog -->
+    <p-dialog [(visible)]="showItemLookup" [modal]="true" [style]="{width: '900px'}" [draggable]="false"
+        [resizable]="false" header="Select Item" class="enhanced-dialog">
 
         <ng-template pTemplate="content">
-            <div class="mb-3">
+            <div class="mb-4">
+                <label class="form-label">Search Items</label>
                 <p-iconfield iconPosition="left">
-                    <p-inputicon styleClass="pi pi-search" />
+                    <p-inputicon class="pi pi-search" />
                     <input type="text" pInputText [(ngModel)]="itemSearchQuery"
-                        placeholder="Search by item code or name..." class="w-full" />
+                        placeholder="Search by item code or name..." class="form-input" />
                 </p-iconfield>
             </div>
 
             <p-table [value]="filteredItems" selectionMode="single" [(selection)]="selectedItemForLookup"
-                [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+                [scrollable]="true" scrollHeight="400px" class="enhanced-lookup-table">
 
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 50px"></th>
-                        <th>Item Code</th>
-                        <th>Item Name</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Unit</th>
+                        <th class="table-header-cell" style="width: 50px"></th>
+                        <th class="table-header-cell">Item Code</th>
+                        <th class="table-header-cell">Item Name</th>
+                        <th class="table-header-cell">Category</th>
+                        <th class="table-header-cell text-center">Current Stock</th>
+                        <th class="table-header-cell">Unit</th>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item" (click)="selectItem(item)">
-                        <td>
+                    <tr [pSelectableRow]="item" (click)="selectItem(item)" class="table-body-row cursor-pointer">
+                        <td class="table-body-cell text-center">
                             <p-radiobutton [value]="item" [(ngModel)]="selectedItemForLookup">
                             </p-radiobutton>
                         </td>
-                        <td>{{ item.item_code }}</td>
-                        <td>{{ item.item_name }}</td>
-                        <td>
-                            <span class="px-2 py-1 text-xs rounded"
-                                [class.bg-blue-100]="item.category === 'RAW_MATERIAL'"
-                                [class.text-blue-700]="item.category === 'RAW_MATERIAL'"
-                                [class.bg-green-100]="item.category === 'FINISHED_GOOD'"
-                                [class.text-green-700]="item.category === 'FINISHED_GOOD'">
-                                {{ item.category === 'RAW_MATERIAL' ? 'Raw Material' : 'Finished Good' }}
-                            </span>
+                        <td class="table-body-cell">
+                            <span class="font-medium text-primary-700">{{ item.item_code }}</span>
                         </td>
-                        <td class="text-right">{{ item.current_stock }}</td>
-                        <td>{{ item.unit }}</td>
+                        <td class="table-body-cell">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-box text-gray-400"></i>
+                                {{ item.item_name }}
+                            </div>
+                        </td>
+                        <td class="table-body-cell">
+                            <app-status-badge
+                                [label]="item.category === 'RAW_MATERIAL' ? 'Raw Material' : 'Finished Good'"
+                                [severity]="item.category === 'RAW_MATERIAL' ? 'info' : 'success'" size="sm">
+                            </app-status-badge>
+                        </td>
+                        <td class="table-body-cell text-center">
+                            <span class="font-medium">{{ item.current_stock }}</span>
+                        </td>
+                        <td class="table-body-cell">{{ item.unit }}</td>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="6" class="text-center p-4">
-                            <div class="text-gray-500">
-                                <i class="pi pi-search text-4xl mb-3"></i>
-                                <p>No items found</p>
+                        <td colspan="6" class="text-center p-8">
+                            <div class="empty-state">
+                                <i class="pi pi-search empty-icon"></i>
+                                <h4 class="empty-title">No Items Found</h4>
+                                <p class="empty-description">Try adjusting your search criteria</p>
                             </div>
                         </td>
                     </tr>
@@ -242,11 +286,15 @@
         </ng-template>
 
         <ng-template pTemplate="footer">
-            <p-button label="Cancel" severity="secondary" [outlined]="true" (onClick)="cancelItemLookup()">
-            </p-button>
-            <p-button label="Select" icon="pi pi-check" (onClick)="confirmItemSelection()"
-                [disabled]="!selectedItemForLookup">
-            </p-button>
+            <div class="flex justify-end gap-3">
+                <button pButton type="button" label="Cancel" severity="secondary" [outlined]="true" class="enhanced-btn"
+                    (click)="cancelItemLookup()">
+                </button>
+                <button pButton type="button" label="Select" icon="pi pi-check" severity="primary"
+                    class="enhanced-btn hover-lift" [disabled]="!selectedItemForLookup"
+                    (click)="confirmItemSelection()">
+                </button>
+            </div>
         </ng-template>
     </p-dialog>
 </div>

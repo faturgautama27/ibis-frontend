@@ -10,6 +10,13 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+
 import {
     StockAdjustmentAudit,
     AdjustmentFilters,
@@ -44,7 +51,12 @@ import { selectLoading } from '../../store/stock-adjustment.selectors';
         DatePickerModule,
         TimelineModule,
         CardModule,
-        TagModule
+        TagModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        StatusBadgeComponent
     ],
     templateUrl: './stock-adjustment-audit.component.html',
     styleUrls: ['./stock-adjustment-audit.component.scss']

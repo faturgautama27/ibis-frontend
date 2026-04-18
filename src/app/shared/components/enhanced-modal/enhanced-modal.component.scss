@@ -1,0 +1,365 @@
+// Enhanced Modal Component Styles
+// Requirements: 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7
+
+:host {
+    display: block;
+}
+
+:host ::ng-deep {
+    .enhanced-modal {
+        .p-dialog {
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgb(229, 231, 235);
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+
+        .p-dialog-header {
+            background: linear-gradient(135deg, rgb(249, 250, 251) 0%, rgb(243, 244, 246) 100%);
+            border-bottom: 1px solid rgb(229, 231, 235);
+            padding: 1.5rem;
+            border-radius: 1rem 1rem 0 0;
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, rgb(59, 130, 246), rgb(147, 197, 253), rgb(59, 130, 246));
+                background-size: 200% 100%;
+                animation: shimmer 3s ease-in-out infinite;
+            }
+        }
+
+        .p-dialog-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: rgb(17, 24, 39);
+            margin: 0;
+        }
+
+        .p-dialog-header-icon {
+            color: rgb(107, 114, 128);
+            transition: all 0.2s ease;
+            border-radius: 0.375rem;
+            padding: 0.25rem;
+
+            &:hover {
+                color: rgb(239, 68, 68);
+                background-color: rgb(254, 242, 242);
+                transform: scale(1.1);
+            }
+        }
+
+        .p-dialog-content {
+            padding: 1.5rem;
+            background: white;
+            max-height: 70vh;
+            overflow-y: auto;
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: linear-gradient(90deg, transparent, rgb(229, 231, 235), transparent);
+            }
+        }
+
+        .p-dialog-footer {
+            background: linear-gradient(135deg, rgb(249, 250, 251) 0%, rgb(243, 244, 246) 100%);
+            border-top: 1px solid rgb(229, 231, 235);
+            padding: 1.5rem;
+            border-radius: 0 0 1rem 1rem;
+            position: relative;
+
+            &::before {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, rgb(59, 130, 246), rgb(147, 197, 253), rgb(59, 130, 246));
+                background-size: 200% 100%;
+                animation: shimmer 3s ease-in-out infinite reverse;
+            }
+        }
+
+        .p-dialog-mask {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .p-dialog-enter {
+            animation: modalEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .p-dialog-leave {
+            animation: modalLeave 0.3s ease-in;
+        }
+
+        /* Enhanced scrollbar styling */
+        .p-dialog-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .p-dialog-content::-webkit-scrollbar-track {
+            background: rgb(243, 244, 246);
+            border-radius: 4px;
+        }
+
+        .p-dialog-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, rgb(209, 213, 219), rgb(156, 163, 175));
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .p-dialog-content::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, rgb(156, 163, 175), rgb(107, 114, 128));
+        }
+    }
+
+    /* Size variants with enhanced styling */
+    .enhanced-modal.modal-sm .p-dialog {
+        width: 90vw;
+        max-width: 400px;
+    }
+
+    .enhanced-modal.modal-md .p-dialog {
+        width: 90vw;
+        max-width: 500px;
+    }
+
+    .enhanced-modal.modal-lg .p-dialog {
+        width: 90vw;
+        max-width: 800px;
+    }
+
+    .enhanced-modal.modal-xl .p-dialog {
+        width: 95vw;
+        max-width: 1200px;
+    }
+
+    .enhanced-modal.modal-full .p-dialog {
+        width: 95vw;
+        height: 95vh;
+        max-width: none;
+    }
+
+    /* Enhanced animation keyframes */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modalEnter {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.9);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes modalLeave {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.9);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInContent {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Content animations */
+    .animate-fade-in {
+        animation: fadeInContent 0.4s ease-out 0.1s both;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out 0.2s both;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .enhanced-modal .p-dialog {
+            width: 95vw !important;
+            max-width: none !important;
+            margin: 1rem;
+            border-radius: 1rem;
+        }
+
+        .enhanced-modal .p-dialog-header,
+        .enhanced-modal .p-dialog-content,
+        .enhanced-modal .p-dialog-footer {
+            padding: 1rem;
+        }
+
+        .enhanced-modal .p-dialog-content {
+            max-height: 60vh;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .enhanced-modal .p-dialog {
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .enhanced-modal .p-dialog-header {
+            border-radius: 0;
+        }
+
+        .enhanced-modal .p-dialog-footer {
+            border-radius: 0;
+        }
+
+        .enhanced-modal .p-dialog-content {
+            max-height: calc(100vh - 140px);
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .enhanced-modal .p-dialog {
+            border: 2px solid rgb(0, 0, 0);
+        }
+
+        .enhanced-modal .p-dialog-header,
+        .enhanced-modal .p-dialog-footer {
+            border-color: rgb(0, 0, 0);
+        }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+
+        .enhanced-modal .p-dialog-enter,
+        .enhanced-modal .p-dialog-leave,
+        .animate-fade-in,
+        .animate-slide-up {
+            animation: none !important;
+        }
+
+        .enhanced-modal .p-dialog-mask {
+            animation: none !important;
+        }
+    }
+}
+
+// Focus management for accessibility
+:focus-visible {
+    outline: 2px solid rgb(59, 130, 246);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+}
+
+// Loading state for modal content
+.modal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+
+    .loading-spinner {
+        width: 2rem;
+        height: 2rem;
+        border: 2px solid rgb(229, 231, 235);
+        border-top: 2px solid rgb(59, 130, 246);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+// Error state styling
+.modal-error {
+    padding: 1rem;
+    background: rgb(254, 242, 242);
+    border: 1px solid rgb(252, 165, 165);
+    border-radius: 0.5rem;
+    color: rgb(153, 27, 27);
+
+    .error-icon {
+        color: rgb(239, 68, 68);
+        margin-right: 0.5rem;
+    }
+}
+
+// Success state styling
+.modal-success {
+    padding: 1rem;
+    background: rgb(240, 253, 244);
+    border: 1px solid rgb(167, 243, 208);
+    border-radius: 0.5rem;
+    color: rgb(21, 128, 61);
+
+    .success-icon {
+        color: rgb(34, 197, 94);
+        margin-right: 0.5rem;
+    }
+}

@@ -16,6 +16,9 @@ import { DividerModule } from 'primeng/divider';
 import { LucideAngularModule, PackageCheck, ArrowLeft, ExternalLink } from 'lucide-angular';
 import { InboundDemoService } from '../../services/inbound-demo.service';
 import { InboundHeader, InboundDetail, InboundStatus, QualityStatus } from '../../models/inbound.model';
+import { EnhancedCardComponent, PageHeaderComponent, StatusBadgeComponent, EmptyStateComponent } from '../../../../shared/components';
+
+// Enhanced Components
 
 @Component({
     selector: 'app-inbound-detail',
@@ -27,7 +30,11 @@ import { InboundHeader, InboundDetail, InboundStatus, QualityStatus } from '../.
         TableModule,
         TagModule,
         DividerModule,
-        LucideAngularModule
+        LucideAngularModule,
+        EnhancedCardComponent,
+        PageHeaderComponent,
+        StatusBadgeComponent,
+        EmptyStateComponent
     ],
     templateUrl: './inbound-detail.component.html',
     styleUrls: ['./inbound-detail.component.scss']
@@ -47,6 +54,28 @@ export class InboundDetailComponent implements OnInit {
     details: InboundDetail[] = [];
     loading = false;
     error: string | null = null;
+
+    // Page Header Configuration
+    breadcrumbs = [
+        { label: 'Dashboard', routerLink: '/dashboard' },
+        { label: 'Inbound Receipts', routerLink: '/inbound' },
+        { label: 'Receipt Details' }
+    ];
+
+    headerActions = [
+        {
+            label: 'Back to List',
+            icon: 'pi pi-arrow-left',
+            command: () => this.goBack(),
+            styleClass: 'p-button-text'
+        },
+        {
+            label: 'Edit Receipt',
+            icon: 'pi pi-pencil',
+            command: () => this.editInbound(),
+            styleClass: 'p-button-outlined'
+        }
+    ];
 
     // Expose enums to template
     InboundStatus = InboundStatus;
@@ -87,6 +116,12 @@ export class InboundDetailComponent implements OnInit {
 
     goBack(): void {
         this.router.navigate(['/inbound']);
+    }
+
+    editInbound(): void {
+        if (this.inbound?.id) {
+            this.router.navigate(['/inbound', this.inbound.id, 'edit']);
+        }
     }
 
     viewPurchaseOrder(): void {

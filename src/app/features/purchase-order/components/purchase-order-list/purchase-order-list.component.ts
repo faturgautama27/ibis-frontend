@@ -12,6 +12,13 @@ import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService } from 'primeng/api';
+
+// Enhanced Components
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 import { PurchaseOrderHeader, POStatus, POFilters } from '../../models/purchase-order.model';
 import {
     loadOrders,
@@ -51,7 +58,13 @@ import {
         DatePickerModule,
         TagModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        // Enhanced Components
+        EnhancedButtonComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        PageHeaderComponent,
+        StatusBadgeComponent
     ],
     providers: [ConfirmationService],
     templateUrl: './purchase-order-list.component.html',
@@ -208,7 +221,7 @@ export class PurchaseOrderListComponent implements OnInit {
     /**
      * Get status badge severity for PrimeNG tag
      */
-    getStatusSeverity(status: POStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+    getStatusSeverity(status: POStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (status) {
             case POStatus.PENDING:
                 return 'warn';

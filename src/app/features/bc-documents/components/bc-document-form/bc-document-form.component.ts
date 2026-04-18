@@ -4,18 +4,14 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 
 // PrimeNG imports
-import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FileUploadModule } from 'primeng/fileupload';
-import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
-
-// Lucide icons
-import { LucideAngularModule, FileText, Upload } from 'lucide-angular';
+import { ButtonModule } from 'primeng/button';
 
 // Services
 import { BCDocumentDemoService } from '../../services/bc-document-demo.service';
@@ -23,6 +19,11 @@ import { MessageService } from 'primeng/api';
 
 // Models
 import { BCDocument, BCDocType, BCDocStatus } from '../../models/bc-document.model';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
 
 /**
  * BC Document Form Component
@@ -41,256 +42,15 @@ import { BCDocument, BCDocType, BCDocStatus } from '../../models/bc-document.mod
     DatePickerModule,
     InputNumberModule,
     FileUploadModule,
-    MessageModule,
     ToastModule,
-    LucideAngularModule
+    // Enhanced Components
+    PageHeaderComponent,
+    EnhancedCardComponent,
+    EnhancedButtonComponent
   ],
   providers: [MessageService],
-  template: `
-    <div class="main-layout overflow-hidden">
-      <!-- Page Header -->
-      <div class="mb-6">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="FileTextIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-          <h1 class="text-2xl font-semibold text-gray-900">
-            {{ isEditMode ? 'Edit BC Document' : 'Create BC Document' }}
-          </h1>
-        </div>
-        <p class="text-sm text-gray-600">
-          {{ isEditMode ? 'Update BC document information' : 'Create a new BC document' }}
-        </p>
-      </div>
-
-      <!-- Form Card -->
-      <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 13rem); overflow-y: auto">
-        <form [formGroup]="documentForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <!-- Document Information -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Document Information</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Document Number <span class="text-red-500">*</span>
-              </label>
-              <input pInputText formControlName="doc_number" class="w-full" />
-              <small *ngIf="isFieldInvalid('doc_number')" class="text-red-600 mt-1">Document number is required</small>
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Document Type <span class="text-red-500">*</span>
-              </label>
-              <p-select
-                formControlName="doc_type"
-                [options]="typeOptions"
-                placeholder="Select type"
-                class="w-full"
-              />
-              <small *ngIf="isFieldInvalid('doc_type')" class="text-red-600 mt-1">Document type is required</small>
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Document Date <span class="text-red-500">*</span>
-              </label>
-              <p-datepicker
-                formControlName="doc_date"
-                dateFormat="dd/mm/yy"
-                [showIcon]="true"
-                class="w-full"
-              />
-              <small *ngIf="isFieldInvalid('doc_date')" class="text-red-600 mt-1">Document date is required</small>
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Status</label>
-              <p-select
-                formControlName="status"
-                [options]="statusOptions"
-                class="w-full"
-                [disabled]="isEditMode"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Partner Information -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Partner Information</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Partner Name <span class="text-red-500">*</span>
-              </label>
-              <input pInputText formControlName="partner_name" class="w-full" />
-              <small *ngIf="isFieldInvalid('partner_name')" class="text-red-600 mt-1">Partner name is required</small>
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Partner NPWP <span class="text-red-500">*</span>
-              </label>
-              <input pInputText formControlName="partner_npwp" class="w-full" />
-              <small *ngIf="isFieldInvalid('partner_npwp')" class="text-red-600 mt-1">Partner NPWP is required</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- Invoice & Shipping Information -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Invoice & Shipping Information</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
-              <input pInputText formControlName="invoice_number" class="w-full" />
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Invoice Date</label>
-              <p-datepicker
-                formControlName="invoice_date"
-                dateFormat="dd/mm/yy"
-                [showIcon]="true"
-                class="w-full"
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">BL/AWB Number</label>
-              <input pInputText formControlName="bl_awb_number" class="w-full" />
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">BL/AWB Date</label>
-              <p-datepicker
-                formControlName="bl_awb_date"
-                dateFormat="dd/mm/yy"
-                [showIcon]="true"
-                class="w-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Customs Office -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Customs Office</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Customs Office Code</label>
-              <input pInputText formControlName="customs_office_code" class="w-full" />
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Customs Office Name</label>
-              <input pInputText formControlName="customs_office_name" class="w-full" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Value Information -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Value Information</h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Total Value <span class="text-red-500">*</span>
-              </label>
-              <p-inputnumber
-                formControlName="total_value"
-                mode="decimal"
-                [minFractionDigits]="0"
-                [maxFractionDigits]="2"
-                class="w-full"
-              />
-              <small *ngIf="isFieldInvalid('total_value')" class="text-red-600 mt-1">Total value is required</small>
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Currency</label>
-              <p-select
-                formControlName="currency"
-                [options]="currencyOptions"
-                class="w-full"
-              />
-            </div>
-
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Exchange Rate</label>
-              <p-inputnumber
-                formControlName="exchange_rate"
-                mode="decimal"
-                [minFractionDigits]="0"
-                [maxFractionDigits]="4"
-                class="w-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- File Attachments -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">File Attachments</h2>
-          
-          <p-fileupload
-            mode="basic"
-            chooseLabel="Upload File"
-            [auto]="true"
-            [maxFileSize]="10000000"
-            (onSelect)="onFileSelect($event)"
-            accept=".pdf,.jpg,.jpeg,.png"
-          />
-          
-          <div *ngIf="uploadedFiles.length > 0" class="mt-4 space-y-2">
-            <div *ngFor="let file of uploadedFiles" class="flex items-center justify-between p-2 bg-gray-50 rounded">
-              <span class="text-sm">{{ file }}</span>
-              <button
-                pButton
-                icon="pi pi-times"
-                class="p-button-text p-button-sm p-button-danger"
-                (click)="removeFile(file)"
-                type="button"
-              ></button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Notes</h2>
-          
-          <textarea
-            pInputTextarea
-            formControlName="notes"
-            rows="3"
-            class="w-full"
-            placeholder="Additional notes..."
-          ></textarea>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-          <button pButton type="button" label="Cancel" icon="pi pi-times" class="p-button-text p-button-secondary" (click)="onCancel()"></button>
-          <button
-            pButton
-            type="submit"
-            [label]="isEditMode ? 'Update' : 'Create'"
-            icon="pi pi-check"
-            [loading]="loading"
-            [disabled]="documentForm.invalid || loading"
-          ></button>
-        </div>
-      </form>
-      </div>
-    </div>
-
-    <p-toast />
-  `
+  templateUrl: './bc-document-form.component.html',
+  styleUrls: ['./bc-document-form.component.scss']
 })
 export class BCDocumentFormComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -298,9 +58,6 @@ export class BCDocumentFormComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private bcDocumentService = inject(BCDocumentDemoService);
   private messageService = inject(MessageService);
-
-  FileTextIcon = FileText;
-  UploadIcon = Upload;
 
   documentForm!: FormGroup;
   isEditMode = false;
@@ -390,7 +147,6 @@ export class BCDocumentFormComponent implements OnInit {
   onFileSelect(event: any): void {
     const file = event.files[0];
     if (file) {
-      // In a real app, this would upload to server
       this.uploadedFiles.push(file.name);
       this.messageService.add({
         severity: 'success',

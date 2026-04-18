@@ -1,0 +1,73 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Card Section Titles */
+.card-section-title {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--gray-900);
+    margin: 0 0 var(--space-1) 0;
+}
+
+.card-section-subtitle {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+    margin: 0;
+}
+
+/* Template Download Card */
+.template-card {
+    border-color: var(--info-200) !important;
+    background: linear-gradient(135deg, var(--info-50), transparent) !important;
+}
+
+/* Enhanced Button Overrides */
+::ng-deep {
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    /* File Upload Enhancements */
+    .p-fileupload-choose {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

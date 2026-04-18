@@ -8,6 +8,12 @@ import { TabsModule } from 'primeng/tabs';
 import { MessageModule } from 'primeng/message';
 import { ImportExportService, ImportResult, ExportHistory } from '../../services/import-export.service';
 
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+
 /**
  * Import/Export Panel Component
  * Requirements: 21.1-21.7
@@ -22,248 +28,14 @@ import { ImportExportService, ImportResult, ExportHistory } from '../../services
         CardModule,
         TableModule,
         TabsModule,
-        MessageModule
+        MessageModule,
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        EnhancedButtonComponent
     ],
-    template: `
-        <div class="main-layout">
-            <!-- Page Header -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-upload text-sky-600"></i>
-                        Data Import & Export
-                    </h1>
-                    <p class="text-sm text-gray-600 mt-1">Import and export master data and transactions</p>
-                </div>
-            </div>
-
-            <!-- Table Card -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <p-tabs>
-                    <!-- Import Tab -->
-                    <p-tabpanel header="Import Data">
-                        <div class="space-y-6 py-4">
-                            <!-- Import Items -->
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Import Items</h3>
-                                <p class="text-sm text-gray-600 mb-4">
-                                    Upload CSV file with columns: code, name, type, unit, hs_code, description
-                                </p>
-                                <p-fileUpload 
-                                    mode="basic"
-                                    accept=".csv,.xlsx"
-                                    [maxFileSize]="10000000"
-                                    [auto]="true"
-                                    chooseLabel="Choose File"
-                                    (onSelect)="onImportItems($event)"
-                                    class="mb-3"
-                                ></p-fileUpload>
-                                
-                                <div *ngIf="importResult" class="mt-4">
-                                    <p-message 
-                                        [severity]="importResult.success ? 'success' : 'warn'"
-                                        [text]="getImportMessage(importResult)"
-                                    ></p-message>
-                                    
-                                    <div *ngIf="importResult.errors.length > 0" class="mt-3">
-                                        <h4 class="font-semibold text-red-600 mb-2">Errors:</h4>
-                                        <ul class="list-disc list-inside text-sm text-red-600">
-                                            <li *ngFor="let error of importResult.errors.slice(0, 10)">
-                                                Row {{ error.row }}: {{ error.message }}
-                                            </li>
-                                        </ul>
-                                        <p *ngIf="importResult.errors.length > 10" class="text-sm text-gray-600 mt-2">
-                                            ... and {{ importResult.errors.length - 10 }} more errors
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Import Suppliers -->
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Import Suppliers</h3>
-                                <p class="text-sm text-gray-600 mb-4">
-                                    Upload CSV file with columns: code, name, npwp, address, phone, email
-                                </p>
-                                <p-fileUpload 
-                                    mode="basic"
-                                    accept=".csv,.xlsx"
-                                    [maxFileSize]="10000000"
-                                    [auto]="true"
-                                    chooseLabel="Choose File"
-                                    (onSelect)="onImportSuppliers($event)"
-                                ></p-fileUpload>
-                            </div>
-
-                            <!-- Import Customers -->
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Import Customers</h3>
-                                <p class="text-sm text-gray-600 mb-4">
-                                    Upload CSV file with columns: code, name, npwp, address, phone, email
-                                </p>
-                                <p-fileUpload 
-                                    mode="basic"
-                                    accept=".csv,.xlsx"
-                                    [maxFileSize]="10000000"
-                                    [auto]="true"
-                                    chooseLabel="Choose File"
-                                    (onSelect)="onImportCustomers($event)"
-                                ></p-fileUpload>
-                            </div>
-
-                            <!-- Download Templates -->
-                            <div class="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                                <h3 class="text-lg font-semibold text-blue-900 mb-3">Download Templates</h3>
-                                <div class="flex gap-3">
-                                    <button 
-                                        pButton 
-                                        label="Items Template" 
-                                        icon="pi pi-download"
-                                        (click)="downloadTemplate('items')"
-                                        class="p-button-sm"
-                                    ></button>
-                                    <button 
-                                        pButton 
-                                        label="Suppliers Template" 
-                                        icon="pi pi-download"
-                                        (click)="downloadTemplate('suppliers')"
-                                        class="p-button-sm"
-                                    ></button>
-                                    <button 
-                                        pButton 
-                                        label="Customers Template" 
-                                        icon="pi pi-download"
-                                        (click)="downloadTemplate('customers')"
-                                        class="p-button-sm"
-                                    ></button>
-                                </div>
-                            </div>
-                        </div>
-                    </p-tabpanel>
-
-                    <!-- Export Tab -->
-                    <p-tabpanel header="Export Data">
-                        <div class="space-y-4 py-4">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <!-- Export Items -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Items</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export all items master data</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('items')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-
-                                <!-- Export Stock Balance -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Stock Balance</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export current stock balance</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('stock_balance')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-
-                                <!-- Export Inbound -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Inbound</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export inbound transactions</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('inbound')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-
-                                <!-- Export Outbound -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Outbound</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export outbound transactions</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('outbound')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-
-                                <!-- Export Production -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Production</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export production orders</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('production')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-
-                                <!-- Export Suppliers -->
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h3 class="font-semibold text-gray-900 mb-2">Suppliers</h3>
-                                    <p class="text-sm text-gray-600 mb-3">Export suppliers master data</p>
-                                    <button 
-                                        pButton 
-                                        label="Export CSV" 
-                                        icon="pi pi-download"
-                                        (click)="exportData('suppliers')"
-                                        class="w-full p-button-sm"
-                                    ></button>
-                                </div>
-                            </div>
-                        </div>
-                    </p-tabpanel>
-
-                    <!-- Export History Tab -->
-                    <p-tabpanel header="Export History">
-                        <div class="py-4">
-                            <p-table [value]="exportHistory" [paginator]="true" [rows]="10">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Export Type</th>
-                                        <th>File Name</th>
-                                        <th>Records</th>
-                                        <th>File Size</th>
-                                        <th>Exported At</th>
-                                        <th>Exported By</th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-history>
-                                    <tr>
-                                        <td>{{ history.export_type }}</td>
-                                        <td>{{ history.file_name }}</td>
-                                        <td>{{ history.record_count }}</td>
-                                        <td>{{ formatFileSize(history.file_size) }}</td>
-                                        <td>{{ history.exported_at | date:'short' }}</td>
-                                        <td>{{ history.exported_by }}</td>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="emptymessage">
-                                    <tr>
-                                        <td colspan="6" class="text-center text-gray-500 py-4">
-                                            No export history
-                                        </td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                    </p-tabpanel>
-                </p-tabs>
-            </div>
-        </div>
-    `
+    templateUrl: './import-export-panel.component.html',
+    styleUrls: ['./import-export-panel.component.scss']
 })
 export class ImportExportPanelComponent implements OnInit {
     private importExportService = inject(ImportExportService);

@@ -1,0 +1,130 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Alert Card Styling */
+::ng-deep .alert-card {
+    background: var(--warning-50) !important;
+    border: 1px solid var(--warning-200) !important;
+    border-left: 4px solid var(--warning-500) !important;
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+
+    /* Button Enhancements */
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    /* Input Field Enhancements */
+    .p-inputtext,
+    .p-select {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    /* Table Enhancements */
+    .p-datatable {
+        border: none;
+
+        .p-datatable-thead>tr>th {
+            background: var(--gray-50);
+            border-bottom: var(--table-header-border-width) solid var(--gray-200);
+            padding: var(--padding-md) var(--padding-lg);
+            font-weight: var(--font-semibold);
+            color: var(--gray-700);
+            font-size: var(--text-sm);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .p-datatable-tbody>tr {
+            border-bottom: var(--table-border-width) solid var(--gray-100);
+            transition: all var(--duration-fast) var(--ease-out);
+
+            &:hover {
+                background: var(--gray-50) !important;
+            }
+
+            &:nth-child(even) {
+                background: var(--gray-25);
+            }
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: var(--padding-md) var(--padding-lg);
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            vertical-align: middle;
+        }
+    }
+
+    /* Progress Bar Enhancements */
+    .p-progressbar {
+        border-radius: var(--radius-full);
+        background: var(--gray-200);
+
+        .p-progressbar-value {
+            border-radius: var(--radius-full);
+            background: var(--primary-500);
+        }
+    }
+
+    /* Confirm Dialog Enhancements */
+    .p-confirmdialog {
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--modal-shadow);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-select {
+        border-width: 3px;
+        border-color: var(--gray-900);
+    }
+}

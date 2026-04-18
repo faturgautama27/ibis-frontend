@@ -1,0 +1,86 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Customers" subtitle="Manage customer information" icon="pi pi-building"
+    [primaryAction]="{ label: 'Add Customer', icon: 'pi pi-plus' }" (primaryActionClick)="onCreateCustomer()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Filters Section -->
+    <app-enhanced-card variant="standard" class="mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Search -->
+            <div class="flex flex-col">
+                <label class="form-label">Search</label>
+                <p-iconfield>
+                    <p-inputicon class="pi pi-search" />
+                    <input type="text" pInputText placeholder="Search by code, name, or tax ID..."
+                        [(ngModel)]="searchQuery" (input)="onSearchChange()" class="w-full" />
+                </p-iconfield>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="flex flex-col">
+                <label class="form-label">Status</label>
+                <p-select [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onFilterChange()"
+                    placeholder="All Customers" [showClear]="true" class="w-full"></p-select>
+            </div>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Error Message -->
+    @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p class="text-sm text-red-800">{{ error }}</p>
+    </div>
+    }
+
+    <!-- Data Table -->
+    <app-enhanced-table [data]="filteredCustomers" [loading]="loading" [paginator]="true" [rows]="50"
+        [totalRecords]="filteredCustomers.length" [showHeader]="false" [searchable]="false" [columnCount]="6"
+        emptyIcon="pi pi-building" emptyTitle="No Customers Found"
+        emptyMessage="No customers match your current filters.">
+
+        <th slot="header" class="text-left">Code</th>
+        <th slot="header" class="text-left">Name</th>
+        <th slot="header" class="text-left">Contact</th>
+        <th slot="header" class="text-left">Tax ID (NPWP)</th>
+        <th slot="header" class="text-center">Status</th>
+        <th slot="header" class="text-center">Actions</th>
+
+        <ng-template #bodyTemplate let-customer>
+            <td class="font-medium text-gray-900">{{ customer.customer_code }}</td>
+            <td>
+                <div class="text-gray-900">{{ customer.customer_name }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ customer.city || customer.address }}</div>
+            </td>
+            <td>
+                <div class="text-sm text-gray-700">{{ customer.contact_person || '-' }}</div>
+                <div class="text-xs text-gray-500">{{ customer.phone || '-' }}</div>
+            </td>
+            <td class="font-mono text-sm text-gray-700">{{ customer.tax_id }}</td>
+            <td class="text-center">
+                <app-status-badge [label]="customer.active ? 'Active' : 'Inactive'"
+                    [severity]="customer.active ? 'success' : 'danger'">
+                </app-status-badge>
+            </td>
+            <td class="text-center">
+                <div class="flex items-center justify-center gap-2">
+                    <app-enhanced-button icon="pi pi-pencil" variant="text" size="sm" type="button"
+                        (onClick)="onEditCustomer(customer)">
+                    </app-enhanced-button>
+                    <app-enhanced-button icon="pi pi-trash" variant="danger" size="sm" type="button"
+                        (onClick)="onDeleteCustomer(customer)">
+                    </app-enhanced-button>
+                </div>
+            </td>
+        </ng-template>
+
+        <div slot="empty-actions">
+            <app-enhanced-button label="Add First Customer" icon="pi pi-plus" variant="primary" size="sm" type="button"
+                (onClick)="onCreateCustomer()">
+            </app-enhanced-button>
+        </div>
+    </app-enhanced-table>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>

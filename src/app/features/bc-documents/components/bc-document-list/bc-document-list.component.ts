@@ -4,23 +4,26 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 // PrimeNG imports
-import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
 import { SelectModule } from 'primeng/select';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
-
-// Lucide icons
-import { LucideAngularModule, FileText, Plus } from 'lucide-angular';
+import { TooltipModule } from 'primeng/tooltip';
 
 // Services
 import { BCDocumentDemoService } from '../../services/bc-document-demo.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 // Models
-import { BCDocument, BCDocType, BCDocStatus, getBCDocTypeLabel, getBCDocStatusLabel, getBCDocStatusColor } from '../../models/bc-document.model';
+import { BCDocument, BCDocType, BCDocStatus, getBCDocTypeLabel, getBCDocStatusLabel } from '../../models/bc-document.model';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 
 /**
  * BC Document List Component
@@ -32,198 +35,28 @@ import { BCDocument, BCDocType, BCDocStatus, getBCDocTypeLabel, getBCDocStatusLa
   imports: [
     CommonModule,
     FormsModule,
-    TableModule,
     ButtonModule,
     InputTextModule,
-    TagModule,
     SelectModule,
     ConfirmDialogModule,
     ToastModule,
-    LucideAngularModule
+    TooltipModule,
+    // Enhanced Components
+    PageHeaderComponent,
+    EnhancedCardComponent,
+    EnhancedTableComponent,
+    EnhancedButtonComponent,
+    StatusBadgeComponent
   ],
   providers: [ConfirmationService, MessageService],
-  template: `
-    <div class="main-layout">
-      <!-- Page Header -->
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <lucide-icon [img]="FileTextIcon" class="w-8 h-8 text-sky-600"></lucide-icon>
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900">BC Documents</h1>
-            <p class="text-sm text-gray-600 mt-1">Manage customs documents</p>
-          </div>
-        </div>
-        <button 
-          pButton 
-          type="button"
-          label="Create Document" 
-          icon="pi pi-plus"
-          class="p-button-primary"
-          (click)="onCreate()"
-        ></button>
-      </div>
-
-      <!-- Filters Section -->
-      <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-700 mb-1">Search</label>
-            <input 
-              pInputText 
-              type="text"
-              [(ngModel)]="searchTerm" 
-              (input)="onSearch()" 
-              placeholder="Search by document number, partner name..."
-              class="w-full"
-            />
-          </div>
-          <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-700 mb-1">Document Type</label>
-            <p-select
-              [(ngModel)]="selectedType"
-              [options]="typeOptions"
-              placeholder="All Types"
-              (onChange)="onFilterChange()"
-              [showClear]="true"
-              class="w-full"
-            />
-          </div>
-          <div class="flex flex-col">
-            <label class="text-sm font-medium text-gray-700 mb-1">Status</label>
-            <p-select
-              [(ngModel)]="selectedStatus"
-              [options]="statusOptions"
-              placeholder="All Status"
-              (onChange)="onFilterChange()"
-              [showClear]="true"
-              class="w-full"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Data Table -->
-      <div class="bg-white rounded-lg shadow-sm" style="max-height: calc(100vh - 20rem); overflow-y: auto">
-        <p-table
-          [value]="filteredDocuments"
-          [paginator]="true"
-          [rows]="20"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} documents"
-          [rowsPerPageOptions]="[10, 20, 50]"
-          [loading]="loading"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Document Number</th>
-              <th>Type</th>
-              <th>Date</th>
-              <th>Partner</th>
-              <th>Total Value</th>
-              <th>Status</th>
-              <th class="text-center">Actions</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-doc>
-            <tr>
-              <td>
-                <div class="font-medium text-gray-900">{{ doc.doc_number }}</div>
-                <div *ngIf="doc.ceisa_response_number" class="text-xs text-gray-500">CEISA: {{ doc.ceisa_response_number }}</div>
-              </td>
-              <td>
-                <span class="text-sm">{{ getBCDocTypeLabel(doc.doc_type) }}</span>
-              </td>
-              <td>
-                <span class="text-sm">{{ doc.doc_date | date: 'dd MMM yyyy' }}</span>
-              </td>
-              <td>
-                <div class="text-sm font-medium">{{ doc.partner_name }}</div>
-                <div class="text-xs text-gray-500">{{ doc.partner_npwp }}</div>
-              </td>
-              <td>
-                <span class="text-sm font-medium">{{ doc.total_value | number: '1.0-0' }} {{ doc.currency }}</span>
-              </td>
-              <td>
-                <p-tag 
-                  [value]="getBCDocStatusLabel(doc.status)" 
-                  [severity]="getStatusSeverity(doc.status)"
-                />
-              </td>
-              <td>
-                <div class="flex items-center justify-center gap-2">
-                  <button
-                    *ngIf="doc.status === 'DRAFT'"
-                    pButton
-                    type="button"
-                    icon="pi pi-send"
-                    class="p-button-rounded p-button-text p-button-sm"
-                    (click)="onSubmit(doc)"
-                    pTooltip="Submit"
-                  ></button>
-                  <button
-                    *ngIf="doc.status === 'SUBMITTED'"
-                    pButton
-                    type="button"
-                    icon="pi pi-check"
-                    class="p-button-rounded p-button-text p-button-success p-button-sm"
-                    (click)="onApprove(doc)"
-                    pTooltip="Approve"
-                  ></button>
-                  <button
-                    *ngIf="doc.status === 'SUBMITTED'"
-                    pButton
-                    type="button"
-                    icon="pi pi-times"
-                    class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                    (click)="onReject(doc)"
-                    pTooltip="Reject"
-                  ></button>
-                  <button
-                    pButton
-                    type="button"
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-text p-button-sm"
-                    (click)="onEdit(doc)"
-                    pTooltip="Edit"
-                    [disabled]="doc.status === 'APPROVED'"
-                  ></button>
-                  <button
-                    pButton
-                    type="button"
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                    (click)="onDelete(doc)"
-                    pTooltip="Delete"
-                    [disabled]="doc.status === 'APPROVED'"
-                  ></button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="7" class="text-center py-8 text-gray-500">
-                No BC documents found
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </div>
-    </div>
-
-    <p-confirmDialog />
-    <p-toast />
-  `
+  templateUrl: './bc-document-list.component.html',
+  styleUrls: ['./bc-document-list.component.scss']
 })
 export class BCDocumentListComponent implements OnInit {
   private router = inject(Router);
   private bcDocumentService = inject(BCDocumentDemoService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
-
-  // Icons
-  FileTextIcon = FileText;
-  PlusIcon = Plus;
 
   documents: BCDocument[] = [];
   filteredDocuments: BCDocument[] = [];
@@ -281,7 +114,6 @@ export class BCDocumentListComponent implements OnInit {
   applyFilters(): void {
     let filtered = [...this.documents];
 
-    // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(doc =>
@@ -291,12 +123,10 @@ export class BCDocumentListComponent implements OnInit {
       );
     }
 
-    // Type filter
     if (this.selectedType) {
       filtered = filtered.filter(doc => doc.doc_type === this.selectedType);
     }
 
-    // Status filter
     if (this.selectedStatus) {
       filtered = filtered.filter(doc => doc.status === this.selectedStatus);
     }
@@ -394,7 +224,6 @@ export class BCDocumentListComponent implements OnInit {
   }
 
   onReject(document: BCDocument): void {
-    // In a real app, this would open a dialog to get rejection reason
     const reason = prompt('Enter rejection reason:');
     if (reason) {
       this.bcDocumentService.rejectDocument(document.id, 'admin', reason).subscribe({
@@ -425,8 +254,8 @@ export class BCDocumentListComponent implements OnInit {
     return getBCDocStatusLabel(status);
   }
 
-  getStatusSeverity(status: BCDocStatus): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
-    const severityMap: Record<BCDocStatus, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
+  getStatusSeverity(status: BCDocStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    const severityMap: Record<BCDocStatus, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
       [BCDocStatus.DRAFT]: 'secondary',
       [BCDocStatus.SUBMITTED]: 'info',
       [BCDocStatus.APPROVED]: 'success',

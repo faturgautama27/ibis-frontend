@@ -1,0 +1,305 @@
+/**
+ * Theme Configuration
+ * Centralized theme management for the IBIS Inventory Management System
+ * 
+ * This file provides theme switching capabilities and theme-specific overrides.
+ * Currently supports light mode with extensibility for dark mode.
+ */
+
+/* ===== LIGHT THEME (DEFAULT) ===== */
+:root,
+[data-theme="light"] {
+    /* Theme-specific color overrides can be added here */
+    /* Currently using the default token values */
+
+    /* Background colors for different contexts */
+    --background-primary: var(--gray-50);
+    /* Main page background */
+    --background-secondary: var(--gray-100);
+    /* Card backgrounds */
+    --background-tertiary: white;
+    /* Input backgrounds */
+
+    /* Text colors for different contexts */
+    --text-primary: var(--gray-900);
+    /* Main text */
+    --text-secondary: var(--gray-600);
+    /* Secondary text */
+    --text-tertiary: var(--gray-500);
+    /* Placeholder text */
+
+    /* Border colors */
+    --border-primary: var(--gray-200);
+    /* Main borders */
+    --border-secondary: var(--gray-300);
+    /* Subtle borders */
+
+    /* Interactive element colors */
+    --interactive-primary: var(--primary-500);
+    /* Main interactive color */
+    --interactive-hover: var(--primary-600);
+    /* Hover state */
+    --interactive-active: var(--primary-700);
+    /* Active/pressed state */
+}
+
+/* ===== DARK THEME (FUTURE EXTENSION) ===== */
+[data-theme="dark"] {
+    /* Dark theme tokens will be defined here when needed */
+    /* This provides a foundation for future dark mode implementation */
+
+    /* Example dark theme colors (commented out for now):
+  --gray-50: #1f2937;
+  --gray-100: #374151;
+  --gray-200: #4b5563;
+  --gray-300: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-500: #d1d5db;
+  --gray-600: #e5e7eb;
+  --gray-700: #f3f4f6;
+  --gray-800: #f9fafb;
+  --gray-900: #ffffff;
+  
+  --background-primary: var(--gray-50);
+  --background-secondary: var(--gray-100);
+  --background-tertiary: var(--gray-200);
+  
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-tertiary: var(--gray-500);
+  
+  --border-primary: var(--gray-200);
+  --border-secondary: var(--gray-300);
+  */
+
+    /* Placeholder for dark theme - prevents empty ruleset warning */
+    color-scheme: dark;
+}
+
+/* ===== THEME UTILITIES ===== */
+.theme-light {
+    color-scheme: light;
+}
+
+.theme-dark {
+    color-scheme: dark;
+}
+
+/* ===== COMPONENT THEME OVERRIDES ===== */
+/* These classes can be used to apply theme-aware styling to components */
+
+.bg-primary {
+    background-color: var(--background-primary);
+}
+
+.bg-secondary {
+    background-color: var(--background-secondary);
+}
+
+.bg-tertiary {
+    background-color: var(--background-tertiary);
+}
+
+.text-primary {
+    color: var(--text-primary);
+}
+
+.text-secondary {
+    color: var(--text-secondary);
+}
+
+.text-tertiary {
+    color: var(--text-tertiary);
+}
+
+.border-primary {
+    border-color: var(--border-primary);
+}
+
+.border-secondary {
+    border-color: var(--border-secondary);
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-primary: var(--gray-900);
+        --border-secondary: var(--gray-800);
+    }
+}
+
+/* ===== GLOBAL UTILITIES ===== */
+/* Text selection styling */
+::selection {
+    background-color: var(--selection-bg);
+    color: var(--selection-color);
+}
+
+::-moz-selection {
+    background-color: var(--selection-bg);
+    color: var(--selection-color);
+}
+
+/* Scrollbar styling for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-md);
+    transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}
+
+/* Focus outline reset and custom focus styles */
+*:focus {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Remove default margins and paddings */
+* {
+    box-sizing: border-box;
+}
+
+/* Utility classes for common patterns */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--primary-600);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    z-index: var(--z-toast);
+    transition: top var(--duration-fast) var(--ease-out);
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    * {
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    :root {
+        /* Optimize colors for printing */
+        --text-primary: #000000;
+        --text-secondary: #333333;
+        --background-primary: #ffffff;
+        --background-secondary: #ffffff;
+        --background-tertiary: #ffffff;
+
+        /* Remove shadows and effects for print */
+        --card-shadow: none;
+        --card-hover-shadow: none;
+        --modal-shadow: none;
+        --dropdown-shadow: none;
+    }
+
+    /* Hide interactive elements in print */
+    button,
+    .btn,
+    .p-button,
+    .no-print {
+        display: none !important;
+    }
+
+    /* Show print-only elements */
+    .print-only {
+        display: block !important;
+    }
+
+    /* Optimize layout for print */
+    .sidebar {
+        display: none !important;
+    }
+
+    .page-header {
+        position: static !important;
+        box-shadow: none !important;
+        border-bottom: 2px solid #000000 !important;
+    }
+
+    /* Ensure good contrast for print */
+    .card {
+        border: 1px solid #000000 !important;
+        box-shadow: none !important;
+    }
+
+    /* Page breaks */
+    .page-break-before {
+        page-break-before: always;
+    }
+
+    .page-break-after {
+        page-break-after: always;
+    }
+
+    .page-break-inside-avoid {
+        page-break-inside: avoid;
+    }
+}

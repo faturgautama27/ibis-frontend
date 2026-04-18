@@ -10,7 +10,16 @@ import { TagModule } from 'primeng/tag';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DividerModule } from 'primeng/divider';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TextareaModule } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+
 import {
     StockAdjustmentHeader,
     StockAdjustmentDetail,
@@ -61,7 +70,14 @@ import { Permission, getPermissionErrorMessage } from '../../../../shared/consta
         TagModule,
         CheckboxModule,
         DividerModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        TextareaModule,
+        TooltipModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        StatusBadgeComponent
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './stock-adjustment-approval.component.html',

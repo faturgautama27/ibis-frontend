@@ -1,0 +1,238 @@
+<div class="sales-order-detail-container">
+    <!-- Enhanced Page Header -->
+    <app-page-header [title]="salesOrder ? 'Sales Order ' + salesOrder.soNumber : 'Sales Order Details'"
+        subtitle="View sales order information and linked transactions" icon="pi pi-shopping-bag">
+        <div slot="actions">
+            <app-enhanced-button label="Back to List" icon="pi pi-arrow-left" variant="secondary" size="md"
+                (onClick)="onBack()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Print" icon="pi pi-print" variant="secondary" size="md" (onClick)="onPrint()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Export" icon="pi pi-download" variant="secondary" size="md"
+                (onClick)="onExport()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Edit" icon="pi pi-pencil" variant="primary" size="md" (onClick)="onEdit()"
+                *ngIf="salesOrder">
+            </app-enhanced-button>
+        </div>
+    </app-page-header>
+
+    <div *ngIf="salesOrder" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Sales Order Information -->
+            <app-enhanced-card variant="standard" title="Sales Order Information" [header]="true">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">SO Number</label>
+                            <p class="text-lg font-semibold text-gray-900">{{ salesOrder.soNumber }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">SO Date</label>
+                            <p class="text-gray-900">{{ formatDate(salesOrder.soDate) }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Customer</label>
+                            <p class="text-gray-900 font-medium">{{ salesOrder.customerName }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Warehouse</label>
+                            <p class="text-gray-900">{{ salesOrder.warehouseName }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Status</label>
+                            <app-status-badge [status]="salesOrder.status" [label]="getStatusLabel(salesOrder.status)"
+                                [severity]="getStatusSeverity(salesOrder.status)">
+                            </app-status-badge>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Delivery Date</label>
+                            <p class="text-gray-900">{{ salesOrder.deliveryDate ? formatDate(salesOrder.deliveryDate) :
+                                'Not specified' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Shipping Method</label>
+                            <p class="text-gray-900">{{ salesOrder.shippingMethod || 'Not specified' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Payment Terms</label>
+                            <p class="text-gray-900">{{ salesOrder.paymentTerms || 'Not specified' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Currency</label>
+                            <p class="text-gray-900">{{ salesOrder.currency }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-500 mb-1">Input Method</label>
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ salesOrder.inputMethod }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6" *ngIf="salesOrder.shippingAddress">
+                    <label class="block text-sm font-medium text-gray-500 mb-2">Shipping Address</label>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-gray-900">{{ salesOrder.shippingAddress }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-6" *ngIf="salesOrder.notes">
+                    <label class="block text-sm font-medium text-gray-500 mb-2">Notes</label>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-gray-900">{{ salesOrder.notes }}</p>
+                    </div>
+                </div>
+            </app-enhanced-card>
+
+            <!-- Line Items -->
+            <app-enhanced-card variant="standard" title="Line Items" [header]="true">
+                <app-enhanced-table [data]="lineItems" [loading]="false" [paginator]="false" [searchable]="false"
+                    [rowClickable]="false" variant="compact" customClass="line-items-table">
+
+                    <!-- Table Header -->
+                    <ng-container slot="header">
+                        <th class="table-header-cell">Item Code</th>
+                        <th class="table-header-cell">Item Name</th>
+                        <th class="table-header-cell text-right">Quantity</th>
+                        <th class="table-header-cell text-right">Unit Price</th>
+                        <th class="table-header-cell text-right">Total Price</th>
+                        <th class="table-header-cell">Notes</th>
+                    </ng-container>
+
+                    <!-- Table Body -->
+                    <ng-template #bodyTemplate let-item>
+                        <td class="table-body-cell">
+                            <div class="font-medium text-gray-900">{{ item.itemCode }}</div>
+                        </td>
+                        <td class="table-body-cell">
+                            <div class="text-gray-900">{{ item.itemName }}</div>
+                        </td>
+                        <td class="table-body-cell text-right">
+                            <div class="font-medium text-gray-900">{{ item.quantity | number: '1.0-0' }}</div>
+                        </td>
+                        <td class="table-body-cell text-right">
+                            <div class="text-gray-900">{{ formatCurrency(item.unitPrice, salesOrder.currency) }}</div>
+                        </td>
+                        <td class="table-body-cell text-right">
+                            <div class="font-semibold text-gray-900">{{ formatCurrency(item.totalPrice,
+                                salesOrder.currency) }}</div>
+                        </td>
+                        <td class="table-body-cell">
+                            <div class="text-gray-600">{{ item.notes || '-' }}</div>
+                        </td>
+                    </ng-template>
+                </app-enhanced-table>
+
+                <!-- Summary -->
+                <div slot="footer">
+                    <div class="border-t pt-4 mt-4">
+                        <div class="flex justify-between items-center text-lg font-semibold">
+                            <span>Total Value:</span>
+                            <span class="text-primary-600">{{ formatCurrency(salesOrder.totalValue, salesOrder.currency)
+                                }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-600 mt-1">
+                            <span>Total Items: {{ salesOrder.totalItems }}</span>
+                            <span>Total Quantity: {{ salesOrder.totalQuantity | number: '1.0-0' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </app-enhanced-card>
+
+            <!-- Linked Outbound Transactions -->
+            <app-enhanced-card variant="standard" title="Linked Outbound Transactions" [header]="true">
+                <div class="text-center py-8">
+                    <i class="pi pi-truck text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-2">No outbound transactions found</p>
+                    <p class="text-sm text-gray-500">Outbound transactions will appear here when items are shipped</p>
+                </div>
+            </app-enhanced-card>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Order Summary -->
+            <app-enhanced-card variant="stats" title="Order Summary" [header]="true">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Total Items</span>
+                        <span class="font-semibold text-gray-900">{{ salesOrder.totalItems }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Total Quantity</span>
+                        <span class="font-semibold text-gray-900">{{ salesOrder.totalQuantity | number: '1.0-0'
+                            }}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                        <span class="text-sm text-gray-600">Total Value</span>
+                        <span class="font-bold text-lg text-primary-600">{{ formatCurrency(salesOrder.totalValue,
+                            salesOrder.currency) }}</span>
+                    </div>
+                </div>
+            </app-enhanced-card>
+
+            <!-- Status Timeline -->
+            <app-enhanced-card variant="standard" title="Status History" [header]="true">
+                <p-timeline [value]="timelineEvents" align="left" styleClass="custom-timeline">
+                    <ng-template pTemplate="marker" let-event>
+                        <span class="flex w-8 h-8 items-center justify-center text-white rounded-full z-10 shadow-md"
+                            [style.background-color]="event.color">
+                            <i [class]="event.icon" class="text-sm"></i>
+                        </span>
+                    </ng-template>
+                    <ng-template pTemplate="content" let-event>
+                        <div class="ml-4 pb-4">
+                            <div class="font-medium text-gray-900">{{ event.status }}</div>
+                            <div class="text-sm text-gray-600 mt-1">{{ event.date }}</div>
+                            <div class="text-sm text-gray-500 mt-1">{{ event.description }}</div>
+                        </div>
+                    </ng-template>
+                </p-timeline>
+            </app-enhanced-card>
+
+            <!-- Audit Information -->
+            <app-enhanced-card variant="standard" title="Audit Information" [header]="true">
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Created By</label>
+                        <p class="text-sm text-gray-900">{{ salesOrder.createdBy }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Created At</label>
+                        <p class="text-sm text-gray-900">{{ formatDate(salesOrder.createdAt) }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Last Updated By</label>
+                        <p class="text-sm text-gray-900">{{ salesOrder.updatedBy }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 mb-1">Last Updated At</label>
+                        <p class="text-sm text-gray-900">{{ salesOrder.updatedAt ? formatDate(salesOrder.updatedAt) :
+                            'N/A' }}</p>
+                    </div>
+                </div>
+            </app-enhanced-card>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="!salesOrder && loading" class="text-center py-12">
+        <i class="pi pi-spin pi-spinner text-4xl text-primary-500 mb-4"></i>
+        <p class="text-gray-600">Loading sales order details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!salesOrder && !loading" class="text-center py-12">
+        <i class="pi pi-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+        <p class="text-gray-600 mb-4">Sales order not found</p>
+        <app-enhanced-button label="Back to List" icon="pi pi-arrow-left" variant="primary" size="md"
+            (onClick)="onBack()">
+        </app-enhanced-button>
+    </div>
+</div>

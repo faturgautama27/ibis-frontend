@@ -11,7 +11,12 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedTableComponent } from '../../../../shared/components/enhanced-table/enhanced-table.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 import {
     StockAdjustmentHeader,
     AdjustmentStatus,
@@ -55,7 +60,12 @@ import {
         DatePickerModule,
         TagModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedTableComponent,
+        StatusBadgeComponent
     ],
     providers: [ConfirmationService],
     templateUrl: './stock-adjustment-list.component.html',
@@ -104,6 +114,28 @@ export class StockAdjustmentListComponent implements OnInit {
     // Permission flags (would come from auth service in real app)
     canApprove = true; // TODO: Get from auth service
     canCreate = true;  // TODO: Get from auth service
+
+    // Header actions for secondary menu
+    headerActions: MenuItem[] = [
+        {
+            label: 'Export to Excel',
+            icon: 'pi pi-file-excel',
+            command: () => this.onExportToExcel()
+        },
+        {
+            label: 'Print Report',
+            icon: 'pi pi-print',
+            command: () => this.onPrintReport()
+        },
+        {
+            separator: true
+        },
+        {
+            label: 'Audit Trail',
+            icon: 'pi pi-history',
+            command: () => this.onViewAuditTrail()
+        }
+    ];
 
     ngOnInit(): void {
         // Load all adjustments on init
@@ -256,5 +288,28 @@ export class StockAdjustmentListComponent implements OnInit {
      */
     canViewAdjustment(adjustment: StockAdjustmentHeader): boolean {
         return true; // All users can view
+    }
+
+    /**
+     * Export adjustments to Excel
+     */
+    onExportToExcel(): void {
+        // TODO: Implement Excel export functionality
+        console.log('Export to Excel clicked');
+    }
+
+    /**
+     * Print adjustments report
+     */
+    onPrintReport(): void {
+        // TODO: Implement print functionality
+        console.log('Print Report clicked');
+    }
+
+    /**
+     * View audit trail
+     */
+    onViewAuditTrail(): void {
+        this.router.navigate(['/stock-adjustment/audit']);
     }
 }

@@ -6,16 +6,17 @@
 /* PrimeNG Theme */
 @import 'primeicons/primeicons.css';
 
+/* IBIS Design System */
+@import 'styles/design-system/index.scss';
+
 .html,
 body {
-    font-family: 'Inter', sans-serif !important;
+    font-family: var(--font-family) !important;
     font-optical-sizing: auto;
     font-feature-settings: 'liga', 'kern';
     font-variation-settings: 'slnt' 0;
-    background-color: #f9fafb;
-    /* gray-50 */
-    color: #111827;
-    /* gray-900 */
+    background-color: var(--gray-50);
+    color: var(--gray-900);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden !important;
@@ -98,4 +99,248 @@ p-inputnumber {
     background-color: white !important;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+}
+
+/* Enhanced UI Components Styling */
+
+/* Enhanced Input Fields */
+.enhanced-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 200ms ease-in-out;
+    color: var(--gray-900);
+}
+
+.enhanced-input::placeholder {
+    color: var(--gray-400);
+}
+
+.enhanced-input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.enhanced-input.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.enhanced-input.success {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* Enhanced Select Fields */
+.enhanced-select {
+    width: 100%;
+}
+
+.enhanced-select .p-select {
+    width: 100%;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 200ms ease-in-out;
+}
+
+/* Enhanced Date Picker */
+.enhanced-datepicker {
+    width: 100%;
+}
+
+.enhanced-datepicker .p-datepicker {
+    width: 100%;
+}
+
+.enhanced-datepicker .p-datepicker-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 200ms ease-in-out;
+}
+
+/* Enhanced Input Number */
+.enhanced-input-number {
+    width: 100%;
+}
+
+.enhanced-input-number .p-inputnumber-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 200ms ease-in-out;
+}
+
+/* Enhanced Textarea */
+.enhanced-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--gray-200);
+    border-radius: 0.5rem;
+    transition: all 200ms ease-in-out;
+    color: var(--gray-900);
+    resize: none;
+}
+
+.enhanced-textarea::placeholder {
+    color: var(--gray-400);
+}
+
+.enhanced-textarea:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+/* Enhanced Table Styling */
+.enhanced-table {
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 1px solid var(--gray-200);
+}
+
+.enhanced-table .p-datatable-thead>tr>th {
+    background-color: var(--gray-50);
+    border-bottom: 2px solid var(--gray-200);
+    padding: 1rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.enhanced-table .p-datatable-tbody>tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background-color 150ms;
+}
+
+.enhanced-table .p-datatable-tbody>tr:hover {
+    background-color: var(--gray-50);
+}
+
+.enhanced-table .p-datatable-tbody>tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.enhanced-table .p-datatable-tbody>tr>td {
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--gray-900);
+}
+
+/* Enhanced Dialog Styling */
+.enhanced-dialog .p-dialog {
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: none;
+}
+
+.enhanced-dialog .p-dialog-header {
+    background-color: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: 1rem 1rem 0 0;
+    padding: 1rem 1.5rem;
+}
+
+.enhanced-dialog .p-dialog-content {
+    padding: 1rem 1.5rem;
+}
+
+.enhanced-dialog .p-dialog-footer {
+    background-color: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    border-radius: 0 0 1rem 1rem;
+    padding: 1rem 1.5rem;
+}
+
+/* Enhanced Button Hover Effects */
+.p-button:hover {
+    transform: translateY(-2px);
+    transition: all 200ms ease-in-out;
+}
+
+.p-button:active {
+    transform: translateY(0);
+}
+
+.p-button-rounded:hover {
+    transform: scale(1.05);
+}
+
+/* Enhanced Card Animations */
+.card-animated {
+    transition: all 200ms ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Search and Filter Card Styling */
+.search-filter-card {
+    margin-bottom: 1.5rem;
+}
+
+.table-card {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Utility Classes */
+.bg-gray-25 {
+    background-color: #fafafa;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+
+    .enhanced-table .p-datatable-thead>tr>th,
+    .enhanced-table .p-datatable-tbody>tr>td {
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+    }
+
+    .enhanced-input,
+    .enhanced-textarea {
+        font-size: 0.875rem;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+
+    .enhanced-input,
+    .enhanced-textarea {
+        border-width: 2px;
+        border-color: var(--gray-900);
+    }
+
+    .enhanced-table {
+        border-width: 2px;
+        border-color: var(--gray-900);
+    }
+
+    .enhanced-table .p-datatable-thead>tr>th {
+        border-bottom-width: 2px;
+        border-bottom-color: var(--gray-900);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+
+    .enhanced-input,
+    .enhanced-textarea,
+    .enhanced-table .p-datatable-tbody>tr,
+    .card-animated,
+    .hover-lift,
+    .p-button {
+        @apply transition-none;
+        transform: none !important;
+    }
 }

@@ -33,6 +33,13 @@ import { Customer } from '../../../suppliers-customers/models/customer.model';
 import { Warehouse } from '../../../warehouse/models/warehouse.model';
 import { SalesOrderHeader } from '../../../sales-order/models/sales-order.model';
 
+// Enhanced Components
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedFormFieldComponent } from '../../../../shared/components/enhanced-form-field/enhanced-form-field.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+
 // Components
 import { SalesOrderLookupComponent } from '../../../sales-order/components/sales-order-lookup/sales-order-lookup.component';
 
@@ -56,7 +63,12 @@ import { SalesOrderLookupComponent } from '../../../sales-order/components/sales
     ToastModule,
     DialogModule,
     LucideAngularModule,
-    SalesOrderLookupComponent
+    SalesOrderLookupComponent,
+    EnhancedCardComponent,
+    PageHeaderComponent,
+    EnhancedFormFieldComponent,
+    StatusBadgeComponent,
+    EmptyStateComponent
   ],
   providers: [MessageService],
   template: `

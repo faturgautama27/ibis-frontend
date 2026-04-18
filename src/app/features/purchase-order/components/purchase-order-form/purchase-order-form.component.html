@@ -1,313 +1,103 @@
-<div class="purchase-order-form-container p-4">
+<div class="purchase-order-form-container">
     <p-toast></p-toast>
 
-    <div class="mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Create Purchase Order</h2>
-        <p class="text-gray-600">Select an input method and fill in the purchase order details</p>
-    </div>
+    <!-- Enhanced Page Header -->
+    <app-page-header title="Create Purchase Order"
+        subtitle="Select an input method and fill in the purchase order details" icon="pi pi-shopping-cart">
+        <div slot="actions">
+            <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" size="md" (onClick)="onCancel()">
+            </app-enhanced-button>
+        </div>
+    </app-page-header>
 
     <!-- Input Method Selector -->
-    <p-card class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4">
-                <h3 class="text-lg font-semibold">Select Input Method</h3>
-            </div>
-        </ng-template>
-
+    <app-enhanced-card variant="standard" title="Select Input Method" [header]="true" customClass="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div *ngFor="let method of inputMethods"
-                class="input-method-card p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md"
-                [class.border-blue-500]="selectedInputMethod === method.value"
-                [class.bg-blue-50]="selectedInputMethod === method.value"
-                [class.border-gray-300]="selectedInputMethod !== method.value"
-                (click)="onInputMethodChange(method.value)">
-                <div class="flex flex-col items-center text-center">
-                    <i [class]="method.icon + ' text-4xl mb-2'"
-                        [class.text-blue-600]="selectedInputMethod === method.value"
-                        [class.text-gray-600]="selectedInputMethod !== method.value"></i>
-                    <span class="font-semibold">{{ method.label }}</span>
+            <div *ngFor="let method of inputMethods" class="input-method-card"
+                [class.selected]="selectedInputMethod === method.value" (click)="onInputMethodChange(method.value)">
+                <div class="method-content">
+                    <i [class]="method.icon + ' method-icon'"></i>
+                    <span class="method-label">{{ method.label }}</span>
                 </div>
             </div>
         </div>
-    </p-card>
+    </app-enhanced-card>
 
     <!-- Excel Upload Section -->
-    <p-card *ngIf="selectedInputMethod === 'EXCEL'" class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4">
-                <h3 class="text-lg font-semibold">Excel Upload</h3>
-            </div>
-        </ng-template>
-
-        <div class="space-y-4">
-            <div class="flex gap-2">
-                <input type="file" accept=".xlsx,.xls" (change)="onExcelFileSelected($event)" class="flex-1" #fileInput>
-                <p-button label="Download Template" icon="pi pi-download" (onClick)="downloadTemplate()"
-                    [outlined]="true"></p-button>
+    <app-enhanced-card *ngIf="selectedInputMethod === 'EXCEL'" variant="standard" title="Excel Upload" [header]="true"
+        customClass="mb-6">
+        <div class="upload-section">
+            <div class="upload-controls">
+                <input type="file" accept=".xlsx,.xls" (change)="onExcelFileSelected($event)" class="file-input"
+                    #fileInput>
+                <app-enhanced-button label="Download Template" icon="pi pi-download" variant="secondary" size="md"
+                    (onClick)="downloadTemplate()">
+                </app-enhanced-button>
             </div>
 
-            <div *ngIf="loading" class="text-center py-4">
-                <i class="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
-                <p class="mt-2 text-gray-600">Parsing Excel file...</p>
-            </div>
+            <app-loading-spinner *ngIf="loading" message="Parsing Excel file..." size="lg">
+            </app-loading-spinner>
 
-            <div *ngIf="hasErrors && errorMessages.length > 0" class="mt-4">
-                <p-message severity="error" [text]="'Found ' + errorMessages.length + ' validation errors'"></p-message>
-                <div class="mt-2 max-h-40 overflow-y-auto bg-red-50 p-3 rounded">
-                    <ul class="list-disc list-inside text-sm text-red-700">
-                        <li *ngFor="let error of errorMessages">{{ error }}</li>
+            <div *ngIf="hasErrors && errorMessages.length > 0" class="error-section">
+                <app-validation-message [customMessage]="'Found ' + errorMessages.length + ' validation errors'"
+                    [showImmediately]="true">
+                </app-validation-message>
+                <div class="error-list">
+                    <ul class="error-items">
+                        <li *ngFor="let error of errorMessages" class="error-item">{{ error }}</li>
                     </ul>
                 </div>
-                <p-button label="Download Error Report" icon="pi pi-download" (onClick)="downloadErrorReport()"
-                    severity="danger" [outlined]="true" class="mt-2"></p-button>
+                <app-enhanced-button label="Download Error Report" icon="pi pi-download" variant="danger" size="sm"
+                    (onClick)="downloadErrorReport()">
+                </app-enhanced-button>
             </div>
         </div>
-    </p-card>
+    </app-enhanced-card>
 
     <!-- API Integration Section -->
-    <p-card *ngIf="selectedInputMethod === 'API'" class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4">
-                <h3 class="text-lg font-semibold">API Integration</h3>
-            </div>
-        </ng-template>
-
-        <div class="space-y-4">
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
+    <app-enhanced-card *ngIf="selectedInputMethod === 'API'" variant="standard" title="API Integration" [header]="true"
+        customClass="mb-6">
+        <div class="api-section">
+            <div class="api-status">
+                <div class="status-indicator">
                     <i class="pi pi-circle-fill text-green-500"></i>
-                    <span class="text-sm text-gray-600">API Connected</span>
+                    <span class="status-text">API Connected</span>
                 </div>
-                <p-button label="Fetch Data" icon="pi pi-cloud-download" (onClick)="fetchFromApi()"
-                    [loading]="loading"></p-button>
+                <app-enhanced-button label="Fetch Data" icon="pi pi-cloud-download" variant="primary" size="md"
+                    [loading]="loading" (onClick)="fetchFromApi()">
+                </app-enhanced-button>
             </div>
 
-            <div *ngIf="loading" class="text-center py-4">
-                <i class="pi pi-spin pi-spinner text-3xl text-blue-600"></i>
-                <p class="mt-2 text-gray-600">Fetching data from API...</p>
-            </div>
+            <app-loading-spinner *ngIf="loading" message="Fetching data from API..." size="lg">
+            </app-loading-spinner>
 
-            <div *ngIf="hasErrors && errorMessages.length > 0" class="mt-4">
-                <p-message severity="error" [text]="'API returned ' + errorMessages.length + ' errors'"></p-message>
-                <div class="mt-2 max-h-40 overflow-y-auto bg-red-50 p-3 rounded">
-                    <ul class="list-disc list-inside text-sm text-red-700">
-                        <li *ngFor="let error of errorMessages">{{ error }}</li>
+            <div *ngIf="hasErrors && errorMessages.length > 0" class="error-section">
+                <app-validation-message [customMessage]="'API returned ' + errorMessages.length + ' errors'"
+                    [showImmediately]="true">
+                </app-validation-message>
+                <div class="error-list">
+                    <ul class="error-items">
+                        <li *ngFor="let error of errorMessages" class="error-item">{{ error }}</li>
                     </ul>
                 </div>
             </div>
         </div>
-    </p-card>
+    </app-enhanced-card>
 
     <!-- Preview Panel -->
-    <p-card *ngIf="showPreview && previewData.length > 0" class="mb-4">
-        <ng-template pTemplate="header">
-            <div class="p-4 flex justify-between items-center">
-                <h3 class="text-lg font-semibold">Preview Data</h3>
-                <div class="flex gap-2">
-                    <p-button label="Cancel" icon="pi pi-times" (onClick)="cancelPreview()" [outlined]="true"
-                        severity="secondary"></p-button>
-                    <p-button label="Confirm & Load" icon="pi pi-check" (onClick)="confirmPreview()"
-                        [disabled]="hasErrors"></p-button>
-                </div>
-            </div>
-        </ng-template>
+    <app-enhanced-card *ngIf="showPreview && previewData.length > 0" variant="standard" title="Preview Data"
+        [header]="true" customClass="mb-6">
+        <div slot="header" class="preview-header-actions">
+            <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" size="sm"
+                (onClick)="cancelPreview()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Confirm & Load" icon="pi pi-check" variant="primary" size="sm"
+                [disabled]="hasErrors" (onClick)="confirmPreview()">
+            </app-enhanced-button>
+        </div>
 
-        <p-table [value]="previewData" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Line</th>
-                    <th>Item Code</th>
-                    <th>Item Name</th>
-                    <th>HS Code</th>
-                    <th>Quantity</th>
-                    <th>Unit</th>
-                    <th>Unit Price</th>
-                    <th>Total Price</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-line>
-                <tr>
-                    <td>{{ line.lineNumber }}</td>
-                    <td>{{ line.itemCode }}</td>
-                    <td>{{ line.itemName }}</td>
-                    <td>{{ line.hsCode }}</td>
-                    <td>{{ line.orderedQuantity }}</td>
-                    <td>{{ line.unit }}</td>
-                    <td>{{ line.unitPrice | number:'1.2-2' }}</td>
-                    <td>{{ (line.orderedQuantity * line.unitPrice) | number:'1.2-2' }}</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </p-card>
-
-    <!-- Purchase Order Form -->
-    <form [formGroup]="purchaseOrderForm" (ngSubmit)="onSubmit()">
-        <!-- Header Information -->
-        <p-card class="mb-4">
-            <ng-template pTemplate="header">
-                <div class="p-4">
-                    <h3 class="text-lg font-semibold">Purchase Order Information</h3>
-                </div>
-            </ng-template>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- PO Number -->
-                <div class="flex flex-col">
-                    <label for="poNumber" class="mb-2 font-semibold">PO Number *</label>
-                    <input pInputText id="poNumber" formControlName="poNumber" placeholder="Enter PO number"
-                        [class.ng-invalid]="hasError('poNumber')" [class.ng-dirty]="hasError('poNumber')">
-                    <small *ngIf="hasError('poNumber')" class="text-red-600 mt-1">
-                        {{ getErrorMessage('poNumber') }}
-                    </small>
-                </div>
-
-                <!-- PO Date -->
-                <div class="flex flex-col">
-                    <label for="poDate" class="mb-2 font-semibold">PO Date *</label>
-                    <p-datepicker id="poDate" formControlName="poDate" dateFormat="yy-mm-dd" iconDisplay="button"
-                        [class.ng-invalid]="hasError('poDate')" [class.ng-dirty]="hasError('poDate')"></p-datepicker>
-                    <small *ngIf="hasError('poDate')" class="text-red-600 mt-1">
-                        {{ getErrorMessage('poDate') }}
-                    </small>
-                </div>
-
-                <!-- Supplier -->
-                <div class="flex flex-col">
-                    <label for="supplierId" class="mb-2 font-semibold">Supplier *</label>
-                    <p-select id="supplierId" formControlName="supplierId" [options]="suppliers"
-                        placeholder="Select supplier" [class.ng-invalid]="hasError('supplierId')"
-                        [class.ng-dirty]="hasError('supplierId')"></p-select>
-                    <small *ngIf="hasError('supplierId')" class="text-red-600 mt-1">
-                        {{ getErrorMessage('supplierId') }}
-                    </small>
-                </div>
-
-                <!-- Warehouse -->
-                <div class="flex flex-col">
-                    <label for="warehouseId" class="mb-2 font-semibold">Warehouse *</label>
-                    <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses"
-                        placeholder="Select warehouse" [class.ng-invalid]="hasError('warehouseId')"
-                        [class.ng-dirty]="hasError('warehouseId')"></p-select>
-                    <small *ngIf="hasError('warehouseId')" class="text-red-600 mt-1">
-                        {{ getErrorMessage('warehouseId') }}
-                    </small>
-                </div>
-
-                <!-- Delivery Date -->
-                <div class="flex flex-col">
-                    <label for="deliveryDate" class="mb-2 font-semibold">Delivery Date</label>
-                    <p-datepicker id="deliveryDate" formControlName="deliveryDate" dateFormat="yy-mm-dd"
-                        iconDisplay="button"></p-datepicker>
-                </div>
-
-                <!-- Currency -->
-                <div class="flex flex-col">
-                    <label for="currency" class="mb-2 font-semibold">Currency *</label>
-                    <p-select id="currency" formControlName="currency" [options]="currencies"
-                        placeholder="Select currency"></p-select>
-                </div>
-
-                <!-- Exchange Rate -->
-                <div class="flex flex-col">
-                    <label for="exchangeRate" class="mb-2 font-semibold">Exchange Rate</label>
-                    <input pInputText id="exchangeRate" formControlName="exchangeRate" type="number"
-                        placeholder="Enter exchange rate">
-                </div>
-
-                <!-- Payment Terms -->
-                <div class="flex flex-col">
-                    <label for="paymentTerms" class="mb-2 font-semibold">Payment Terms</label>
-                    <input pInputText id="paymentTerms" formControlName="paymentTerms"
-                        placeholder="Enter payment terms">
-                </div>
-
-                <!-- Notes -->
-                <div class="flex flex-col md:col-span-2">
-                    <label for="notes" class="mb-2 font-semibold">Notes</label>
-                    <textarea pInputTextarea id="notes" formControlName="notes" rows="3"
-                        placeholder="Enter additional notes"></textarea>
-                </div>
-            </div>
-        </p-card>
-
-        <!-- Line Items -->
-        <p-card class="mb-4" *ngIf="selectedInputMethod === 'MANUAL'">
-            <ng-template pTemplate="header">
-                <div class="p-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold">Line Items</h3>
-                    <p-button label="Add Item" icon="pi pi-plus" (onClick)="addLineItem()" [outlined]="true"></p-button>
-                </div>
-            </ng-template>
-
-            <div *ngIf="details.length === 0" class="text-center py-8 text-gray-500">
-                <i class="pi pi-inbox text-4xl mb-2"></i>
-                <p>No line items added yet. Click "Add Item" to start.</p>
-            </div>
-
-            <div *ngIf="details.length > 0" formArrayName="details">
-                <div *ngFor="let item of details.controls; let i = index" [formGroupName]="i"
-                    class="border rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">Line {{ i + 1 }}</h4>
-                        <p-button icon="pi pi-trash" (onClick)="removeLineItem(i)" severity="danger" [outlined]="true"
-                            [text]="true"></p-button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Item Code *</label>
-                            <input pInputText formControlName="itemCode" placeholder="Item code">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Item Name *</label>
-                            <input pInputText formControlName="itemName" placeholder="Item name">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">HS Code *</label>
-                            <input pInputText formControlName="hsCode" placeholder="HS code">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Quantity *</label>
-                            <input pInputText formControlName="orderedQuantity" type="number" placeholder="Quantity">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Unit *</label>
-                            <input pInputText formControlName="unit" placeholder="Unit">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Unit Price *</label>
-                            <input pInputText formControlName="unitPrice" type="number" placeholder="Unit price">
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Delivery Date</label>
-                            <p-datepicker formControlName="deliveryDate" dateFormat="yy-mm-dd"
-                                iconDisplay="button"></p-datepicker>
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="mb-1 text-sm font-semibold">Notes</label>
-                            <input pInputText formControlName="notes" placeholder="Notes">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </p-card>
-
-        <!-- Line Items Display (for Excel/API) -->
-        <p-card class="mb-4" *ngIf="selectedInputMethod !== 'MANUAL' && details.length > 0">
-            <ng-template pTemplate="header">
-                <div class="p-4">
-                    <h3 class="text-lg font-semibold">Line Items ({{ details.length }})</h3>
-                </div>
-            </ng-template>
-
-            <p-table [value]="details.controls" [scrollable]="true" scrollHeight="400px" styleClass="p-datatable-sm">
+        <div class="preview-table-container">
+            <p-table [value]="previewData" [scrollable]="true" scrollHeight="400px" styleClass="preview-table">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Line</th>
@@ -317,31 +107,206 @@
                         <th>Quantity</th>
                         <th>Unit</th>
                         <th>Unit Price</th>
-                        <th>Total</th>
+                        <th>Total Price</th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                <ng-template pTemplate="body" let-line>
                     <tr>
-                        <td>{{ i + 1 }}</td>
-                        <td>{{ item.get('itemCode')?.value }}</td>
-                        <td>{{ item.get('itemName')?.value }}</td>
-                        <td>{{ item.get('hsCode')?.value }}</td>
-                        <td>{{ item.get('orderedQuantity')?.value }}</td>
-                        <td>{{ item.get('unit')?.value }}</td>
-                        <td>{{ item.get('unitPrice')?.value | number:'1.2-2' }}</td>
-                        <td>{{ (item.get('orderedQuantity')?.value * item.get('unitPrice')?.value) | number:'1.2-2' }}
-                        </td>
+                        <td>{{ line.lineNumber }}</td>
+                        <td>{{ line.itemCode }}</td>
+                        <td>{{ line.itemName }}</td>
+                        <td>{{ line.hsCode }}</td>
+                        <td>{{ line.orderedQuantity }}</td>
+                        <td>{{ line.unit }}</td>
+                        <td>{{ line.unitPrice | number:'1.2-2' }}</td>
+                        <td>{{ (line.orderedQuantity * line.unitPrice) | number:'1.2-2' }}</td>
                     </tr>
                 </ng-template>
             </p-table>
-        </p-card>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Purchase Order Form -->
+    <form [formGroup]="purchaseOrderForm" (ngSubmit)="onSubmit()">
+        <!-- Header Information -->
+        <app-enhanced-card variant="standard" title="Purchase Order Information" [header]="true" customClass="mb-6">
+            <div class="form-grid">
+                <!-- PO Number -->
+                <app-enhanced-form-field label="PO Number" [required]="true" [hasError]="hasError('poNumber')"
+                    [errorMessage]="getErrorMessage('poNumber')">
+                    <input pInputText id="poNumber" formControlName="poNumber" placeholder="Enter PO number"
+                        class="enhanced-input">
+                </app-enhanced-form-field>
+
+                <!-- PO Date -->
+                <app-enhanced-form-field label="PO Date" [required]="true" [hasError]="hasError('poDate')"
+                    [errorMessage]="getErrorMessage('poDate')">
+                    <p-datepicker id="poDate" formControlName="poDate" dateFormat="yy-mm-dd" iconDisplay="button"
+                        class="enhanced-datepicker">
+                    </p-datepicker>
+                </app-enhanced-form-field>
+
+                <!-- Supplier -->
+                <app-enhanced-form-field label="Supplier" [required]="true" [hasError]="hasError('supplierId')"
+                    [errorMessage]="getErrorMessage('supplierId')">
+                    <p-select id="supplierId" formControlName="supplierId" [options]="suppliers"
+                        placeholder="Select supplier" class="enhanced-select">
+                    </p-select>
+                </app-enhanced-form-field>
+
+                <!-- Warehouse -->
+                <app-enhanced-form-field label="Warehouse" [required]="true" [hasError]="hasError('warehouseId')"
+                    [errorMessage]="getErrorMessage('warehouseId')">
+                    <p-select id="warehouseId" formControlName="warehouseId" [options]="warehouses"
+                        placeholder="Select warehouse" class="enhanced-select">
+                    </p-select>
+                </app-enhanced-form-field>
+
+                <!-- Delivery Date -->
+                <app-enhanced-form-field label="Delivery Date">
+                    <p-datepicker id="deliveryDate" formControlName="deliveryDate" dateFormat="yy-mm-dd"
+                        iconDisplay="button" class="enhanced-datepicker">
+                    </p-datepicker>
+                </app-enhanced-form-field>
+
+                <!-- Currency -->
+                <app-enhanced-form-field label="Currency" [required]="true">
+                    <p-select id="currency" formControlName="currency" [options]="currencies"
+                        placeholder="Select currency" class="enhanced-select">
+                    </p-select>
+                </app-enhanced-form-field>
+
+                <!-- Exchange Rate -->
+                <app-enhanced-form-field label="Exchange Rate">
+                    <input pInputText id="exchangeRate" formControlName="exchangeRate" type="number"
+                        placeholder="Enter exchange rate" class="enhanced-input">
+                </app-enhanced-form-field>
+
+                <!-- Payment Terms -->
+                <app-enhanced-form-field label="Payment Terms">
+                    <input pInputText id="paymentTerms" formControlName="paymentTerms" placeholder="Enter payment terms"
+                        class="enhanced-input">
+                </app-enhanced-form-field>
+
+                <!-- Notes -->
+                <app-enhanced-form-field label="Notes" customClass="col-span-2">
+                    <textarea pInputTextarea id="notes" formControlName="notes" rows="3"
+                        placeholder="Enter additional notes" class="enhanced-textarea">
+                    </textarea>
+                </app-enhanced-form-field>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Manual Line Items -->
+        <app-enhanced-card *ngIf="selectedInputMethod === 'MANUAL'" variant="standard" title="Line Items"
+            [header]="true" customClass="mb-6">
+            <div slot="header" class="line-items-header-actions">
+                <app-enhanced-button label="Add Item" icon="pi pi-plus" variant="secondary" size="sm"
+                    (onClick)="addLineItem()">
+                </app-enhanced-button>
+            </div>
+
+            <div *ngIf="details.length === 0" class="empty-line-items">
+                <div class="empty-content">
+                    <i class="pi pi-inbox empty-icon"></i>
+                    <p class="empty-message">No line items added yet. Click "Add Item" to start.</p>
+                </div>
+            </div>
+
+            <div *ngIf="details.length > 0" formArrayName="details" class="line-items-container">
+                <div *ngFor="let item of details.controls; let i = index" [formGroupName]="i" class="line-item-card">
+                    <div class="line-item-header">
+                        <h4 class="line-item-title">Line {{ i + 1 }}</h4>
+                        <app-enhanced-button icon="pi pi-trash" variant="text" size="sm"
+                            [customClass]="'text-red-600 hover:text-red-700 hover:bg-red-50'"
+                            (onClick)="removeLineItem(i)">
+                        </app-enhanced-button>
+                    </div>
+
+                    <div class="line-item-fields">
+                        <app-enhanced-form-field label="Item Code" [required]="true">
+                            <input pInputText formControlName="itemCode" placeholder="Item code" class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Item Name" [required]="true">
+                            <input pInputText formControlName="itemName" placeholder="Item name" class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="HS Code" [required]="true">
+                            <input pInputText formControlName="hsCode" placeholder="HS code" class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Quantity" [required]="true">
+                            <input pInputText formControlName="orderedQuantity" type="number" placeholder="Quantity"
+                                class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Unit" [required]="true">
+                            <input pInputText formControlName="unit" placeholder="Unit" class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Unit Price" [required]="true">
+                            <input pInputText formControlName="unitPrice" type="number" placeholder="Unit price"
+                                class="enhanced-input">
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Delivery Date">
+                            <p-datepicker formControlName="deliveryDate" dateFormat="yy-mm-dd" iconDisplay="button"
+                                class="enhanced-datepicker">
+                            </p-datepicker>
+                        </app-enhanced-form-field>
+
+                        <app-enhanced-form-field label="Notes">
+                            <input pInputText formControlName="notes" placeholder="Notes" class="enhanced-input">
+                        </app-enhanced-form-field>
+                    </div>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Line Items Display (for Excel/API) -->
+        <app-enhanced-card *ngIf="selectedInputMethod !== 'MANUAL' && details.length > 0" variant="standard"
+            [title]="'Line Items (' + details.length + ')'" [header]="true" customClass="mb-6">
+            <div class="imported-items-table">
+                <p-table [value]="details.controls" [scrollable]="true" scrollHeight="400px"
+                    styleClass="enhanced-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Line</th>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>HS Code</th>
+                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item let-i="rowIndex">
+                        <tr>
+                            <td>{{ i + 1 }}</td>
+                            <td>{{ item.get('itemCode')?.value }}</td>
+                            <td>{{ item.get('itemName')?.value }}</td>
+                            <td>{{ item.get('hsCode')?.value }}</td>
+                            <td>{{ item.get('orderedQuantity')?.value }}</td>
+                            <td>{{ item.get('unit')?.value }}</td>
+                            <td>{{ item.get('unitPrice')?.value | number:'1.2-2' }}</td>
+                            <td>{{ (item.get('orderedQuantity')?.value * item.get('unitPrice')?.value) | number:'1.2-2'
+                                }}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </app-enhanced-card>
 
         <!-- Form Actions -->
-        <div class="flex justify-end gap-2">
-            <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()" [outlined]="true" severity="secondary"
-                type="button"></p-button>
-            <p-button label="Create Purchase Order" icon="pi pi-check" type="submit" [loading]="saving"
-                [disabled]="saving"></p-button>
+        <div class="form-actions">
+            <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" size="md" type="button"
+                (onClick)="onCancel()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Create Purchase Order" icon="pi pi-check" variant="primary" size="md"
+                type="submit" [loading]="saving" [disabled]="saving">
+            </app-enhanced-button>
         </div>
     </form>
 </div>

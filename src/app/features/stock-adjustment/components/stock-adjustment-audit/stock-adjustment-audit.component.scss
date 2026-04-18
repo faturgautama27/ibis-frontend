@@ -1,83 +1,389 @@
-.stock-adjustment-audit-container {
-    padding: 1.5rem;
+@import '../../../../../styles/design-system/index.scss';
 
-    .card {
-        background: var(--surface-card);
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: var(--space-4);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-md);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--gray-900);
+    background-color: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--duration-normal) var(--ease-out);
+
+    &:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
     }
 
-    h2 {
+    &::placeholder {
+        color: var(--gray-400);
+    }
+}
+
+/* Enhanced Button Styling */
+.enhanced-btn {
+    transition: all var(--duration-fast) var(--ease-out);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+}
+
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Table Styling */
+.table-header-cell {
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-xs);
+}
+
+.table-body-cell {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+    vertical-align: middle;
+}
+
+/* Enhanced Audit Table */
+.audit-table {
+    animation: slideUp var(--duration-normal) var(--ease-out);
+}
+
+/* Timeline Styling */
+.timeline-container {
+    position: relative;
+}
+
+.enhanced-timeline {
+    animation: slideUp var(--duration-normal) var(--ease-out);
+}
+
+.timeline-marker {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+    transition: all var(--duration-fast) var(--ease-out);
+
+    &:hover {
+        transform: scale(1.1);
+        box-shadow: var(--shadow-lg);
+    }
+
+    i {
+        font-size: 1.25rem;
+    }
+}
+
+.timeline-content-card {
+    padding: var(--padding-lg);
+    background: white;
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--primary-500);
+    margin-bottom: var(--space-4);
+    box-shadow: var(--card-shadow);
+    transition: all var(--duration-fast) var(--ease-out);
+
+    &:hover {
+        box-shadow: var(--card-hover-shadow);
+        transform: translateX(2px);
+    }
+}
+
+.timeline-action {
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.timeline-meta {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.timeline-comments {
+    background: var(--gray-50);
+    padding: var(--padding-sm) var(--padding-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--gray-700);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+}
+
+.timeline-status-change,
+.timeline-quantity-change {
+    margin-bottom: var(--space-3);
+}
+
+.timeline-label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    display: block;
+    margin-bottom: var(--space-1);
+}
+
+.quantity-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+}
+
+.timeline-time {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+}
+
+.empty-timeline {
+    padding: var(--padding-xl);
+}
+
+/* Empty State Styling */
+.empty-state {
+    text-align: center;
+    padding: var(--padding-xl);
+    color: var(--gray-500);
+
+    .empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto var(--space-6);
+        color: var(--gray-300);
+        font-size: var(--text-5xl);
+    }
+
+    .empty-title {
+        font-size: var(--text-xl);
+        font-weight: var(--font-semibold);
+        color: var(--gray-700);
+        margin-bottom: var(--space-2);
+    }
+
+    .empty-description {
+        font-size: var(--text-base);
+        color: var(--gray-500);
+        margin-bottom: var(--space-6);
+    }
+}
+
+/* Card Enhancements */
+::ng-deep app-enhanced-card {
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin: 0 0 var(--space-1) 0;
+    }
+
+    .card-subtitle {
+        font-size: var(--text-sm);
+        color: var(--gray-600);
         margin: 0;
-        color: var(--text-color);
+    }
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+
+    /* Button Enhancements */
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+        border-width: 2px;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+
+        &.p-button-outlined {
+            background: white;
+
+            &:hover {
+                background: var(--gray-50);
+            }
+        }
     }
 
-    label {
-        font-weight: 500;
-        color: var(--text-color-secondary);
+    /* Input Field Enhancements */
+    .p-inputtext,
+    .p-select,
+    .p-datepicker input {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
     }
 
-    ::ng-deep {
-        .p-datatable {
-            .p-datatable-thead>tr>th {
-                background: var(--surface-100);
-                color: var(--text-color);
-                font-weight: 600;
-                padding: 1rem;
-            }
-
-            .p-datatable-tbody>tr>td {
-                padding: 0.75rem 1rem;
-            }
-
-            .p-datatable-tbody>tr:hover {
-                background: var(--surface-hover);
-            }
+    /* Select Dropdown Enhancements */
+    .p-select {
+        .p-select-label {
+            padding: var(--padding-sm) var(--padding-md);
         }
 
-        .p-tag {
-            font-weight: 500;
-            padding: 0.25rem 0.75rem;
+        &:not(.p-disabled):hover {
+            border-color: var(--gray-300);
         }
 
-        // Timeline customization
-        .customized-timeline {
-            .p-timeline-event-content {
-                line-height: 1.5;
-            }
+        &.p-focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
 
-            .p-timeline-event-opposite {
-                flex: 0 0 auto;
-            }
-
-            .custom-marker {
-                display: flex;
-                width: 2.5rem;
-                height: 2.5rem;
-                align-items: center;
-                justify-content: center;
-                color: #ffffff;
-                border-radius: 50%;
-                z-index: 1;
-
-                i {
-                    font-size: 1.25rem;
-                }
-            }
-
-            .timeline-content {
-                padding: 1.5rem;
-                background: var(--surface-50);
-                border-radius: 8px;
-                border-left: 3px solid var(--primary-color);
-                margin-bottom: 1rem;
-            }
+    /* Timeline Enhancements */
+    .p-timeline {
+        .p-timeline-event-content {
+            line-height: var(--leading-relaxed);
         }
 
-        .p-button-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
+        .p-timeline-event-opposite {
+            flex: 0 0 auto;
+            padding-right: var(--space-4);
         }
+
+        .p-timeline-event-connector {
+            background: var(--gray-200);
+            width: 2px;
+        }
+    }
+}
+
+/* Animation Classes */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    .table-header-cell,
+    .table-body-cell {
+        padding: var(--padding-sm);
+        font-size: var(--text-xs);
+    }
+
+    .timeline-content-card {
+        padding: var(--padding-md);
+        margin-left: var(--space-4);
+    }
+
+    .timeline-marker {
+        width: 2rem;
+        height: 2rem;
+
+        i {
+            font-size: 1rem;
+        }
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+
+    .form-input,
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-select,
+    ::ng-deep .p-datepicker input {
+        border-width: 3px;
+        border-color: var(--gray-900);
+    }
+
+    .timeline-content-card {
+        border-left-width: 6px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .main-layout {
+        background: white;
+    }
+
+    .enhanced-btn,
+    ::ng-deep .p-button {
+        display: none;
+    }
+
+    .timeline-marker {
+        background: #000 !important;
+    }
+
+    .timeline-content-card {
+        border-left-color: #000 !important;
+        box-shadow: none;
     }
 }

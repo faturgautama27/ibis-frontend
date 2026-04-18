@@ -1,0 +1,234 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: var(--space-4);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+
+    &.required::after {
+        content: ' *';
+        color: var(--error-500);
+    }
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-md);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--gray-900);
+    background-color: white;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--duration-normal) var(--ease-out);
+
+    &:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    &::placeholder {
+        color: var(--gray-400);
+    }
+}
+
+.form-error {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--error-600);
+    margin-top: var(--space-1);
+}
+
+/* Enhanced Button Styling */
+.enhanced-btn {
+    transition: all var(--duration-fast) var(--ease-out);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+}
+
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Card Enhancements */
+::ng-deep app-enhanced-card {
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin: 0 0 var(--space-1) 0;
+    }
+
+    .card-subtitle {
+        font-size: var(--text-sm);
+        color: var(--gray-600);
+        margin: 0;
+    }
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+
+    /* Button Enhancements */
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+        border-width: 2px;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+
+        &.p-button-outlined {
+            background: white;
+
+            &:hover {
+                background: var(--gray-50);
+            }
+        }
+    }
+
+    /* Input Field Enhancements */
+    .p-inputtext,
+    .p-select,
+    .p-inputnumber input {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    /* Select Dropdown Enhancements */
+    .p-select {
+        .p-select-label {
+            padding: var(--padding-sm) var(--padding-md);
+        }
+
+        &:not(.p-disabled):hover {
+            border-color: var(--gray-300);
+        }
+
+        &.p-focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    /* InputNumber Enhancements */
+    .p-inputnumber {
+        .p-inputnumber-button {
+            border-radius: 0;
+            border: 2px solid var(--gray-200);
+
+            &:hover {
+                background: var(--primary-50);
+                border-color: var(--primary-300);
+            }
+        }
+    }
+
+    /* Textarea Enhancements */
+    .p-textarea {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+        resize: vertical;
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    /* Toast Enhancements */
+    .p-toast {
+        .p-toast-message {
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: none;
+
+            &.p-toast-message-success {
+                background: var(--success-50);
+                border-left: 4px solid var(--success-500);
+                color: var(--success-800);
+            }
+
+            &.p-toast-message-error {
+                background: var(--error-50);
+                border-left: 4px solid var(--error-500);
+                color: var(--error-800);
+            }
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+
+    .form-input,
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-select,
+    ::ng-deep .p-inputnumber input,
+    ::ng-deep .p-textarea {
+        border-width: 3px;
+        border-color: var(--gray-900);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .main-layout {
+        background: white;
+    }
+
+    .enhanced-btn,
+    ::ng-deep .p-button {
+        display: none;
+    }
+}

@@ -1,0 +1,113 @@
+<!-- Enhanced Page Header -->
+<app-page-header [title]="isEditMode ? 'Edit Customer' : 'Create Customer'"
+    [subtitle]="isEditMode ? 'Update customer information' : 'Add a new customer to the system'" icon="pi pi-building"
+    [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Customers', route: '/customers' },
+        { label: isEditMode ? 'Edit' : 'Create' }
+    ]" (back)="onCancel()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <form [formGroup]="customerForm" (ngSubmit)="onSubmit()">
+
+        <!-- Basic Information Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-info-circle text-primary-600"></i>
+                    Basic Information
+                </h3>
+                <p class="card-subtitle">Enter the customer's basic details</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col">
+                    <label class="form-label required">Customer Code</label>
+                    <input pInputText formControlName="customer_code" class="w-full" />
+                    @if (isFieldInvalid('customer_code')) {
+                    <small class="form-error">Customer code is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label required">Customer Name</label>
+                    <input pInputText formControlName="customer_name" class="w-full" />
+                    @if (isFieldInvalid('customer_name')) {
+                    <small class="form-error">Customer name is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col md:col-span-2">
+                    <label class="form-label required">Address</label>
+                    <textarea pInputTextarea formControlName="address" rows="2" class="w-full"></textarea>
+                    @if (isFieldInvalid('address')) {
+                    <small class="form-error">Address is required</small>
+                    }
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">City</label>
+                    <input pInputText formControlName="city" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label required">Tax ID (NPWP)</label>
+                    <input pInputText formControlName="tax_id" placeholder="XX.XXX.XXX.X-XXX.XXX" (blur)="onNPWPBlur()"
+                        class="w-full font-mono" />
+                    @if (isFieldInvalid('tax_id')) {
+                    <small class="form-error">
+                        {{ customerForm.get('tax_id')?.hasError('required') ? 'Tax ID is required' : 'Invalid NPWP
+                        format' }}
+                    </small>
+                    }
+                    <small class="text-gray-500 mt-1">Format: XX.XXX.XXX.X-XXX.XXX</small>
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Contact Person</label>
+                    <input pInputText formControlName="contact_person" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Phone</label>
+                    <input pInputText formControlName="phone" class="w-full" />
+                </div>
+
+                <div class="flex flex-col">
+                    <label class="form-label">Email</label>
+                    <input pInputText type="email" formControlName="email" class="w-full" />
+                </div>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Status Card -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-check-circle text-primary-600"></i>
+                    Status
+                </h3>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <p-checkbox formControlName="active" [binary]="true" inputId="active"></p-checkbox>
+                <label for="active" class="text-sm font-medium text-gray-700 cursor-pointer">Active</label>
+            </div>
+        </app-enhanced-card>
+
+        <!-- Actions Card -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <app-enhanced-button label="Cancel" icon="pi pi-times" variant="secondary" type="button"
+                        (onClick)="onCancel()">
+                    </app-enhanced-button>
+                    <app-enhanced-button [label]="isEditMode ? 'Update' : 'Create'" icon="pi pi-check" variant="primary"
+                        type="submit" [loading]="loading" [disabled]="customerForm.invalid || loading">
+                    </app-enhanced-button>
+                </div>
+            </div>
+        </app-enhanced-card>
+
+    </form>
+</div>

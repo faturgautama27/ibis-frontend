@@ -1,0 +1,58 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Stock Opname Sessions" subtitle="Manage stock counting and adjustments" icon="pi pi-clipboard"
+    [primaryAction]="{ label: 'Create Opname', icon: 'pi pi-plus', severity: 'primary' }"
+    (primaryActionClick)="onCreate()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <!-- Data Table Card -->
+    <app-enhanced-card variant="standard">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-list text-primary-600"></i>
+                Opname Sessions
+            </h3>
+            <p class="card-subtitle">View and manage all stock opname sessions</p>
+        </div>
+
+        <app-enhanced-table [data]="opnames" [paginator]="true" [rows]="20" [totalRecords]="opnames.length"
+            [searchable]="false" [showHeader]="false" emptyTitle="No Opname Sessions Found"
+            emptyMessage="No stock opname sessions have been created yet. Click 'Create Opname' to get started."
+            emptyIcon="pi pi-clipboard" [columnCount]="7">
+
+            <ng-container slot="header">
+                <th class="table-header-cell">Opname Number</th>
+                <th class="table-header-cell">Date</th>
+                <th class="table-header-cell">Type</th>
+                <th class="table-header-cell">Warehouse</th>
+                <th class="table-header-cell">Status</th>
+                <th class="table-header-cell">Total Difference</th>
+                <th class="table-header-cell text-center">Actions</th>
+            </ng-container>
+
+            <ng-container slot="body">
+                <ng-template #bodyTemplate let-opname>
+                    <td class="table-body-cell font-medium text-gray-900">{{ opname.opname_number }}</td>
+                    <td class="table-body-cell">{{ opname.opname_date | date:'dd MMM yyyy' }}</td>
+                    <td class="table-body-cell">{{ opname.opname_type }}</td>
+                    <td class="table-body-cell">{{ opname.warehouse_name }}</td>
+                    <td class="table-body-cell">
+                        <app-status-badge [label]="opname.status" [severity]="getStatusSeverity(opname.status)">
+                        </app-status-badge>
+                    </td>
+                    <td class="table-body-cell">{{ opname.total_difference || 0 }}</td>
+                    <td class="table-body-cell text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <app-enhanced-button icon="pi pi-pencil" variant="text" size="sm" type="button"
+                                (onClick)="onEdit(opname)">
+                            </app-enhanced-button>
+                            <app-enhanced-button icon="pi pi-trash" variant="danger" size="sm" type="button"
+                                (onClick)="onDelete(opname)">
+                            </app-enhanced-button>
+                        </div>
+                    </td>
+                </ng-template>
+            </ng-container>
+        </app-enhanced-table>
+    </app-enhanced-card>
+</div>

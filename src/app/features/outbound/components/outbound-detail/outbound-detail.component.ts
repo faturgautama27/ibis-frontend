@@ -17,6 +17,12 @@ import { LucideAngularModule, PackageOpen, ArrowLeft, ExternalLink } from 'lucid
 import { OutboundDemoService } from '../../services/outbound-demo.service';
 import { OutboundHeader, OutboundDetail, OutboundStatus, OutboundType } from '../../models/outbound.model';
 
+// Enhanced Components
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+
 @Component({
     selector: 'app-outbound-detail',
     standalone: true,
@@ -27,7 +33,11 @@ import { OutboundHeader, OutboundDetail, OutboundStatus, OutboundType } from '..
         TableModule,
         TagModule,
         DividerModule,
-        LucideAngularModule
+        LucideAngularModule,
+        EnhancedCardComponent,
+        PageHeaderComponent,
+        StatusBadgeComponent,
+        EmptyStateComponent
     ],
     templateUrl: './outbound-detail.component.html',
     styleUrls: ['./outbound-detail.component.scss']
@@ -47,6 +57,28 @@ export class OutboundDetailComponent implements OnInit {
     details: OutboundDetail[] = [];
     loading = false;
     error: string | null = null;
+
+    // Page Header Configuration
+    breadcrumbs = [
+        { label: 'Dashboard', routerLink: '/dashboard' },
+        { label: 'Outbound Shipments', routerLink: '/outbound' },
+        { label: 'Shipment Details' }
+    ];
+
+    headerActions = [
+        {
+            label: 'Back to List',
+            icon: 'pi pi-arrow-left',
+            command: () => this.goBack(),
+            styleClass: 'p-button-text'
+        },
+        {
+            label: 'Edit Shipment',
+            icon: 'pi pi-pencil',
+            command: () => this.editOutbound(),
+            styleClass: 'p-button-outlined'
+        }
+    ];
 
     // Expose enums to template
     OutboundStatus = OutboundStatus;
@@ -87,6 +119,12 @@ export class OutboundDetailComponent implements OnInit {
 
     goBack(): void {
         this.router.navigate(['/outbound']);
+    }
+
+    editOutbound(): void {
+        if (this.outbound?.id) {
+            this.router.navigate(['/outbound', this.outbound.id, 'edit']);
+        }
     }
 
     viewSalesOrder(): void {

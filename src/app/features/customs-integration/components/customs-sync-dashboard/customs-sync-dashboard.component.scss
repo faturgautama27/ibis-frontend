@@ -1,0 +1,108 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Stat Cards */
+.stat-card {
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    .stat-label {
+        font-size: var(--text-sm);
+        font-weight: var(--font-medium);
+    }
+
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+    }
+}
+
+.stat-card--blue {
+    border-left: 4px solid var(--info-500) !important;
+    background: linear-gradient(135deg, var(--info-50), transparent) !important;
+
+    .stat-label {
+        color: var(--info-600);
+    }
+
+    .stat-value {
+        color: var(--info-900);
+    }
+}
+
+.stat-card--green {
+    border-left: 4px solid var(--success-500) !important;
+    background: linear-gradient(135deg, var(--success-50), transparent) !important;
+
+    .stat-label {
+        color: var(--success-600);
+    }
+
+    .stat-value {
+        color: var(--success-900);
+    }
+}
+
+.stat-card--red {
+    border-left: 4px solid var(--error-500) !important;
+    background: linear-gradient(135deg, var(--error-50), transparent) !important;
+
+    .stat-label {
+        color: var(--error-600);
+    }
+
+    .stat-value {
+        color: var(--error-900);
+    }
+}
+
+.stat-card--yellow {
+    border-left: 4px solid var(--warning-500) !important;
+    background: linear-gradient(135deg, var(--warning-50), transparent) !important;
+
+    .stat-label {
+        color: var(--warning-600);
+    }
+
+    .stat-value {
+        color: var(--warning-900);
+    }
+}
+
+/* Enhanced Button Overrides */
+::ng-deep {
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+}

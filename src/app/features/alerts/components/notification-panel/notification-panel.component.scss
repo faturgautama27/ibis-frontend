@@ -1,0 +1,132 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: inline-block;
+}
+
+/* Filter Section */
+.notification-filter-section {
+    padding: var(--padding-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+}
+
+/* Notification List */
+.notification-list {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+    padding-right: var(--space-1);
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--gray-100);
+        border-radius: var(--radius-full);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--gray-300);
+        border-radius: var(--radius-full);
+    }
+}
+
+/* Notification Item */
+.notification-item {
+    padding: var(--padding-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+
+    &:hover {
+        transform: translateX(2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    &--unread {
+        background: var(--primary-50);
+        border-color: var(--primary-200);
+
+        &:hover {
+            background: var(--primary-100);
+        }
+    }
+
+    &--read {
+        background: white;
+
+        &:hover {
+            background: var(--gray-50);
+        }
+    }
+}
+
+/* Notification Icon Wrapper */
+.notification-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    &--critical {
+        background: var(--error-100);
+        color: var(--error-600);
+    }
+
+    &--warning {
+        background: var(--warning-100);
+        color: var(--warning-600);
+    }
+
+    &--info {
+        background: var(--info-100);
+        color: var(--info-600);
+    }
+}
+
+/* PrimeNG Overrides */
+::ng-deep {
+    .p-drawer {
+        .p-drawer-header {
+            padding: var(--padding-lg);
+            border-bottom: 1px solid var(--gray-200);
+            background: white;
+        }
+
+        .p-drawer-content {
+            padding: var(--padding-lg);
+            background: var(--background-primary);
+        }
+    }
+
+    .p-button.p-button-rounded.p-button-text {
+        border-radius: var(--radius-full);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            background: var(--gray-100);
+        }
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .notification-list {
+        max-height: calc(100vh - 320px);
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .notification-item {
+        transition: none;
+        transform: none !important;
+    }
+}

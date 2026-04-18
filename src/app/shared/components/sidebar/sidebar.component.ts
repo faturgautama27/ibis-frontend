@@ -161,4 +161,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (!item.children) return false;
     return item.children.some(child => this.isActive(child.route));
   }
+
+  /**
+   * TrackBy function for menu items
+   */
+  trackByItemId(index: number, item: MenuItem): string {
+    return item.id;
+  }
+
+  /**
+   * TrackBy function for child menu items
+   */
+  trackByChildId(index: number, child: MenuItem): string {
+    return child.id;
+  }
 }

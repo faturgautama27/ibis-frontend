@@ -1,0 +1,143 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+
+    /* Button Enhancements */
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    /* Input Field Enhancements */
+    .p-inputtext,
+    .p-select,
+    .p-inputnumber input {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    /* Table Enhancements */
+    .p-datatable {
+        border: none;
+
+        .p-datatable-thead>tr>th {
+            background: var(--gray-50);
+            border-bottom: var(--table-header-border-width) solid var(--gray-200);
+            padding: var(--padding-md) var(--padding-lg);
+            font-weight: var(--font-semibold);
+            color: var(--gray-700);
+            font-size: var(--text-sm);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .p-datatable-tbody>tr {
+            border-bottom: var(--table-border-width) solid var(--gray-100);
+            transition: all var(--duration-fast) var(--ease-out);
+
+            &:hover {
+                background: var(--gray-50) !important;
+            }
+
+            &:nth-child(even) {
+                background: var(--gray-25);
+            }
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: var(--padding-md) var(--padding-lg);
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            vertical-align: middle;
+        }
+    }
+
+    /* Dialog Enhancements */
+    .p-dialog {
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--modal-shadow);
+        border: none;
+
+        .p-dialog-header {
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+            padding: var(--padding-lg);
+
+            .p-dialog-title {
+                font-size: var(--text-xl);
+                font-weight: var(--font-semibold);
+                color: var(--gray-900);
+            }
+        }
+
+        .p-dialog-content {
+            padding: var(--padding-lg);
+        }
+
+        .p-dialog-footer {
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-200);
+            border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+            padding: var(--padding-lg);
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    ::ng-deep .p-dialog {
+        width: 95vw !important;
+        margin: var(--space-4);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-select {
+        border-width: 3px;
+        border-color: var(--gray-900);
+    }
+}

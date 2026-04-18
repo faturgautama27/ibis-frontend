@@ -1,0 +1,348 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Stock Balance" subtitle="Real-time inventory balance across all warehouses"
+    icon="pi pi-chart-bar">
+</app-page-header>
+
+<div class="main-layout px-6 py-6 space-y-6">
+
+    <!-- Search and Filters -->
+    <app-enhanced-card variant="standard">
+        <div class="flex gap-4">
+            <div class="flex-1">
+                <input pInputText [(ngModel)]="searchTerm" (input)="onSearch()"
+                    placeholder="Search by item code, name, warehouse..." class="w-full" />
+            </div>
+            @if (rfidEnabled) {
+            <div>
+                <app-enhanced-button label="Scan RFID" icon="pi pi-qrcode" variant="secondary" (onClick)="onRFIDScan()">
+                </app-enhanced-button>
+            </div>
+            }
+        </div>
+    </app-enhanced-card>
+
+    <!-- Tabs -->
+    <app-enhanced-card variant="standard">
+        <p-tabs [(value)]="activeTab" (onChange)="onTabChange()">
+            <p-tablist>
+                <p-tab value="balance">
+                    <div class="flex items-center gap-2">
+                        <lucide-icon [img]="PackageIcon" class="w-4 h-4"></lucide-icon>
+                        <span>Current Balance</span>
+                    </div>
+                </p-tab>
+                <p-tab value="alerts">
+                    <div class="flex items-center gap-2">
+                        <lucide-icon [img]="AlertTriangleIcon" class="w-4 h-4"></lucide-icon>
+                        <span>Alerts</span>
+                        @if (unacknowledgedAlerts > 0) {
+                        <span class="px-2 py-0.5 text-xs font-medium bg-red-100 text-red-800 rounded-full">
+                            {{ unacknowledgedAlerts }}
+                        </span>
+                        }
+                    </div>
+                </p-tab>
+                <p-tab value="expiring">
+                    <div class="flex items-center gap-2">
+                        <lucide-icon [img]="ClockIcon" class="w-4 h-4"></lucide-icon>
+                        <span>Expiring Items</span>
+                    </div>
+                </p-tab>
+                <p-tab value="aging">
+                    <div class="flex items-center gap-2">
+                        <lucide-icon [img]="TrendingDownIcon" class="w-4 h-4"></lucide-icon>
+                        <span>Stock Aging</span>
+                    </div>
+                </p-tab>
+                <p-tab value="history">
+                    <div class="flex items-center gap-2">
+                        <lucide-icon [img]="ClockIcon" class="w-4 h-4"></lucide-icon>
+                        <span>Movement History</span>
+                    </div>
+                </p-tab>
+            </p-tablist>
+
+            <p-tabpanels>
+
+                <!-- Current Balance Tab -->
+                <p-tabpanel value="balance">
+                    <div class="py-4">
+                        <app-enhanced-table [data]="filteredBalances" [loading]="loading" [paginator]="true" [rows]="20"
+                            [searchable]="false" [showHeader]="false" [columnCount]="10"
+                            emptyTitle="No Stock Balance Found"
+                            emptyMessage="No stock balance records match your search criteria" emptyIcon="pi pi-box">
+
+                            <ng-container slot="header">
+                                <th>Item Code</th>
+                                <th>Item Name</th>
+                                <th>Warehouse</th>
+                                <th>Quantity</th>
+                                <th>Reserved</th>
+                                <th>Available</th>
+                                <th>Value</th>
+                                <th>Batch</th>
+                                <th>Expiry</th>
+                                <th>Location</th>
+                            </ng-container>
+
+                            <ng-container slot="body">
+                                <ng-template #bodyTemplate let-balance>
+                                    <td>
+                                        <span class="font-medium">{{ balance.item_code }}</span>
+                                        @if (balance.rfid_tag) {
+                                        <div class="text-xs text-gray-500">RFID: {{ balance.rfid_tag }}</div>
+                                        }
+                                    </td>
+                                    <td>{{ balance.item_name }}</td>
+                                    <td>
+                                        <div class="text-sm">{{ balance.warehouse_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ balance.warehouse_code }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="font-medium">{{ balance.quantity | number: '1.0-2' }}</span>
+                                        <span class="text-xs text-gray-500 ml-1">{{ balance.unit }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ balance.reserved_quantity | number: '1.0-2' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="font-medium"
+                                            [class.text-red-600]="balance.available_quantity < 100">
+                                            {{ balance.available_quantity | number: '1.0-2' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm font-medium">{{ balance.total_value | number: '1.0-0'
+                                            }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">{{ balance.batch_number || '-' }}</span>
+                                    </td>
+                                    <td>
+                                        @if (balance.expiry_date) {
+                                        <span class="text-xs"
+                                            [class.text-red-600]="isExpiringSoon(balance.expiry_date)">
+                                            {{ balance.expiry_date | date: 'dd MMM yyyy' }}
+                                        </span>
+                                        } @else {
+                                        <span class="text-xs text-gray-400">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">{{ balance.location_code || '-' }}</span>
+                                    </td>
+                                </ng-template>
+                            </ng-container>
+                        </app-enhanced-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Alerts Tab -->
+                <p-tabpanel value="alerts">
+                    <div class="py-4">
+                        <app-enhanced-table [data]="alerts" [loading]="loading" [paginator]="true" [rows]="20"
+                            [searchable]="false" [showHeader]="false" [columnCount]="7" emptyTitle="No Alerts"
+                            emptyMessage="There are no active stock alerts" emptyIcon="pi pi-check-circle">
+
+                            <ng-container slot="header">
+                                <th>Severity</th>
+                                <th>Type</th>
+                                <th>Item</th>
+                                <th>Warehouse</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </ng-container>
+
+                            <ng-container slot="body">
+                                <ng-template #bodyTemplate let-alert>
+                                    <td>
+                                        <app-status-badge [label]="alert.severity"
+                                            [severity]="getSeverityTag(alert.severity)">
+                                        </app-status-badge>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ alert.alert_type }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm font-medium">{{ alert.item_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ alert.item_code }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ alert.warehouse_name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ alert.message }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">{{ alert.created_at | date: 'dd MMM yyyy HH:mm' }}</span>
+                                    </td>
+                                    <td>
+                                        @if (!alert.is_acknowledged) {
+                                        <button pButton label="Acknowledge" class="p-button-sm p-button-text"
+                                            (click)="acknowledgeAlert(alert)">
+                                        </button>
+                                        } @else {
+                                        <span class="text-xs text-gray-500">Acknowledged</span>
+                                        }
+                                    </td>
+                                </ng-template>
+                            </ng-container>
+                        </app-enhanced-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Expiring Items Tab -->
+                <p-tabpanel value="expiring">
+                    <div class="py-4">
+                        <app-enhanced-table [data]="expiringItems" [loading]="loading" [paginator]="true" [rows]="20"
+                            [searchable]="false" [showHeader]="false" [columnCount]="6" emptyTitle="No Expiring Items"
+                            emptyMessage="No items are expiring within the next 30 days" emptyIcon="pi pi-calendar">
+
+                            <ng-container slot="header">
+                                <th>Item</th>
+                                <th>Warehouse</th>
+                                <th>Quantity</th>
+                                <th>Batch</th>
+                                <th>Expiry Date</th>
+                                <th>Days Until Expiry</th>
+                            </ng-container>
+
+                            <ng-container slot="body">
+                                <ng-template #bodyTemplate let-item>
+                                    <td>
+                                        <div class="text-sm font-medium">{{ item.item_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ item.item_code }}</div>
+                                    </td>
+                                    <td>{{ item.warehouse_name }}</td>
+                                    <td>
+                                        <span class="font-medium">{{ item.quantity | number: '1.0-2' }}</span>
+                                        <span class="text-xs text-gray-500 ml-1">{{ item.unit }}</span>
+                                    </td>
+                                    <td>{{ item.batch_number }}</td>
+                                    <td>
+                                        <span class="text-sm"
+                                            [class.text-red-600]="getDaysUntilExpiry(item.expiry_date) <= 7">
+                                            {{ item.expiry_date | date: 'dd MMM yyyy' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="font-medium"
+                                            [class.text-red-600]="getDaysUntilExpiry(item.expiry_date) <= 7"
+                                            [class.text-orange-600]="getDaysUntilExpiry(item.expiry_date) > 7 && getDaysUntilExpiry(item.expiry_date) <= 14">
+                                            {{ getDaysUntilExpiry(item.expiry_date) }} days
+                                        </span>
+                                    </td>
+                                </ng-template>
+                            </ng-container>
+                        </app-enhanced-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Stock Aging Tab -->
+                <p-tabpanel value="aging">
+                    <div class="py-4">
+                        <app-enhanced-table [data]="agingReport" [loading]="loading" [paginator]="true" [rows]="20"
+                            [searchable]="false" [showHeader]="false" [columnCount]="9" emptyTitle="No Aging Data"
+                            emptyMessage="No stock aging data available" emptyIcon="pi pi-chart-bar">
+
+                            <ng-container slot="header">
+                                <th>Item</th>
+                                <th>Warehouse</th>
+                                <th>Total Qty</th>
+                                <th>0-30 Days</th>
+                                <th>31-60 Days</th>
+                                <th>61-90 Days</th>
+                                <th>91-180 Days</th>
+                                <th>Over 180 Days</th>
+                                <th>Avg Age</th>
+                            </ng-container>
+
+                            <ng-container slot="body">
+                                <ng-template #bodyTemplate let-report>
+                                    <td>
+                                        <div class="text-sm font-medium">{{ report.item_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ report.item_code }}</div>
+                                    </td>
+                                    <td>{{ report.warehouse_name }}</td>
+                                    <td>
+                                        <span class="font-medium">{{ report.total_quantity | number: '1.0-0' }}</span>
+                                    </td>
+                                    <td>{{ report.aging_buckets['0-30_days'].quantity | number: '1.0-0' }}</td>
+                                    <td>{{ report.aging_buckets['31-60_days'].quantity | number: '1.0-0' }}</td>
+                                    <td>{{ report.aging_buckets['61-90_days'].quantity | number: '1.0-0' }}</td>
+                                    <td>{{ report.aging_buckets['91-180_days'].quantity | number: '1.0-0' }}</td>
+                                    <td>
+                                        <span [class.text-red-600]="report.aging_buckets['over_180_days'].quantity > 0">
+                                            {{ report.aging_buckets['over_180_days'].quantity | number: '1.0-0' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-sm">{{ report.average_age_days }} days</span>
+                                    </td>
+                                </ng-template>
+                            </ng-container>
+                        </app-enhanced-table>
+                    </div>
+                </p-tabpanel>
+
+                <!-- Movement History Tab -->
+                <p-tabpanel value="history">
+                    <div class="py-4">
+                        <app-enhanced-table [data]="history" [loading]="loading" [paginator]="true" [rows]="20"
+                            [searchable]="false" [showHeader]="false" [columnCount]="9" emptyTitle="No Movement History"
+                            emptyMessage="No stock movement history found" emptyIcon="pi pi-history">
+
+                            <ng-container slot="header">
+                                <th>Date</th>
+                                <th>Item</th>
+                                <th>Warehouse</th>
+                                <th>Movement Type</th>
+                                <th>Reference</th>
+                                <th>Qty Before</th>
+                                <th>Change</th>
+                                <th>Qty After</th>
+                                <th>User</th>
+                            </ng-container>
+
+                            <ng-container slot="body">
+                                <ng-template #bodyTemplate let-h>
+                                    <td>
+                                        <span class="text-xs">{{ h.movement_date | date: 'dd MMM yyyy HH:mm' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="text-sm">{{ h.item_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ h.item_code }}</div>
+                                    </td>
+                                    <td>{{ h.warehouse_name }}</td>
+                                    <td>
+                                        <span class="text-xs">{{ getMovementTypeLabel(h.movement_type) }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">{{ h.reference_number }}</span>
+                                    </td>
+                                    <td>{{ h.quantity_before | number: '1.0-2' }}</td>
+                                    <td>
+                                        <span [class.text-green-600]="h.quantity_change > 0"
+                                            [class.text-red-600]="h.quantity_change < 0" class="font-medium">
+                                            {{ h.quantity_change > 0 ? '+' : '' }}{{ h.quantity_change | number: '1.0-2'
+                                            }}
+                                        </span>
+                                    </td>
+                                    <td>{{ h.quantity_after | number: '1.0-2' }}</td>
+                                    <td>
+                                        <span class="text-xs">{{ h.created_by }}</span>
+                                    </td>
+                                </ng-template>
+                            </ng-container>
+                        </app-enhanced-table>
+                    </div>
+                </p-tabpanel>
+
+            </p-tabpanels>
+        </p-tabs>
+    </app-enhanced-card>
+
+</div>
+
+<p-toast />

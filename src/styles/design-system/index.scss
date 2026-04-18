@@ -1,0 +1,39 @@
+/**
+ * Design System Index
+ * Main entry point for the IBIS Inventory Management System design system
+ * 
+ * This file imports all design system components in the correct order:
+ * 1. Configuration and mixins
+ * 2. Tokens (CSS custom properties)
+ * 3. Theme configuration
+ * 4. Typography system
+ * 5. Spacing utilities
+ * 6. Core components
+ * 7. Navigation and layout components
+ * 
+ * Import this file in your main styles.scss to use the design system.
+ */
+
+/* Import configuration and mixins first */
+@import 'config';
+
+/* Import design tokens - these define all CSS custom properties */
+@import 'tokens';
+
+/* Import theme configuration - depends on tokens */
+@import 'theme';
+
+/* Import typography system - depends on tokens */
+@import 'typography';
+
+/* Import spacing utilities - depends on tokens */
+@import 'spacing';
+
+/* Import core component styles - depends on tokens and theme */
+@import 'components';
+
+/* Import navigation and layout components - depends on all above */
+@import 'navigation';
+
+/* Import animation system - depends on tokens for timing and easing */
+@import 'animations';

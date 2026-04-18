@@ -1,0 +1,205 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Data Import & Export" subtitle="Import and export master data and transactions"
+    icon="pi pi-upload">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+    <app-enhanced-card variant="standard">
+        <p-tabs>
+
+            <!-- Import Tab -->
+            <p-tabpanel header="Import Data">
+                <div class="space-y-6 py-4">
+
+                    <!-- Import Items -->
+                    <app-enhanced-card variant="standard">
+                        <div slot="header">
+                            <h3 class="card-section-title">Import Items</h3>
+                            <p class="card-section-subtitle">
+                                Upload CSV file with columns: code, name, type, unit, hs_code, description
+                            </p>
+                        </div>
+                        <p-fileUpload mode="basic" accept=".csv,.xlsx" [maxFileSize]="10000000" [auto]="true"
+                            chooseLabel="Choose File" (onSelect)="onImportItems($event)" class="mb-3">
+                        </p-fileUpload>
+
+                        @if (importResult) {
+                        <div class="mt-4">
+                            <p-message [severity]="importResult.success ? 'success' : 'warn'"
+                                [text]="getImportMessage(importResult)">
+                            </p-message>
+
+                            @if (importResult.errors.length > 0) {
+                            <div class="mt-3">
+                                <h4 class="font-semibold text-red-600 mb-2">Errors:</h4>
+                                <ul class="list-disc list-inside text-sm text-red-600">
+                                    @for (error of importResult.errors.slice(0, 10); track error.row) {
+                                    <li>Row {{ error.row }}: {{ error.message }}</li>
+                                    }
+                                </ul>
+                                @if (importResult.errors.length > 10) {
+                                <p class="text-sm text-gray-600 mt-2">
+                                    ... and {{ importResult.errors.length - 10 }} more errors
+                                </p>
+                                }
+                            </div>
+                            }
+                        </div>
+                        }
+                    </app-enhanced-card>
+
+                    <!-- Import Suppliers -->
+                    <app-enhanced-card variant="standard">
+                        <div slot="header">
+                            <h3 class="card-section-title">Import Suppliers</h3>
+                            <p class="card-section-subtitle">
+                                Upload CSV file with columns: code, name, npwp, address, phone, email
+                            </p>
+                        </div>
+                        <p-fileUpload mode="basic" accept=".csv,.xlsx" [maxFileSize]="10000000" [auto]="true"
+                            chooseLabel="Choose File" (onSelect)="onImportSuppliers($event)">
+                        </p-fileUpload>
+                    </app-enhanced-card>
+
+                    <!-- Import Customers -->
+                    <app-enhanced-card variant="standard">
+                        <div slot="header">
+                            <h3 class="card-section-title">Import Customers</h3>
+                            <p class="card-section-subtitle">
+                                Upload CSV file with columns: code, name, npwp, address, phone, email
+                            </p>
+                        </div>
+                        <p-fileUpload mode="basic" accept=".csv,.xlsx" [maxFileSize]="10000000" [auto]="true"
+                            chooseLabel="Choose File" (onSelect)="onImportCustomers($event)">
+                        </p-fileUpload>
+                    </app-enhanced-card>
+
+                    <!-- Download Templates -->
+                    <app-enhanced-card variant="standard" customClass="template-card">
+                        <div slot="header">
+                            <h3 class="card-section-title text-blue-900">Download Templates</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <app-enhanced-button label="Items Template" icon="pi pi-download" variant="secondary"
+                                size="sm" (onClick)="downloadTemplate('items')">
+                            </app-enhanced-button>
+                            <app-enhanced-button label="Suppliers Template" icon="pi pi-download" variant="secondary"
+                                size="sm" (onClick)="downloadTemplate('suppliers')">
+                            </app-enhanced-button>
+                            <app-enhanced-button label="Customers Template" icon="pi pi-download" variant="secondary"
+                                size="sm" (onClick)="downloadTemplate('customers')">
+                            </app-enhanced-button>
+                        </div>
+                    </app-enhanced-card>
+
+                </div>
+            </p-tabpanel>
+
+            <!-- Export Tab -->
+            <p-tabpanel header="Export Data">
+                <div class="space-y-4 py-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                        <!-- Export Items -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Items</h3>
+                                <p class="card-section-subtitle">Export all items master data</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('items')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                        <!-- Export Stock Balance -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Stock Balance</h3>
+                                <p class="card-section-subtitle">Export current stock balance</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('stock_balance')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                        <!-- Export Inbound -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Inbound</h3>
+                                <p class="card-section-subtitle">Export inbound transactions</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('inbound')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                        <!-- Export Outbound -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Outbound</h3>
+                                <p class="card-section-subtitle">Export outbound transactions</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('outbound')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                        <!-- Export Production -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Production</h3>
+                                <p class="card-section-subtitle">Export production orders</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('production')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                        <!-- Export Suppliers -->
+                        <app-enhanced-card variant="interactive">
+                            <div slot="header">
+                                <h3 class="card-section-title">Suppliers</h3>
+                                <p class="card-section-subtitle">Export suppliers master data</p>
+                            </div>
+                            <app-enhanced-button label="Export CSV" icon="pi pi-download" variant="primary" size="sm"
+                                [fullWidth]="true" (onClick)="exportData('suppliers')">
+                            </app-enhanced-button>
+                        </app-enhanced-card>
+
+                    </div>
+                </div>
+            </p-tabpanel>
+
+            <!-- Export History Tab -->
+            <p-tabpanel header="Export History">
+                <div class="py-4">
+                    <app-enhanced-table [data]="exportHistory" [paginator]="true" [rows]="10" [searchable]="false"
+                        [showHeader]="false" [columnCount]="6" emptyTitle="No Export History"
+                        emptyMessage="No exports have been performed yet" emptyIcon="pi pi-history">
+
+                        <ng-container slot="header">
+                            <th>Export Type</th>
+                            <th>File Name</th>
+                            <th>Records</th>
+                            <th>File Size</th>
+                            <th>Exported At</th>
+                            <th>Exported By</th>
+                        </ng-container>
+
+                        <ng-container slot="body">
+                            <ng-template #bodyTemplate let-history>
+                                <td>{{ history.export_type }}</td>
+                                <td>{{ history.file_name }}</td>
+                                <td>{{ history.record_count }}</td>
+                                <td>{{ formatFileSize(history.file_size) }}</td>
+                                <td>{{ history.exported_at | date:'short' }}</td>
+                                <td>{{ history.exported_by }}</td>
+                            </ng-template>
+                        </ng-container>
+                    </app-enhanced-table>
+                </div>
+            </p-tabpanel>
+
+        </p-tabs>
+    </app-enhanced-card>
+</div>

@@ -36,6 +36,13 @@ import { Supplier } from '../../../suppliers-customers/models/supplier.model';
 import { Warehouse } from '../../../warehouse/models/warehouse.model';
 import { PurchaseOrderHeader } from '../../../purchase-order/models/purchase-order.model';
 
+// Enhanced Components
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedFormFieldComponent } from '../../../../shared/components/enhanced-form-field/enhanced-form-field.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+
 // Components
 import { PurchaseOrderLookupComponent } from '../../../purchase-order/components/purchase-order-lookup/purchase-order-lookup.component';
 
@@ -65,7 +72,12 @@ import { PurchaseOrderLookupComponent } from '../../../purchase-order/components
     DialogModule,
     TagModule,
     LucideAngularModule,
-    PurchaseOrderLookupComponent
+    PurchaseOrderLookupComponent,
+    EnhancedCardComponent,
+    PageHeaderComponent,
+    EnhancedFormFieldComponent,
+    StatusBadgeComponent,
+    EmptyStateComponent
   ],
   providers: [MessageService],
   template: `
@@ -611,6 +623,22 @@ export class InboundFormComponent implements OnInit {
   items: Item[] = [];
   itemOptions: { label: string; value: string }[] = [];
   details: InboundDetail[] = [];
+
+  // Page Header Configuration
+  breadcrumbs = [
+    { label: 'Dashboard', routerLink: '/dashboard' },
+    { label: 'Inbound Receipts', routerLink: '/inbound' },
+    { label: this.isEditMode ? 'View Receipt' : 'Create Receipt' }
+  ];
+
+  headerActions = [
+    {
+      label: 'Back to List',
+      icon: 'pi pi-arrow-left',
+      command: () => this.onCancel(),
+      styleClass: 'p-button-text'
+    }
+  ];
 
   // Dropdown options
   statusOptions = [

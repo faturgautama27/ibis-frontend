@@ -1,0 +1,134 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Traceability System" subtitle="Track item movements and production history"
+    icon="pi pi-sitemap">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Search Card -->
+    <app-enhanced-card variant="standard" class="mb-6">
+        <div slot="header">
+            <h3 class="card-title flex items-center gap-2">
+                <i class="pi pi-search text-primary-600"></i>
+                Search Criteria
+            </h3>
+            <p class="card-subtitle">Enter item details to trace its movement history</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="form-label">Item ID</label>
+                <input pInputText [(ngModel)]="searchItemId" placeholder="Enter Item ID" class="w-full" />
+            </div>
+            <div>
+                <label class="form-label">Batch Number</label>
+                <input pInputText [(ngModel)]="searchBatchNumber" placeholder="Enter Batch Number (optional)"
+                    class="w-full" />
+            </div>
+            <div>
+                <label class="form-label">RFID Tag</label>
+                <input pInputText [(ngModel)]="searchRFIDValue" placeholder="Scan or enter RFID" class="w-full" />
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <app-enhanced-button label="Trace Forward" icon="pi pi-arrow-right" variant="primary" type="button"
+                (onClick)="traceForward()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Trace Backward" icon="pi pi-arrow-left" variant="secondary" type="button"
+                (onClick)="traceBackward()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Search by RFID" icon="pi pi-qrcode" variant="secondary" type="button"
+                [disabled]="!searchRFIDValue" (onClick)="searchRFID()">
+            </app-enhanced-button>
+            <app-enhanced-button label="Production History" icon="pi pi-history" variant="secondary" type="button"
+                (onClick)="loadProductionHistory()">
+            </app-enhanced-button>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Results Section -->
+    @if (traceResults.length > 0 || productionHistory.length > 0) {
+    <p-tabs>
+        @if (traceResults.length > 0) {
+        <p-tabpanel header="Traceability Chain">
+            <app-enhanced-card variant="standard">
+                <div slot="header">
+                    <h3 class="card-title">
+                        {{ traceDirection === 'forward' ? 'Forward Trace' : 'Backward Trace' }}
+                    </h3>
+                </div>
+
+                <p-timeline [value]="traceResults" align="alternate">
+                    <ng-template pTemplate="content" let-event>
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-gray-900">{{ event.movement_type }}</h4>
+                                <app-status-badge [label]="event.reference_type"
+                                    [severity]="getMovementSeverity(event.movement_type)">
+                                </app-status-badge>
+                            </div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p><strong>Date:</strong> {{ event.movement_date | date:'medium' }}</p>
+                                <p><strong>Reference:</strong> {{ event.reference_number }}</p>
+                                <p><strong>Quantity:</strong> {{ event.quantity_change }} {{ event.unit }}</p>
+                                @if (event.batch_number) {
+                                <p><strong>Batch:</strong> {{ event.batch_number }}</p>
+                                }
+                                <p><strong>Warehouse:</strong> {{ event.warehouse_name }}</p>
+                                <p><strong>Balance After:</strong> {{ event.quantity_after }} {{ event.unit }}</p>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-timeline>
+            </app-enhanced-card>
+        </p-tabpanel>
+        }
+
+        @if (productionHistory.length > 0) {
+        <p-tabpanel header="Production History">
+            <app-enhanced-table [data]="productionHistory" [loading]="false" [paginator]="true" [rows]="10"
+                [totalRecords]="productionHistory.length" [showHeader]="true" title="Production Orders"
+                [searchable]="false" [columnCount]="6" emptyIcon="pi pi-inbox" emptyTitle="No Production History"
+                emptyMessage="No production orders found for this item.">
+
+                <th slot="header">WO Number</th>
+                <th slot="header">Date</th>
+                <th slot="header">Output Item</th>
+                <th slot="header">Quantity</th>
+                <th slot="header">Status</th>
+                <th slot="header">Materials Used</th>
+
+                <ng-template #bodyTemplate let-order>
+                    <td>{{ order.wo_number }}</td>
+                    <td>{{ order.wo_date | date:'short' }}</td>
+                    <td>{{ order.output_item_name }}</td>
+                    <td>{{ order.output_quantity }} {{ order.output_unit }}</td>
+                    <td>
+                        <app-status-badge [label]="order.status" [severity]="getStatusSeverity(order.status)">
+                        </app-status-badge>
+                    </td>
+                    <td>
+                        @for (material of order.materials; track material.material_item_name) {
+                        <div class="text-sm">
+                            {{ material.material_item_name }}: {{ material.quantity_used }} {{ material.unit }}
+                        </div>
+                        }
+                    </td>
+                </ng-template>
+            </app-enhanced-table>
+        </p-tabpanel>
+        }
+    </p-tabs>
+    }
+
+    <!-- No Results -->
+    @if (searched && traceResults.length === 0 && productionHistory.length === 0) {
+    <app-enhanced-card variant="standard">
+        <app-empty-state icon="pi pi-search" title="No Results Found"
+            description="No traceability data found for the specified criteria." context="card">
+        </app-empty-state>
+    </app-enhanced-card>
+    }
+
+</div>

@@ -5,6 +5,9 @@ import { ChartModule } from 'primeng/chart';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TimelineModule } from 'primeng/timeline';
+import { ButtonModule } from 'primeng/button';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 import { DashboardService, DashboardMetrics } from '../../services/dashboard.service';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -22,125 +25,705 @@ import { switchMap } from 'rxjs/operators';
         ChartModule,
         TableModule,
         TagModule,
-        TimelineModule
+        TimelineModule,
+        ButtonModule,
+        EnhancedCardComponent,
+        StatusBadgeComponent
     ],
     template: `
-        <div class="main-layout">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+        <div class="dashboard-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-content">
+                    <div class="header-text">
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Real-time inventory insights and system overview</p>
+                    </div>
+                    <div class="header-actions">
+                        <p-button 
+                            icon="pi pi-refresh" 
+                            label="Refresh" 
+                            severity="secondary"
+                            size="small"
+                            (onClick)="loadDashboardData()">
+                        </p-button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Metrics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Total Stock Value</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                {{ formatCurrency(metrics.total_stock_value) }}
-                            </p>
-                        </div>
-                        <i class="pi pi-dollar text-3xl text-blue-500"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Total Items</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ metrics.total_items }}</p>
-                        </div>
-                        <i class="pi pi-box text-3xl text-green-500"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Low Stock Alerts</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ metrics.low_stock_count }}</p>
-                        </div>
-                        <i class="pi pi-exclamation-triangle text-3xl text-yellow-500"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm text-gray-600 mb-1">Expiring Soon</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ metrics.expiring_items_count }}</p>
-                        </div>
-                        <i class="pi pi-calendar-times text-3xl text-red-500"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <!-- Stock Movement Trends -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Stock Movement Trends (30 Days)</h3>
-                    <p-chart type="line" [data]="movementChartData" [options]="chartOptions"></p-chart>
-                </div>
-
-                <!-- Warehouse Utilization -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Warehouse Utilization</h3>
-                    <p-chart type="bar" [data]="utilizationChartData" [options]="chartOptions"></p-chart>
-                </div>
-            </div>
-
-            <!-- Production Efficiency -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Production Efficiency (6 Months)</h3>
-                <p-chart type="bar" [data]="efficiencyChartData" [options]="chartOptions"></p-chart>
-            </div>
-
-            <!-- Bottom Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Pending Transactions -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Pending Transactions</h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                            <span class="text-gray-700">Pending Inbound</span>
-                            <span class="font-bold text-blue-600">{{ metrics.pending_inbound }}</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                            <span class="text-gray-700">Pending Outbound</span>
-                            <span class="font-bold text-green-600">{{ metrics.pending_outbound }}</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                            <span class="text-gray-700">Pending Production</span>
-                            <span class="font-bold text-purple-600">{{ metrics.pending_production }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activities -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
-                    <div class="space-y-2 max-h-64 overflow-y-auto">
-                        <div *ngFor="let activity of recentActivities" 
-                             class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded">
-                            <i class="pi pi-circle-fill text-xs text-blue-500 mt-1"></i>
-                            <div class="flex-1">
-                                <p class="text-sm text-gray-900">{{ activity.movement_type }}</p>
-                                <p class="text-xs text-gray-600">
-                                    {{ activity.item_name }} - {{ activity.quantity_change }} {{ activity.unit }}
-                                </p>
-                                <p class="text-xs text-gray-500">{{ activity.movement_date | date:'short' }}</p>
+            <div class="metrics-grid">
+                <!-- Total Stock Value Card -->
+                <app-enhanced-card 
+                    variant="stats" 
+                    class="metric-card metric-card-primary">
+                    <div class="metric-content">
+                        <div class="metric-info">
+                            <div class="metric-label">Total Stock Value</div>
+                            <div class="metric-value">{{ formatCurrency(metrics.total_stock_value) }}</div>
+                            <div class="metric-change positive">
+                                <i class="pi pi-arrow-up"></i>
+                                <span>+12.5% from last month</span>
                             </div>
                         </div>
+                        <div class="metric-icon primary">
+                            <i class="pi pi-dollar"></i>
+                        </div>
                     </div>
+                </app-enhanced-card>
+
+                <!-- Total Items Card -->
+                <app-enhanced-card 
+                    variant="stats" 
+                    class="metric-card metric-card-success">
+                    <div class="metric-content">
+                        <div class="metric-info">
+                            <div class="metric-label">Total Items</div>
+                            <div class="metric-value">{{ formatNumber(metrics.total_items) }}</div>
+                            <div class="metric-change positive">
+                                <i class="pi pi-arrow-up"></i>
+                                <span>+8.2% from last month</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon success">
+                            <i class="pi pi-box"></i>
+                        </div>
+                    </div>
+                </app-enhanced-card>
+
+                <!-- Low Stock Alerts Card -->
+                <app-enhanced-card 
+                    variant="stats" 
+                    class="metric-card metric-card-warning">
+                    <div class="metric-content">
+                        <div class="metric-info">
+                            <div class="metric-label">Low Stock Alerts</div>
+                            <div class="metric-value">{{ metrics.low_stock_count }}</div>
+                            <div class="metric-change neutral">
+                                <i class="pi pi-minus"></i>
+                                <span>No change</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon warning">
+                            <i class="pi pi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </app-enhanced-card>
+
+                <!-- Expiring Soon Card -->
+                <app-enhanced-card 
+                    variant="stats" 
+                    class="metric-card metric-card-danger">
+                    <div class="metric-content">
+                        <div class="metric-info">
+                            <div class="metric-label">Expiring Soon</div>
+                            <div class="metric-value">{{ metrics.expiring_items_count }}</div>
+                            <div class="metric-change negative">
+                                <i class="pi pi-arrow-down"></i>
+                                <span>-3 from yesterday</span>
+                            </div>
+                        </div>
+                        <div class="metric-icon danger">
+                            <i class="pi pi-calendar-times"></i>
+                        </div>
+                    </div>
+                </app-enhanced-card>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-section">
+                <div class="charts-grid">
+                    <!-- Stock Movement Trends -->
+                    <app-enhanced-card 
+                        variant="standard" 
+                        title="Stock Movement Trends" 
+                        subtitle="Last 30 days overview"
+                        [header]="true"
+                        class="chart-card">
+                        <div class="chart-container">
+                            <p-chart 
+                                type="line" 
+                                [data]="movementChartData" 
+                                [options]="chartOptions"
+                                class="dashboard-chart">
+                            </p-chart>
+                        </div>
+                    </app-enhanced-card>
+
+                    <!-- Warehouse Utilization -->
+                    <app-enhanced-card 
+                        variant="standard" 
+                        title="Warehouse Utilization" 
+                        subtitle="Current capacity usage"
+                        [header]="true"
+                        class="chart-card">
+                        <div class="chart-container">
+                            <p-chart 
+                                type="bar" 
+                                [data]="utilizationChartData" 
+                                [options]="chartOptions"
+                                class="dashboard-chart">
+                            </p-chart>
+                        </div>
+                    </app-enhanced-card>
+                </div>
+
+                <!-- Production Efficiency Chart -->
+                <app-enhanced-card 
+                    variant="standard" 
+                    title="Production Efficiency" 
+                    subtitle="6-month performance overview"
+                    [header]="true"
+                    class="chart-card full-width">
+                    <div class="chart-container large">
+                        <p-chart 
+                            type="bar" 
+                            [data]="efficiencyChartData" 
+                            [options]="chartOptions"
+                            class="dashboard-chart">
+                        </p-chart>
+                    </div>
+                </app-enhanced-card>
+            </div>
+
+            <!-- Bottom Section -->
+            <div class="bottom-section">
+                <div class="bottom-grid">
+                    <!-- Pending Transactions -->
+                    <app-enhanced-card 
+                        variant="standard" 
+                        title="Pending Transactions" 
+                        subtitle="Requires attention"
+                        [header]="true"
+                        class="transactions-card">
+                        <div class="transactions-list">
+                            <div class="transaction-item inbound">
+                                <div class="transaction-info">
+                                    <div class="transaction-label">Pending Inbound</div>
+                                    <div class="transaction-description">Awaiting receipt confirmation</div>
+                                </div>
+                                <div class="transaction-value">{{ metrics.pending_inbound }}</div>
+                                <div class="transaction-icon">
+                                    <i class="pi pi-arrow-down"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="transaction-item outbound">
+                                <div class="transaction-info">
+                                    <div class="transaction-label">Pending Outbound</div>
+                                    <div class="transaction-description">Ready for shipment</div>
+                                </div>
+                                <div class="transaction-value">{{ metrics.pending_outbound }}</div>
+                                <div class="transaction-icon">
+                                    <i class="pi pi-arrow-up"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="transaction-item production">
+                                <div class="transaction-info">
+                                    <div class="transaction-label">Pending Production</div>
+                                    <div class="transaction-description">In manufacturing queue</div>
+                                </div>
+                                <div class="transaction-value">{{ metrics.pending_production }}</div>
+                                <div class="transaction-icon">
+                                    <i class="pi pi-cog"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </app-enhanced-card>
+
+                    <!-- Recent Activities -->
+                    <app-enhanced-card 
+                        variant="standard" 
+                        title="Recent Activities" 
+                        subtitle="Latest system updates"
+                        [header]="true"
+                        class="activities-card">
+                        <div class="activities-list">
+                            @for (activity of recentActivities; track activity.id) {
+                                <div class="activity-item">
+                                    <div class="activity-indicator">
+                                        <i class="pi pi-circle-fill"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-title">{{ activity.movement_type }}</div>
+                                        <div class="activity-description">
+                                            {{ activity.item_name }} - {{ activity.quantity_change }} {{ activity.unit }}
+                                        </div>
+                                        <div class="activity-time">{{ activity.movement_date | date:'short' }}</div>
+                                    </div>
+                                    <app-status-badge 
+                                        [label]="getActivityStatus(activity.movement_type)"
+                                        [status]="activity.movement_type"
+                                        [autoSeverity]="true"
+                                        size="sm">
+                                    </app-status-badge>
+                                </div>
+                            }
+                            @empty {
+                                <div class="empty-state">
+                                    <i class="pi pi-info-circle"></i>
+                                    <span>No recent activities</span>
+                                </div>
+                            }
+                        </div>
+                    </app-enhanced-card>
                 </div>
             </div>
 
-            <!-- Auto-refresh indicator -->
-            <div class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 text-sm text-gray-600">
-                <i class="pi pi-sync mr-2"></i>
-                Auto-refresh: {{ countdown }}s
+            <!-- Auto-refresh Indicator -->
+            <div class="refresh-indicator">
+                <div class="refresh-content">
+                    <i class="pi pi-sync" [class.spinning]="isRefreshing"></i>
+                    <span>Auto-refresh: {{ countdown }}s</span>
+                </div>
             </div>
         </div>
-    `
+    `,
+    styles: [`
+        /* Dashboard Container */
+        .dashboard-container {
+            padding: var(--padding-lg);
+            background: var(--gray-50);
+            min-height: 100vh;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: var(--space-8);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-6);
+        }
+
+        .header-text {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: var(--text-4xl);
+            font-weight: var(--font-bold);
+            color: var(--gray-900);
+            margin: 0 0 var(--space-2) 0;
+            line-height: var(--leading-tight);
+        }
+
+        .page-subtitle {
+            font-size: var(--text-lg);
+            color: var(--gray-600);
+            margin: 0;
+            line-height: var(--leading-normal);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--space-3);
+            align-items: center;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .metric-card {
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .metric-card:hover {
+            transform: var(--card-hover-transform);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+        .metric-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-4);
+        }
+
+        .metric-info {
+            flex: 1;
+        }
+
+        .metric-label {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--gray-600);
+            margin-bottom: var(--space-2);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+        }
+
+        .metric-value {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-3);
+            line-height: var(--leading-tight);
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+        }
+
+        .metric-change.positive {
+            color: var(--success-600);
+        }
+
+        .metric-change.negative {
+            color: var(--error-600);
+        }
+
+        .metric-change.neutral {
+            color: var(--gray-500);
+        }
+
+        .metric-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-3xl);
+            flex-shrink: 0;
+        }
+
+        .metric-icon.primary {
+            background: var(--primary-100);
+            color: var(--primary-600);
+        }
+
+        .metric-icon.success {
+            background: var(--success-100);
+            color: var(--success-600);
+        }
+
+        .metric-icon.warning {
+            background: var(--warning-100);
+            color: var(--warning-600);
+        }
+
+        .metric-icon.danger {
+            background: var(--error-100);
+            color: var(--error-600);
+        }
+
+        /* Charts Section */
+        .charts-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-6);
+        }
+
+        .chart-card {
+            min-height: 400px;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-container.large {
+            height: 400px;
+        }
+
+        .dashboard-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            margin-bottom: var(--space-8);
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-6);
+        }
+
+        /* Transactions Card */
+        .transactions-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--padding-md);
+            border-radius: var(--radius-lg);
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        .transaction-item:hover {
+            background: var(--gray-50);
+        }
+
+        .transaction-item.inbound {
+            background: var(--primary-50);
+            border: 1px solid var(--primary-200);
+        }
+
+        .transaction-item.outbound {
+            background: var(--success-50);
+            border: 1px solid var(--success-200);
+        }
+
+        .transaction-item.production {
+            background: var(--warning-50);
+            border: 1px solid var(--warning-200);
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-label {
+            font-size: var(--text-base);
+            font-weight: var(--font-semibold);
+            color: var(--gray-900);
+            margin-bottom: var(--space-1);
+        }
+
+        .transaction-description {
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+
+        .transaction-value {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            color: var(--gray-900);
+            margin-right: var(--space-3);
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-lg);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .transaction-item.inbound .transaction-icon {
+            color: var(--primary-600);
+        }
+
+        .transaction-item.outbound .transaction-icon {
+            color: var(--success-600);
+        }
+
+        .transaction-item.production .transaction-icon {
+            color: var(--warning-600);
+        }
+
+        /* Activities Card */
+        .activities-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            padding: var(--padding-sm);
+            border-radius: var(--radius-md);
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        .activity-item:hover {
+            background: var(--gray-50);
+        }
+
+        .activity-indicator {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: var(--space-1);
+        }
+
+        .activity-indicator i {
+            font-size: 8px;
+            color: var(--primary-500);
+        }
+
+        .activity-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .activity-title {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--gray-900);
+            margin-bottom: var(--space-1);
+        }
+
+        .activity-description {
+            font-size: var(--text-xs);
+            color: var(--gray-600);
+            margin-bottom: var(--space-1);
+        }
+
+        .activity-time {
+            font-size: var(--text-xs);
+            color: var(--gray-500);
+        }
+
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--padding-xl);
+            color: var(--gray-500);
+            font-size: var(--text-sm);
+        }
+
+        .empty-state i {
+            font-size: var(--text-lg);
+        }
+
+        /* Auto-refresh Indicator */
+        .refresh-indicator {
+            position: fixed;
+            bottom: var(--space-6);
+            right: var(--space-6);
+            z-index: var(--z-tooltip);
+        }
+
+        .refresh-content {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--padding-sm) var(--padding-md);
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+            font-size: var(--text-sm);
+            color: var(--gray-600);
+        }
+
+        .refresh-content i.spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: var(--padding-md);
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--space-4);
+            }
+
+            .page-title {
+                font-size: var(--text-3xl);
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-4);
+            }
+
+            .chart-container,
+            .chart-container.large {
+                height: 250px;
+            }
+
+            .refresh-indicator {
+                bottom: var(--space-4);
+                right: var(--space-4);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metric-content {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: var(--space-3);
+            }
+
+            .metric-icon {
+                width: 48px;
+                height: 48px;
+                font-size: var(--text-2xl);
+            }
+
+            .metric-value {
+                font-size: var(--text-2xl);
+            }
+
+            .transaction-item {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: var(--space-2);
+            }
+
+            .transaction-value {
+                margin-right: 0;
+                margin-bottom: var(--space-2);
+            }
+        }
+    `]
 })
 export class MainDashboardComponent implements OnInit, OnDestroy {
     private dashboardService = inject(DashboardService);
@@ -160,6 +743,7 @@ export class MainDashboardComponent implements OnInit, OnDestroy {
 
     recentActivities: any[] = [];
     countdown = 300; // 5 minutes
+    isRefreshing = false;
 
     movementChartData: any;
     utilizationChartData: any;
@@ -178,9 +762,17 @@ export class MainDashboardComponent implements OnInit, OnDestroy {
     }
 
     loadDashboardData(): void {
+        this.isRefreshing = true;
+
         // Load metrics
-        this.dashboardService.getDashboardMetrics().subscribe(metrics => {
-            this.metrics = metrics;
+        this.dashboardService.getDashboardMetrics().subscribe({
+            next: (metrics) => {
+                this.metrics = metrics;
+                this.isRefreshing = false;
+            },
+            error: () => {
+                this.isRefreshing = false;
+            }
         });
 
         // Load stock movement trends
@@ -294,5 +886,22 @@ export class MainDashboardComponent implements OnInit, OnDestroy {
             currency: 'IDR',
             minimumFractionDigits: 0
         }).format(value);
+    }
+
+    formatNumber(value: number): string {
+        return new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    getActivityStatus(movementType: string): string {
+        // Map movement types to display labels
+        const statusMap: { [key: string]: string } = {
+            'inbound': 'Received',
+            'outbound': 'Shipped',
+            'production': 'Produced',
+            'adjustment': 'Adjusted',
+            'transfer': 'Transferred'
+        };
+
+        return statusMap[movementType.toLowerCase()] || movementType;
     }
 }

@@ -22,6 +22,12 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
+
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
 
 // Models and Services
 import {
@@ -73,7 +79,12 @@ import {
         DialogModule,
         IconFieldModule,
         InputIconModule,
-        RadioButtonModule
+        RadioButtonModule,
+        TooltipModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        StatusBadgeComponent
     ],
     providers: [MessageService],
     templateUrl: './stock-adjustment-form.component.html',

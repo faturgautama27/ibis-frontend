@@ -1,0 +1,158 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Form / Filter Styling */
+.form-group {
+    margin-bottom: var(--space-4);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+/* Table Styling */
+.table-header-cell {
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-xs);
+}
+
+.table-body-cell {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+    vertical-align: middle;
+}
+
+.table-body-row {
+    transition: all var(--duration-fast) var(--ease-out);
+}
+
+/* Card Enhancements */
+::ng-deep app-enhanced-card {
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin: 0 0 var(--space-1) 0;
+    }
+
+    .card-subtitle {
+        font-size: var(--text-sm);
+        color: var(--gray-600);
+        margin: 0;
+    }
+}
+
+/* PrimeNG Component Overrides */
+::ng-deep {
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    .p-inputtext,
+    .p-select {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--padding-sm) var(--padding-md);
+        font-size: var(--text-sm);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    .p-datatable {
+        border: none;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+
+        .p-datatable-thead>tr>th {
+            background: var(--gray-50);
+            border-bottom: var(--table-header-border-width) solid var(--gray-200);
+            padding: var(--padding-md) var(--padding-lg);
+            font-weight: var(--font-semibold);
+            color: var(--gray-700);
+            font-size: var(--text-sm);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wide);
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+
+        .p-datatable-tbody>tr {
+            border-bottom: var(--table-border-width) solid var(--gray-100);
+            transition: all var(--duration-fast) var(--ease-out);
+
+            &:hover {
+                background: var(--gray-50) !important;
+                transform: translateX(2px);
+            }
+
+            &:nth-child(even) {
+                background: var(--gray-25);
+            }
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: var(--padding-md) var(--padding-lg);
+            color: var(--gray-600);
+            font-size: var(--text-sm);
+            border-left: none;
+            border-right: none;
+            border-top: none;
+            vertical-align: middle;
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+
+    ::ng-deep .p-inputtext,
+    ::ng-deep .p-select {
+        border-width: 3px;
+        border-color: var(--gray-900);
+    }
+}

@@ -6,6 +6,13 @@ import { TagModule } from 'primeng/tag';
 import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
+
+// Enhanced Components
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+
 import { PurchaseOrderHeader, PurchaseOrderDetail, POStatus } from '../../models/purchase-order.model';
 
 /**
@@ -44,10 +51,15 @@ interface LinkedInboundTransaction {
         TagModule,
         TimelineModule,
         CardModule,
-        DividerModule
+        DividerModule,
+        // Enhanced Components
+        EnhancedButtonComponent,
+        EnhancedCardComponent,
+        PageHeaderComponent,
+        StatusBadgeComponent
     ],
     templateUrl: './purchase-order-detail.component.html',
-    styleUrls: ['./purchase-order-detail.component.css']
+    styleUrls: ['./purchase-order-detail.component.scss']
 })
 export class PurchaseOrderDetailComponent implements OnInit {
     @Input() purchaseOrder!: PurchaseOrderHeader;
@@ -229,6 +241,23 @@ export class PurchaseOrderDetailComponent implements OnInit {
             month: 'long',
             day: 'numeric'
         });
+    }
+
+    /**
+     * Get fulfillment CSS class based on percentage
+     */
+    getFulfillmentClass(): string {
+        const percentage = this.getFulfillmentPercentage();
+        if (percentage === 100) return 'complete';
+        if (percentage > 0) return 'partial';
+        return 'pending';
+    }
+
+    /**
+     * Get remaining quantity CSS class
+     */
+    getRemainingClass(remaining: number): string {
+        return remaining > 0 ? 'pending' : 'complete';
     }
 
     /**

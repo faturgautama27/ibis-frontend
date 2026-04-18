@@ -1,0 +1,85 @@
+<!-- Enhanced Page Header -->
+<app-page-header title="Suppliers" subtitle="Manage supplier information" icon="pi pi-truck"
+    [primaryAction]="{ label: 'Add Supplier', icon: 'pi pi-plus' }" (primaryActionClick)="onCreateSupplier()">
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
+
+    <!-- Filters Section -->
+    <app-enhanced-card variant="standard" class="mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Search -->
+            <div class="flex flex-col">
+                <label class="form-label">Search</label>
+                <p-iconfield>
+                    <p-inputicon class="pi pi-search" />
+                    <input type="text" pInputText placeholder="Search by code, name, or tax ID..."
+                        [(ngModel)]="searchQuery" (input)="onSearchChange()" class="w-full" />
+                </p-iconfield>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="flex flex-col">
+                <label class="form-label">Status</label>
+                <p-select [options]="statusOptions" [(ngModel)]="selectedStatus" (onChange)="onFilterChange()"
+                    placeholder="All Suppliers" [showClear]="true" class="w-full"></p-select>
+            </div>
+        </div>
+    </app-enhanced-card>
+
+    <!-- Error Message -->
+    @if (error) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p class="text-sm text-red-800">{{ error }}</p>
+    </div>
+    }
+
+    <!-- Data Table -->
+    <app-enhanced-table [data]="filteredSuppliers" [loading]="loading" [paginator]="true" [rows]="50"
+        [totalRecords]="filteredSuppliers.length" [showHeader]="false" [searchable]="false" [columnCount]="6"
+        emptyIcon="pi pi-truck" emptyTitle="No Suppliers Found" emptyMessage="No suppliers match your current filters.">
+
+        <th slot="header" class="text-left">Code</th>
+        <th slot="header" class="text-left">Name</th>
+        <th slot="header" class="text-left">Contact</th>
+        <th slot="header" class="text-left">Tax ID (NPWP)</th>
+        <th slot="header" class="text-center">Status</th>
+        <th slot="header" class="text-center">Actions</th>
+
+        <ng-template #bodyTemplate let-supplier>
+            <td class="font-medium text-gray-900">{{ supplier.supplier_code }}</td>
+            <td>
+                <div class="text-gray-900">{{ supplier.supplier_name }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ supplier.city || supplier.address }}</div>
+            </td>
+            <td>
+                <div class="text-sm text-gray-700">{{ supplier.contact_person || '-' }}</div>
+                <div class="text-xs text-gray-500">{{ supplier.phone || '-' }}</div>
+            </td>
+            <td class="font-mono text-sm text-gray-700">{{ supplier.tax_id }}</td>
+            <td class="text-center">
+                <app-status-badge [label]="supplier.active ? 'Active' : 'Inactive'"
+                    [severity]="supplier.active ? 'success' : 'danger'">
+                </app-status-badge>
+            </td>
+            <td class="text-center">
+                <div class="flex items-center justify-center gap-2">
+                    <app-enhanced-button icon="pi pi-pencil" variant="text" size="sm" type="button"
+                        (onClick)="onEditSupplier(supplier)">
+                    </app-enhanced-button>
+                    <app-enhanced-button icon="pi pi-trash" variant="danger" size="sm" type="button"
+                        (onClick)="onDeleteSupplier(supplier)">
+                    </app-enhanced-button>
+                </div>
+            </td>
+        </ng-template>
+
+        <div slot="empty-actions">
+            <app-enhanced-button label="Add First Supplier" icon="pi pi-plus" variant="primary" size="sm" type="button"
+                (onClick)="onCreateSupplier()">
+            </app-enhanced-button>
+        </div>
+    </app-enhanced-table>
+
+    <p-confirmDialog></p-confirmDialog>
+</div>

@@ -1,0 +1,106 @@
+@import '../../../../../styles/design-system/index.scss';
+
+:host {
+    display: block;
+    min-height: 100vh;
+    background: var(--background-primary);
+}
+
+.main-layout {
+    min-height: calc(100vh - 4rem);
+    background: var(--background-primary);
+}
+
+/* Card Title/Subtitle */
+::ng-deep app-enhanced-card {
+    .card-title {
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        color: var(--gray-900);
+        margin: 0 0 var(--space-1) 0;
+    }
+
+    .card-subtitle {
+        font-size: var(--text-sm);
+        color: var(--gray-600);
+        margin: 0;
+    }
+}
+
+/* Table Cells */
+.table-header-cell {
+    font-weight: var(--font-semibold);
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    font-size: var(--text-xs);
+}
+
+.table-body-cell {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+    vertical-align: middle;
+}
+
+/* Enhanced Button */
+.enhanced-btn {
+    transition: all var(--duration-fast) var(--ease-out);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-medium);
+}
+
+.hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* PrimeNG Overrides */
+::ng-deep {
+    .p-button {
+        border-radius: var(--radius-md);
+        font-weight: var(--font-medium);
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+    }
+
+    .p-inputtext {
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        transition: all var(--duration-normal) var(--ease-out);
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+    }
+
+    .p-confirmdialog {
+        border-radius: var(--radius-xl);
+        box-shadow: var(--modal-shadow);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-layout {
+        padding: var(--padding-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .enhanced-btn,
+    .hover-lift {
+        transition: none;
+        transform: none !important;
+    }
+}

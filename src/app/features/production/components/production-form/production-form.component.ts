@@ -13,9 +13,13 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 
 // Lucide icons
 import { LucideAngularModule, Factory, Plus, Trash2 } from 'lucide-angular';
+
+// Enhanced Components
+// Using inline enhanced styling instead of separate components for better compatibility
 
 // Services
 import { ProductionDemoService } from '../../services/production-demo.service';
@@ -26,7 +30,7 @@ import { InventoryDemoService } from '../../../inventory/services/inventory-demo
 import { WOStatus } from '../../models/production.model';
 import { Warehouse } from '../../../warehouse/models/warehouse.model';
 import { Item, ItemType } from '../../../inventory/models/item.model';
-import { DialogModule } from 'primeng/dialog';
+import { EnhancedCardComponent, EnhancedFormFieldComponent, PageHeaderComponent } from '@app/shared/components';
 
 /**
  * Production Form Component
@@ -47,391 +51,498 @@ import { DialogModule } from 'primeng/dialog';
     TableModule,
     ToastModule,
     DialogModule,
-    LucideAngularModule
+    LucideAngularModule,
+    PageHeaderComponent,
+    EnhancedCardComponent,
+    EnhancedFormFieldComponent,
+
   ],
   providers: [MessageService],
   template: `
-    <div class="main-layout overflow-hidden">
-      <!-- Page Header -->
-      <div class="mb-6">
-        <div class="flex items-center gap-2 mb-2">
-          <lucide-icon [img]="FactoryIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-          <h1 class="text-2xl font-semibold text-gray-900">
-            {{ isEditMode ? 'Edit Work Order' : 'Create Work Order' }}
-          </h1>
-        </div>
-        <p class="text-sm text-gray-600">
-          {{ isEditMode ? 'Edit production work order details' : 'Create a new production work order' }}
-        </p>
-      </div>
+    <div class="min-h-screen bg-gray-50">
+      <!-- Enhanced Page Header -->
+      <app-page-header
+        [title]="isEditMode ? 'Edit Work Order' : 'Create Work Order'"
+        [subtitle]="isEditMode ? 'Edit production work order details' : 'Create a new production work order'"
+        icon="pi pi-cog"
+        [showBackButton]="true"
+        [primaryAction]="{
+          label: isEditMode ? 'Update Work Order' : 'Create Work Order',
+          icon: 'pi pi-check',
+          loading: loading,
+          disabled: productionForm.invalid || loading || materials.length === 0
+        }"
+        (back)="onCancel()"
+        (primaryActionClick)="onSubmit()">
+      </app-page-header>
 
-      <!-- Form Card -->
-      <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 13rem); overflow-y: auto">
-        <form [formGroup]="productionForm" (ngSubmit)="onSubmit()">
-          <!-- Basic Information -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Basic Information</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">
-                  WO Number <span class="text-red-500">*</span>
-                </label>
-                <input pInputText formControlName="wo_number" class="w-full" />
-                <small *ngIf="isFieldInvalid('wo_number')" class="text-red-600 mt-1">WO number is required</small>
-              </div>
+      <!-- Main Content -->
+      <div class="p-6">
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">
-                  WO Date <span class="text-red-500">*</span>
-                </label>
+        <form [formGroup]="productionForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          
+          <!-- Basic Information Card -->
+          <app-enhanced-card variant="standard" title="Basic Information" [header]="true">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-enhanced-form-field
+                label="WO Number"
+                [required]="true"
+                [hasError]="isFieldInvalid('wo_number')"
+                errorMessage="WO number is required">
+                <input 
+                  pInputText 
+                  formControlName="wo_number" 
+                  class="w-full enhanced-input"
+                  placeholder="Enter work order number" />
+              </app-enhanced-form-field>
+
+              <app-enhanced-form-field
+                label="WO Date"
+                [required]="true"
+                [hasError]="isFieldInvalid('wo_date')"
+                errorMessage="WO date is required">
                 <p-datepicker
                   formControlName="wo_date"
                   dateFormat="dd/mm/yy"
                   [showIcon]="true"
-                  class="w-full"
-                />
-                <small *ngIf="isFieldInvalid('wo_date')" class="text-red-600 mt-1">WO date is required</small>
-              </div>
+                  class="w-full enhanced-input"
+                  placeholder="Select work order date" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Status</label>
+              <app-enhanced-form-field
+                label="Status"
+                helpText="Status will be automatically managed">
                 <p-select
                   formControlName="status"
                   [options]="statusOptions"
-                  class="w-full"
+                  class="w-full enhanced-input"
                   [disabled]="isEditMode"
-                />
-              </div>
+                  placeholder="Select status" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">
-                  Warehouse <span class="text-red-500">*</span>
-                </label>
+              <app-enhanced-form-field
+                label="Warehouse"
+                [required]="true"
+                [hasError]="isFieldInvalid('warehouse_name')"
+                errorMessage="Warehouse is required">
                 <p-select
                   formControlName="warehouse_name"
                   [options]="warehouseOptions"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="Select Warehouse"
+                  placeholder="Select warehouse"
                   [filter]="true"
                   filterBy="label"
-                  class="w-full"
-                  (onChange)="onWarehouseChange($event)"
-                />
-                <small *ngIf="isFieldInvalid('warehouse_name')" class="text-red-600 mt-1">Warehouse is required</small>
-              </div>
+                  class="w-full enhanced-input"
+                  (onChange)="onWarehouseChange($event)" />
+              </app-enhanced-form-field>
             </div>
-          </div>
+          </app-enhanced-card>
 
-          <!-- Output Product -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Output Product (Finished Goods)</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">
-                  Output Item <span class="text-red-500">*</span>
-                </label>
+          <!-- Output Product Card -->
+          <app-enhanced-card variant="standard" title="Output Product (Finished Goods)" [header]="true">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-enhanced-form-field
+                label="Output Item"
+                [required]="true"
+                [hasError]="isFieldInvalid('output_item_code')"
+                errorMessage="Output item is required"
+                helpText="Select the finished goods item to be produced">
                 <p-select
                   formControlName="output_item_code"
                   [options]="itemOptions"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="Select Output Item"
+                  placeholder="Select output item"
                   [filter]="true"
                   filterBy="label"
-                  class="w-full"
-                  (onChange)="onOutputItemChange($event)"
-                />
-                <small *ngIf="isFieldInvalid('output_item_code')" class="text-red-600 mt-1">Output item is required</small>
-              </div>
+                  class="w-full enhanced-input"
+                  (onChange)="onOutputItemChange($event)" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Output Item Name</label>
-                <input pInputText formControlName="output_item_name" class="w-full" [readonly]="true" />
-              </div>
+              <app-enhanced-form-field
+                label="Output Item Name"
+                helpText="Automatically filled when item is selected">
+                <input 
+                  pInputText 
+                  formControlName="output_item_name" 
+                  class="w-full enhanced-input" 
+                  [readonly]="true"
+                  placeholder="Item name will appear here" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">
-                  Planned Quantity <span class="text-red-500">*</span>
-                </label>
-                <p-inputnumber formControlName="planned_quantity" [min]="0" class="w-full" />
-                <small *ngIf="isFieldInvalid('planned_quantity')" class="text-red-600 mt-1">Planned quantity is required</small>
-              </div>
+              <app-enhanced-form-field
+                label="Planned Quantity"
+                [required]="true"
+                [hasError]="isFieldInvalid('planned_quantity')"
+                errorMessage="Planned quantity is required">
+                <p-inputnumber 
+                  formControlName="planned_quantity" 
+                  [min]="0" 
+                  class="w-full enhanced-input"
+                  placeholder="Enter planned quantity" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Unit</label>
-                <input pInputText formControlName="unit" class="w-full" [readonly]="true" />
-              </div>
+              <app-enhanced-form-field
+                label="Unit"
+                helpText="Unit of measurement for the item">
+                <input 
+                  pInputText 
+                  formControlName="unit" 
+                  class="w-full enhanced-input" 
+                  [readonly]="true"
+                  placeholder="Unit will appear here" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Actual Quantity</label>
-                <p-inputnumber formControlName="actual_quantity" [min]="0" class="w-full" [disabled]="!isEditMode" />
-              </div>
+              <app-enhanced-form-field
+                label="Actual Quantity"
+                helpText="Enter actual produced quantity (edit mode only)">
+                <p-inputnumber 
+                  formControlName="actual_quantity" 
+                  [min]="0" 
+                  class="w-full enhanced-input" 
+                  [disabled]="!isEditMode"
+                  placeholder="Enter actual quantity" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Yield Percentage</label>
-                <p-inputnumber formControlName="yield_percentage" [min]="0" [max]="100" suffix="%" class="w-full" [disabled]="true" />
-              </div>
+              <app-enhanced-form-field
+                label="Yield Percentage"
+                helpText="Automatically calculated based on actual vs planned">
+                <p-inputnumber 
+                  formControlName="yield_percentage" 
+                  [min]="0" 
+                  [max]="100" 
+                  suffix="%" 
+                  class="w-full enhanced-input" 
+                  [disabled]="true"
+                  placeholder="Auto-calculated" />
+              </app-enhanced-form-field>
             </div>
-          </div>
+          </app-enhanced-card>
 
-          <!-- Scrap Information -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Scrap Information</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Scrap Quantity</label>
-                <p-inputnumber formControlName="scrap_quantity" [min]="0" class="w-full" [disabled]="!isEditMode" />
-              </div>
+          <!-- Scrap Information Card -->
+          <app-enhanced-card variant="standard" title="Scrap Information" [header]="true">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-enhanced-form-field
+                label="Scrap Quantity"
+                helpText="Enter quantity of scrapped materials">
+                <p-inputnumber 
+                  formControlName="scrap_quantity" 
+                  [min]="0" 
+                  class="w-full enhanced-input" 
+                  [disabled]="!isEditMode"
+                  placeholder="Enter scrap quantity" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Scrap Reason</label>
-                <input pInputText formControlName="scrap_reason" class="w-full" [disabled]="!isEditMode" />
-              </div>
+              <app-enhanced-form-field
+                label="Scrap Reason"
+                helpText="Reason for material scrap">
+                <input 
+                  pInputText 
+                  formControlName="scrap_reason" 
+                  class="w-full enhanced-input" 
+                  [disabled]="!isEditMode"
+                  placeholder="Enter scrap reason" />
+              </app-enhanced-form-field>
             </div>
-          </div>
+          </app-enhanced-card>
 
-          <!-- Production Dates -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Production Dates</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <!-- Production Dates Card -->
+          <app-enhanced-card variant="standard" title="Production Dates" [header]="true">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <app-enhanced-form-field
+                label="Start Date"
+                helpText="When production is scheduled to start">
                 <p-datepicker
                   formControlName="start_date"
                   dateFormat="dd/mm/yy"
                   [showIcon]="true"
-                  class="w-full"
-                />
-              </div>
+                  class="w-full enhanced-input"
+                  placeholder="Select start date" />
+              </app-enhanced-form-field>
 
-              <div class="flex flex-col">
-                <label class="text-sm font-medium text-gray-700 mb-1">Completion Date</label>
+              <app-enhanced-form-field
+                label="Completion Date"
+                helpText="When production was completed (edit mode only)">
                 <p-datepicker
                   formControlName="completion_date"
                   dateFormat="dd/mm/yy"
                   [showIcon]="true"
-                  class="w-full"
+                  class="w-full enhanced-input"
                   [disabled]="!isEditMode"
-                />
-              </div>
+                  placeholder="Select completion date" />
+              </app-enhanced-form-field>
             </div>
-          </div>
+          </app-enhanced-card>
 
-          <!-- Material Requirements -->
-          <div class="mb-6">
-            <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
-              <h2 class="text-lg font-semibold text-gray-900">Material Requirements (Raw Materials)</h2>
+          <!-- Material Requirements Card -->
+          <app-enhanced-card variant="standard" [header]="true">
+            <div slot="header" class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Material Requirements (Raw Materials)</h3>
+                <p class="text-sm text-gray-600 mt-1">Add raw materials needed for production</p>
+              </div>
               <button
                 pButton
                 type="button"
                 label="Add Material"
                 icon="pi pi-plus"
-                class="p-button-sm"
-                (click)="showAddMaterialDialog()"
-              ></button>
+                class="p-button-primary hover:shadow-lg hover:scale-105 transition-all duration-200"
+                (click)="showAddMaterialDialog()">
+              </button>
             </div>
 
             <p-table [value]="materials" [paginator]="false">
               <ng-template pTemplate="header">
                 <tr>
-                  <th>Material Code</th>
-                  <th>Material Name</th>
-                  <th>Required Qty</th>
-                  <th>Consumed Qty</th>
-                  <th>Unit</th>
-                  <th>Batch Number</th>
-                  <th>Warehouse</th>
-                  <th>Actions</th>
+                  <th class="text-left font-semibold text-gray-700 uppercase tracking-wide">Material Code</th>
+                  <th class="text-left font-semibold text-gray-700 uppercase tracking-wide">Material Name</th>
+                  <th class="text-center font-semibold text-gray-700 uppercase tracking-wide">Required Qty</th>
+                  <th class="text-center font-semibold text-gray-700 uppercase tracking-wide">Consumed Qty</th>
+                  <th class="text-center font-semibold text-gray-700 uppercase tracking-wide">Unit</th>
+                  <th class="text-center font-semibold text-gray-700 uppercase tracking-wide">Batch Number</th>
+                  <th class="text-left font-semibold text-gray-700 uppercase tracking-wide">Warehouse</th>
+                  <th class="text-center font-semibold text-gray-700 uppercase tracking-wide">Actions</th>
                 </tr>
               </ng-template>
               <ng-template pTemplate="body" let-material let-rowIndex="rowIndex">
-                <tr>
-                  <td>{{ material.material_item_code }}</td>
-                  <td>{{ material.material_item_name }}</td>
-                  <td>{{ material.required_quantity }}</td>
-                  <td>{{ material.consumed_quantity }}</td>
-                  <td>{{ material.unit }}</td>
-                  <td>{{ material.batch_number || '-' }}</td>
-                  <td>{{ material.warehouse_name }}</td>
-                  <td>
-                    <div class="flex gap-2">
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                  <td class="font-medium text-gray-900">{{ material.material_item_code }}</td>
+                  <td class="text-gray-900">{{ material.material_item_name }}</td>
+                  <td class="text-center text-gray-700 font-medium">{{ material.required_quantity | number:'1.0-2' }}</td>
+                  <td class="text-center text-gray-700 font-medium">{{ material.consumed_quantity | number:'1.0-2' }}</td>
+                  <td class="text-center text-gray-600">{{ material.unit }}</td>
+                  <td class="text-center text-gray-600">{{ material.batch_number || '-' }}</td>
+                  <td class="text-gray-600">{{ material.warehouse_name }}</td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-2">
                       <button
                         pButton
                         icon="pi pi-pencil"
-                        class="p-button-text p-button-sm"
-                        (click)="showEditMaterialDialog(rowIndex)"
-                      ></button>
+                        class="p-button-text p-button-sm hover:bg-warning-50 hover:text-warning-600 transition-all duration-200 hover:scale-110"
+                        pTooltip="Edit Material"
+                        tooltipPosition="top"
+                        (click)="showEditMaterialDialog(rowIndex)">
+                      </button>
                       <button
                         pButton
                         icon="pi pi-trash"
-                        class="p-button-text p-button-sm p-button-danger"
-                        (click)="removeMaterial(rowIndex)"
-                      ></button>
+                        class="p-button-text p-button-sm hover:bg-error-50 hover:text-error-600 transition-all duration-200 hover:scale-110"
+                        pTooltip="Remove Material"
+                        tooltipPosition="top"
+                        (click)="removeMaterial(rowIndex)">
+                      </button>
                     </div>
                   </td>
                 </tr>
               </ng-template>
               <ng-template pTemplate="emptymessage">
                 <tr>
-                  <td colspan="8" class="text-center text-gray-500 py-4">
-                    No materials added yet. Click "Add Material" to start.
+                  <td colspan="8" class="text-center py-12">
+                    <div class="flex flex-col items-center gap-4">
+                      <i class="pi pi-box text-4xl text-gray-300"></i>
+                      <div>
+                        <h4 class="text-lg font-semibold text-gray-700 mb-2">No Materials Added</h4>
+                        <p class="text-gray-500 mb-4">No materials have been added yet. Click "Add Material" to start adding raw materials for production.</p>
+                        <button 
+                          pButton 
+                          type="button" 
+                          label="Add First Material" 
+                          icon="pi pi-plus"
+                          class="p-button-primary hover:shadow-lg hover:scale-105 transition-all duration-200"
+                          (click)="showAddMaterialDialog()">
+                        </button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               </ng-template>
             </p-table>
-          </div>
+          </app-enhanced-card>
 
-          <!-- Notes -->
-          <div class="mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Notes</h2>
-            
-            <textarea
-              pInputTextarea
-              formControlName="notes"
-              rows="3"
-              class="w-full"
-              placeholder="Additional notes..."
-            ></textarea>
-          </div>
+          <!-- Notes Card -->
+          <app-enhanced-card variant="standard" title="Additional Notes" [header]="true">
+            <app-enhanced-form-field
+              label="Notes"
+              helpText="Add any additional notes or instructions for this work order">
+              <textarea
+                pInputTextarea
+                formControlName="notes"
+                rows="4"
+                class="w-full enhanced-input"
+                placeholder="Enter additional notes or instructions...">
+              </textarea>
+            </app-enhanced-form-field>
+          </app-enhanced-card>
 
-          <!-- Actions -->
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <button
-              pButton
-              type="button"
-              label="Cancel"
-              icon="pi pi-times"
-              class="p-button-text p-button-secondary"
-              (click)="onCancel()"
-            ></button>
-            <button
-              pButton
-              type="submit"
-              [label]="isEditMode ? 'Update Work Order' : 'Create Work Order'"
-              icon="pi pi-check"
-              [loading]="loading"
-              [disabled]="productionForm.invalid || loading || materials.length === 0"
-            ></button>
-          </div>
+          <!-- Form Actions -->
+          <app-enhanced-card variant="standard">
+            <div class="flex justify-end gap-4">
+              <button
+                pButton
+                type="button"
+                label="Cancel"
+                icon="pi pi-times"
+                severity="secondary"
+                class="hover:shadow-md hover:scale-105 transition-all duration-200"
+                (click)="onCancel()">
+              </button>
+              <button
+                pButton
+                type="submit"
+                [label]="isEditMode ? 'Update Work Order' : 'Create Work Order'"
+                icon="pi pi-check"
+                [loading]="loading"
+                [disabled]="productionForm.invalid || loading || materials.length === 0"
+                class="hover:shadow-lg hover:scale-105 transition-all duration-200">
+              </button>
+            </div>
+          </app-enhanced-card>
         </form>
       </div>
 
-      <!-- Add/Edit Material Dialog -->
+      <!-- Enhanced Material Dialog -->
       <p-dialog
         [(visible)]="displayMaterialDialog"
         [header]="isEditingMaterial ? 'Edit Material' : 'Add Material'"
         [modal]="true"
         [style]="{width: '700px'}"
         [draggable]="false"
-      >
-        <form [formGroup]="materialForm" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        styleClass="enhanced-dialog">
+        
+        <form [formGroup]="materialForm" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Material Selection -->
-            <div class="flex flex-col md:col-span-2">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Material (Raw Material) <span class="text-red-500">*</span>
-              </label>
-              <p-select
-                formControlName="material_item_id"
-                [options]="rawMaterialOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select Material"
-                [filter]="true"
-                filterBy="label"
-                class="w-full"
-                (onChange)="onMaterialSelect($event)"
-              />
+            <div class="md:col-span-2">
+              <app-enhanced-form-field
+                label="Material (Raw Material)"
+                [required]="true"
+                helpText="Select the raw material needed for production">
+                <p-select
+                  formControlName="material_item_id"
+                  [options]="rawMaterialOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select material"
+                  [filter]="true"
+                  filterBy="label"
+                  class="w-full enhanced-input"
+                  (onChange)="onMaterialSelect($event)" />
+              </app-enhanced-form-field>
             </div>
 
             <!-- Material Code (readonly) -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Material Code</label>
-              <input pInputText formControlName="material_item_code" class="w-full" [readonly]="true" />
-            </div>
+            <app-enhanced-form-field
+              label="Material Code"
+              helpText="Automatically filled when material is selected">
+              <input 
+                pInputText 
+                formControlName="material_item_code" 
+                class="w-full enhanced-input" 
+                [readonly]="true"
+                placeholder="Material code will appear here" />
+            </app-enhanced-form-field>
 
             <!-- Material Name (readonly) -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Material Name</label>
-              <input pInputText formControlName="material_item_name" class="w-full" [readonly]="true" />
-            </div>
+            <app-enhanced-form-field
+              label="Material Name"
+              helpText="Automatically filled when material is selected">
+              <input 
+                pInputText 
+                formControlName="material_item_name" 
+                class="w-full enhanced-input" 
+                [readonly]="true"
+                placeholder="Material name will appear here" />
+            </app-enhanced-form-field>
 
             <!-- Required Quantity -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Required Quantity <span class="text-red-500">*</span>
-              </label>
+            <app-enhanced-form-field
+              label="Required Quantity"
+              [required]="true"
+              helpText="Quantity needed for production">
               <p-inputNumber
                 formControlName="required_quantity"
                 [min]="0"
-                class="w-full"
-              />
-            </div>
+                class="w-full enhanced-input"
+                placeholder="Enter required quantity" />
+            </app-enhanced-form-field>
 
             <!-- Consumed Quantity -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Consumed Quantity</label>
+            <app-enhanced-form-field
+              label="Consumed Quantity"
+              helpText="Actual quantity consumed (edit mode only)">
               <p-inputNumber
                 formControlName="consumed_quantity"
                 [min]="0"
-                class="w-full"
+                class="w-full enhanced-input"
                 [disabled]="!isEditMode"
-              />
-            </div>
+                placeholder="Enter consumed quantity" />
+            </app-enhanced-form-field>
 
             <!-- Unit (readonly) -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Unit</label>
-              <input pInputText formControlName="unit" class="w-full" [readonly]="true" />
-            </div>
+            <app-enhanced-form-field
+              label="Unit"
+              helpText="Unit of measurement">
+              <input 
+                pInputText 
+                formControlName="unit" 
+                class="w-full enhanced-input" 
+                [readonly]="true"
+                placeholder="Unit will appear here" />
+            </app-enhanced-form-field>
 
             <!-- Batch Number -->
-            <div class="flex flex-col">
-              <label class="text-sm font-medium text-gray-700 mb-1">Batch Number</label>
-              <input pInputText formControlName="batch_number" class="w-full" />
-            </div>
+            <app-enhanced-form-field
+              label="Batch Number"
+              helpText="Optional batch number for traceability">
+              <input 
+                pInputText 
+                formControlName="batch_number" 
+                class="w-full enhanced-input"
+                placeholder="Enter batch number (optional)" />
+            </app-enhanced-form-field>
 
             <!-- Warehouse -->
-            <div class="flex flex-col md:col-span-2">
-              <label class="text-sm font-medium text-gray-700 mb-1">
-                Warehouse <span class="text-red-500">*</span>
-              </label>
-              <p-select
-                formControlName="warehouse_name"
-                [options]="warehouseOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select Warehouse"
-                [filter]="true"
-                filterBy="label"
-                class="w-full"
-                appendTo="body"
-                (onChange)="onMaterialWarehouseChange($event)"
-              />
+            <div class="md:col-span-2">
+              <app-enhanced-form-field
+                label="Warehouse"
+                [required]="true"
+                helpText="Select warehouse where material is stored">
+                <p-select
+                  formControlName="warehouse_name"
+                  [options]="warehouseOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select warehouse"
+                  [filter]="true"
+                  filterBy="label"
+                  class="w-full enhanced-input"
+                  appendTo="body"
+                  (onChange)="onMaterialWarehouseChange($event)" />
+              </app-enhanced-form-field>
             </div>
           </div>
         </form>
 
         <ng-template pTemplate="footer">
-          <button
-            pButton
-            label="Cancel"
-            icon="pi pi-times"
-            class="p-button-text"
-            (click)="displayMaterialDialog = false"
-          ></button>
-          <button
-            pButton
-            [label]="isEditingMaterial ? 'Update' : 'Add'"
-            icon="pi pi-check"
-            (click)="saveMaterial()"
-            [disabled]="materialForm.invalid"
-          ></button>
+          <div class="flex justify-end gap-3">
+            <button
+              pButton
+              label="Cancel"
+              icon="pi pi-times"
+              severity="secondary"
+              class="hover:shadow-md hover:scale-105 transition-all duration-200"
+              (click)="displayMaterialDialog = false">
+            </button>
+            <button
+              pButton
+              [label]="isEditingMaterial ? 'Update' : 'Add'"
+              icon="pi pi-check"
+              [disabled]="materialForm.invalid"
+              class="hover:shadow-lg hover:scale-105 transition-all duration-200"
+              (click)="saveMaterial()">
+            </button>
+          </div>
         </ng-template>
       </p-dialog>
     </div>

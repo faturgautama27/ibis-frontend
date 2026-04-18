@@ -1,227 +1,306 @@
-<div class="stock-adjustment-approval-container">
+<!-- Enhanced Page Header -->
+<app-page-header [title]="batchMode ? 'Pending Approvals' : 'Review Stock Adjustment'"
+    [subtitle]="batchMode ? 'Review and approve pending stock adjustments' : 'Review adjustment details and make approval decision'"
+    icon="pi pi-check-circle" [showBackButton]="true" [breadcrumbs]="[
+        { label: 'Stock Adjustments', route: '/stock-adjustment' },
+        { label: batchMode ? 'Approvals' : 'Review' }
+    ]" (back)="onCancel()">
+
+    <div slot="actions" *ngIf="batchMode" class="flex gap-2">
+        <button pButton type="button" label="Batch Approve Selected" icon="pi pi-check" severity="success"
+            class="enhanced-btn hover-lift" [disabled]="selectedAdjustments.length === 0" (click)="onBatchApprove()">
+        </button>
+    </div>
+</app-page-header>
+
+<div class="main-layout px-6 py-6">
     <!-- Single Adjustment Approval Mode -->
     <div *ngIf="!batchMode && (adjustment$ | async) as adjustment" class="single-approval-mode">
-        <!-- Header -->
-        <div class="flex justify-content-between align-items-center mb-4">
-            <h2 class="text-2xl font-semibold">Review Stock Adjustment</h2>
-            <p-button label="Back to List" icon="pi pi-arrow-left" (onClick)="onCancel()"
-                styleClass="p-button-outlined">
-            </p-button>
-        </div>
-
         <!-- Adjustment Header Info -->
-        <div class="card mb-4">
-            <div class="grid">
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Adjustment Number</label>
-                        <p>{{ adjustment.adjustmentNumber }}</p>
-                    </div>
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-info-circle text-primary-600"></i>
+                    Adjustment Information
+                </h3>
+                <p class="card-subtitle">Review the basic information for this stock adjustment</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="info-field">
+                    <label class="info-label">Adjustment Number</label>
+                    <p class="info-value font-medium text-primary-700">{{ adjustment.adjustmentNumber }}</p>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Status</label>
-                        <p>
-                            <p-tag [value]="getStatusLabel(adjustment.status)"
-                                [severity]="getStatusSeverity(adjustment.status)">
-                            </p-tag>
-                        </p>
-                    </div>
+
+                <div class="info-field">
+                    <label class="info-label">Status</label>
+                    <app-status-badge [label]="getStatusLabel(adjustment.status)" [status]="adjustment.status"
+                        [autoSeverity]="true">
+                    </app-status-badge>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Adjustment Date</label>
-                        <p>{{ formatDate(adjustment.adjustmentDate) }}</p>
-                    </div>
+
+                <div class="info-field">
+                    <label class="info-label">Adjustment Date</label>
+                    <p class="info-value">{{ formatDate(adjustment.adjustmentDate) }}</p>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Warehouse</label>
-                        <p>{{ adjustment.warehouseName }}</p>
-                    </div>
+
+                <div class="info-field">
+                    <label class="info-label">Warehouse</label>
+                    <p class="info-value flex items-center gap-2">
+                        <i class="pi pi-building text-gray-400"></i>
+                        {{ adjustment.warehouseName }}
+                    </p>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Submitted By</label>
-                        <p>{{ adjustment.submittedByName || adjustment.submittedBy }}</p>
-                    </div>
+
+                <div class="info-field">
+                    <label class="info-label">Submitted By</label>
+                    <p class="info-value flex items-center gap-2">
+                        <i class="pi pi-user text-gray-400"></i>
+                        {{ adjustment.submittedByName || adjustment.submittedBy }}
+                    </p>
                 </div>
-                <div class="col-12 md:col-6">
-                    <div class="field">
-                        <label class="font-semibold">Submitted At</label>
-                        <p>{{ formatDateTime(adjustment.submittedAt) }}</p>
-                    </div>
+
+                <div class="info-field">
+                    <label class="info-label">Submitted At</label>
+                    <p class="info-value">{{ formatDateTime(adjustment.submittedAt) }}</p>
                 </div>
-                <div class="col-12" *ngIf="adjustment.notes">
-                    <div class="field">
-                        <label class="font-semibold">Notes</label>
-                        <p>{{ adjustment.notes }}</p>
-                    </div>
+
+                <div class="info-field md:col-span-2 lg:col-span-3" *ngIf="adjustment.notes">
+                    <label class="info-label">Notes</label>
+                    <p class="info-value bg-gray-50 p-3 rounded-md">{{ adjustment.notes }}</p>
                 </div>
             </div>
-        </div>
+        </app-enhanced-card>
 
-        <!-- Adjustment Details -->
-        <div class="card mb-4">
-            <h3 class="text-xl font-semibold mb-3">Adjustment Items</h3>
-            <p-table [value]="(details$ | async) || []" [loading]="(loading$ | async) || false"
-                styleClass="p-datatable-striped" responsiveLayout="scroll">
+        <!-- Enhanced Adjustment Details -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-list text-primary-600"></i>
+                    Adjustment Items
+                    <span
+                        class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                        {{ ((details$ | async) || []).length }} items
+                    </span>
+                </h3>
+                <p class="card-subtitle">Review the items to be adjusted</p>
+            </div>
 
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Item Code</th>
-                        <th>Item Name</th>
-                        <th>Type</th>
-                        <th>Quantity</th>
-                        <th>Before</th>
-                        <th>After</th>
-                        <th>Reason</th>
-                    </tr>
-                </ng-template>
+            <app-enhanced-table [data]="(details$ | async) || []" [loading]="(loading$ | async) || false"
+                [paginator]="false" [searchable]="false" [showHeader]="false" emptyTitle="No Items Found"
+                emptyMessage="No adjustment items found for this adjustment" emptyIcon="pi pi-box" [columnCount]="7"
+                class="adjustment-details-table">
 
-                <ng-template pTemplate="body" let-detail>
-                    <tr>
-                        <td>{{ detail.itemCode }}</td>
-                        <td>{{ detail.itemName }}</td>
-                        <td>
-                            <p-tag [value]="getTypeLabel(detail.adjustmentType)"
-                                [severity]="detail.adjustmentType === 'INCREASE' ? 'success' : 'warn'">
-                            </p-tag>
+                <ng-container slot="header">
+                    <th class="table-header-cell">Item Code</th>
+                    <th class="table-header-cell">Item Name</th>
+                    <th class="table-header-cell">Type</th>
+                    <th class="table-header-cell text-center">Quantity</th>
+                    <th class="table-header-cell text-center">Before</th>
+                    <th class="table-header-cell text-center">After</th>
+                    <th class="table-header-cell">Reason</th>
+                </ng-container>
+
+                <ng-container slot="body">
+                    <ng-template #bodyTemplate let-detail>
+                        <td class="table-body-cell">
+                            <span class="font-medium text-primary-700">{{ detail.itemCode }}</span>
                         </td>
-                        <td class="font-semibold">
-                            {{ detail.adjustmentType === 'INCREASE' ? '+' : '-' }}{{ detail.quantity }}
+                        <td class="table-body-cell">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-box text-gray-400"></i>
+                                {{ detail.itemName }}
+                            </div>
                         </td>
-                        <td>{{ detail.beforeQuantity }}</td>
-                        <td class="font-semibold">
-                            {{ detail.adjustmentType === 'INCREASE'
-                            ? detail.beforeQuantity + detail.quantity
-                            : detail.beforeQuantity - detail.quantity }}
+                        <td class="table-body-cell">
+                            <app-status-badge [label]="getTypeLabel(detail.adjustmentType)"
+                                [severity]="detail.adjustmentType === 'INCREASE' ? 'success' : 'warn'" size="sm">
+                            </app-status-badge>
                         </td>
-                        <td>{{ detail.reason }}</td>
-                    </tr>
-                </ng-template>
+                        <td class="table-body-cell text-center">
+                            <span class="font-bold text-lg"
+                                [class.text-green-600]="detail.adjustmentType === 'INCREASE'"
+                                [class.text-orange-600]="detail.adjustmentType === 'DECREASE'">
+                                {{ detail.adjustmentType === 'INCREASE' ? '+' : '-' }}{{ detail.quantity }}
+                            </span>
+                        </td>
+                        <td class="table-body-cell text-center">
+                            <span class="font-medium">{{ detail.beforeQuantity }}</span>
+                        </td>
+                        <td class="table-body-cell text-center">
+                            <span class="font-bold text-lg">
+                                {{ detail.adjustmentType === 'INCREASE'
+                                ? detail.beforeQuantity + detail.quantity
+                                : detail.beforeQuantity - detail.quantity }}
+                            </span>
+                        </td>
+                        <td class="table-body-cell">
+                            <span class="text-sm bg-gray-100 px-2 py-1 rounded">{{ detail.reason }}</span>
+                        </td>
+                    </ng-template>
+                </ng-container>
+            </app-enhanced-table>
+        </app-enhanced-card>
 
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="7" class="text-center py-4">No items found</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
+        <!-- Enhanced Review Form -->
+        <app-enhanced-card variant="standard" class="mb-6">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-comment text-primary-600"></i>
+                    Review Decision
+                </h3>
+                <p class="card-subtitle">Add comments for your approval or rejection decision</p>
+            </div>
 
-        <!-- Review Form -->
-        <div class="card mb-4">
-            <h3 class="text-xl font-semibold mb-3">Review Decision</h3>
             <form [formGroup]="reviewForm">
-                <div class="field">
-                    <label for="comments">Comments <span class="text-red-500" *ngIf="false">*</span></label>
-                    <textarea id="comments" pInputTextarea formControlName="comments" rows="4"
-                        placeholder="Enter your comments (required for rejection)..." class="w-full">
+                <div class="form-group">
+                    <label for="comments" class="form-label">
+                        Comments
+                        <span class="text-red-500" *ngIf="false">*</span>
+                        <span class="text-sm text-gray-500 font-normal">(Required for rejection)</span>
+                    </label>
+                    <textarea id="comments" pTextarea formControlName="comments" rows="4" class="form-input"
+                        placeholder="Enter your comments (required for rejection)...">
                     </textarea>
-                    <small class="text-500">Maximum 500 characters</small>
+                    <small class="form-help">Maximum 500 characters</small>
                 </div>
             </form>
-        </div>
+        </app-enhanced-card>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-content-end gap-2">
-            <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()" styleClass="p-button-outlined"
-                [disabled]="(saving$ | async) || false">
-            </p-button>
-            <p-button label="Reject" icon="pi pi-times-circle" (onClick)="onReject(adjustment)"
-                styleClass="p-button-danger" [loading]="(saving$ | async) || false">
-            </p-button>
-            <p-button label="Approve" icon="pi pi-check-circle" (onClick)="onApprove(adjustment)"
-                styleClass="p-button-success" [loading]="(saving$ | async) || false">
-            </p-button>
-        </div>
+        <!-- Enhanced Action Buttons -->
+        <app-enhanced-card variant="standard">
+            <div slot="footer">
+                <div class="flex justify-end gap-3">
+                    <button pButton type="button" label="Cancel" icon="pi pi-times" severity="secondary"
+                        [outlined]="true" class="enhanced-btn" [disabled]="(saving$ | async) || false"
+                        (click)="onCancel()">
+                    </button>
+                    <button pButton type="button" label="Reject" icon="pi pi-times-circle" severity="danger"
+                        class="enhanced-btn hover-lift" [loading]="(saving$ | async) || false"
+                        (click)="onReject(adjustment)">
+                    </button>
+                    <button pButton type="button" label="Approve" icon="pi pi-check-circle" severity="success"
+                        class="enhanced-btn hover-lift" [loading]="(saving$ | async) || false"
+                        (click)="onApprove(adjustment)">
+                    </button>
+                </div>
+            </div>
+        </app-enhanced-card>
     </div>
 
-    <!-- Batch Approval Mode (Pending Queue) -->
+    <!-- Enhanced Batch Approval Mode (Pending Queue) -->
     <div *ngIf="batchMode" class="batch-approval-mode">
-        <!-- Header -->
-        <div class="flex justify-content-between align-items-center mb-4">
-            <h2 class="text-2xl font-semibold">Pending Approvals</h2>
-            <p-button label="Batch Approve Selected" icon="pi pi-check" (onClick)="onBatchApprove()"
-                [disabled]="selectedAdjustments.length === 0" styleClass="p-button-success">
-            </p-button>
-        </div>
+        <!-- Batch Comments Card -->
+        <app-enhanced-card variant="standard" class="mb-6" *ngIf="selectedAdjustments.length > 0">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-comment text-primary-600"></i>
+                    Batch Approval Comments
+                    <span
+                        class="inline-flex items-center px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium ml-2">
+                        {{ selectedAdjustments.length }} selected
+                    </span>
+                </h3>
+                <p class="card-subtitle">Add optional comments for all selected adjustments</p>
+            </div>
 
-        <!-- Batch Comments -->
-        <div class="card mb-4" *ngIf="selectedAdjustments.length > 0">
             <form [formGroup]="reviewForm">
-                <div class="field">
-                    <label for="batchComments">Batch Approval Comments (Optional)</label>
-                    <textarea id="batchComments" pInputTextarea formControlName="comments" rows="3"
-                        placeholder="Enter comments for all selected adjustments..." class="w-full">
+                <div class="form-group">
+                    <label for="batchComments" class="form-label">Batch Approval Comments (Optional)</label>
+                    <textarea id="batchComments" pTextarea formControlName="comments" rows="3" class="form-input"
+                        placeholder="Enter comments for all selected adjustments...">
                     </textarea>
                 </div>
             </form>
-        </div>
+        </app-enhanced-card>
 
-        <!-- Pending Adjustments Table -->
-        <div class="card">
-            <p-table [value]="(pendingApprovals$ | async) || []" [(selection)]="selectedAdjustments"
-                [loading]="(loading$ | async) || false" dataKey="id" styleClass="p-datatable-striped"
-                responsiveLayout="scroll">
+        <!-- Enhanced Pending Adjustments Table -->
+        <app-enhanced-card variant="standard">
+            <div slot="header">
+                <h3 class="card-title flex items-center gap-2">
+                    <i class="pi pi-clock text-primary-600"></i>
+                    Pending Adjustments
+                    <span
+                        class="inline-flex items-center px-2 py-1 bg-warning-100 text-warning-700 rounded-full text-xs font-medium ml-2">
+                        {{ ((pendingApprovals$ | async) || []).length }} pending
+                    </span>
+                </h3>
+                <p class="card-subtitle">Review and approve pending stock adjustments</p>
+            </div>
 
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 3rem">
-                            <p-checkbox [binary]="true" (onChange)="onSelectAllChange($event.checked)">
-                            </p-checkbox>
-                        </th>
-                        <th>Adjustment Number</th>
-                        <th>Date</th>
-                        <th>Warehouse</th>
-                        <th>Total Items</th>
-                        <th>Submitted By</th>
-                        <th>Submitted At</th>
-                        <th>Actions</th>
-                    </tr>
-                </ng-template>
+            <app-enhanced-table [data]="(pendingApprovals$ | async) || []" [loading]="(loading$ | async) || false"
+                [paginator]="true" [rows]="20" [searchable]="false" [showHeader]="false"
+                emptyTitle="No Pending Approvals"
+                emptyMessage="There are no stock adjustments pending approval at this time"
+                emptyIcon="pi pi-check-circle" [columnCount]="8" class="pending-approvals-table">
 
-                <ng-template pTemplate="body" let-adjustment>
-                    <tr>
-                        <td>
+                <ng-container slot="header">
+                    <th class="table-header-cell" style="width: 3rem">
+                        <p-checkbox [binary]="true" (onChange)="onSelectAllChange($event.checked)">
+                        </p-checkbox>
+                    </th>
+                    <th class="table-header-cell">Adjustment Number</th>
+                    <th class="table-header-cell">Date</th>
+                    <th class="table-header-cell">Warehouse</th>
+                    <th class="table-header-cell text-center">Total Items</th>
+                    <th class="table-header-cell">Submitted By</th>
+                    <th class="table-header-cell">Submitted At</th>
+                    <th class="table-header-cell text-center">Actions</th>
+                </ng-container>
+
+                <ng-container slot="body">
+                    <ng-template #bodyTemplate let-adjustment>
+                        <td class="table-body-cell text-center">
                             <p-checkbox [binary]="true" [ngModel]="isSelected(adjustment)"
                                 (onChange)="onCheckboxChange(adjustment, $event.checked)">
                             </p-checkbox>
                         </td>
-                        <td>{{ adjustment.adjustmentNumber }}</td>
-                        <td>{{ formatDate(adjustment.adjustmentDate) }}</td>
-                        <td>{{ adjustment.warehouseName }}</td>
-                        <td>{{ adjustment.totalItems }}</td>
-                        <td>{{ adjustment.submittedByName || adjustment.submittedBy }}</td>
-                        <td>{{ formatDateTime(adjustment.submittedAt) }}</td>
-                        <td>
-                            <div class="flex gap-2">
-                                <p-button icon="pi pi-eye" styleClass="p-button-text p-button-sm"
-                                    (onClick)="onViewDetails(adjustment)" pTooltip="View Details" tooltipPosition="top">
-                                </p-button>
-                                <p-button icon="pi pi-check" styleClass="p-button-text p-button-success p-button-sm"
-                                    (onClick)="onApprove(adjustment)" pTooltip="Approve" tooltipPosition="top">
-                                </p-button>
-                                <p-button icon="pi pi-times" styleClass="p-button-text p-button-danger p-button-sm"
-                                    (onClick)="onReject(adjustment)" pTooltip="Reject" tooltipPosition="top">
-                                </p-button>
+                        <td class="table-body-cell">
+                            <span class="font-medium text-primary-700">{{ adjustment.adjustmentNumber }}</span>
+                        </td>
+                        <td class="table-body-cell">{{ formatDate(adjustment.adjustmentDate) }}</td>
+                        <td class="table-body-cell">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-building text-gray-400"></i>
+                                {{ adjustment.warehouseName }}
                             </div>
                         </td>
-                    </tr>
-                </ng-template>
-
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <div class="flex flex-column align-items-center gap-2">
-                                <i class="pi pi-inbox text-4xl text-400"></i>
-                                <p class="text-500">No pending approvals</p>
+                        <td class="table-body-cell text-center">
+                            <span
+                                class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm font-medium">
+                                <i class="pi pi-box text-xs"></i>
+                                {{ adjustment.totalItems }}
+                            </span>
+                        </td>
+                        <td class="table-body-cell">
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-user text-gray-400"></i>
+                                {{ adjustment.submittedByName || adjustment.submittedBy }}
                             </div>
                         </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
+                        <td class="table-body-cell text-sm text-gray-500">
+                            {{ formatDateTime(adjustment.submittedAt) }}
+                        </td>
+                        <td class="table-body-cell">
+                            <div class="flex items-center justify-center gap-1">
+                                <button pButton icon="pi pi-eye" severity="secondary" [text]="true" size="small"
+                                    class="enhanced-btn hover-lift" (click)="onViewDetails(adjustment)"
+                                    pTooltip="View Details" tooltipPosition="top">
+                                </button>
+                                <button pButton icon="pi pi-check" severity="success" [text]="true" size="small"
+                                    class="enhanced-btn hover-lift" (click)="onApprove(adjustment)" pTooltip="Approve"
+                                    tooltipPosition="top">
+                                </button>
+                                <button pButton icon="pi pi-times" severity="danger" [text]="true" size="small"
+                                    class="enhanced-btn hover-lift" (click)="onReject(adjustment)" pTooltip="Reject"
+                                    tooltipPosition="top">
+                                </button>
+                            </div>
+                        </td>
+                    </ng-template>
+                </ng-container>
+            </app-enhanced-table>
+        </app-enhanced-card>
     </div>
 </div>
 

@@ -10,6 +10,12 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { UserManagementService } from '../../services/user-management.service';
 import { User, UserRole, UserStatus, validatePassword } from '../../models/user.model';
 
+// Enhanced Components
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { StatusBadgeComponent } from '../../../../shared/components/status-badge/status-badge.component';
+
 /**
  * User List Component
  * Requirements: 19.1, 19.2, 19.3
@@ -26,231 +32,15 @@ import { User, UserRole, UserStatus, validatePassword } from '../../models/user.
         TagModule,
         DialogModule,
         InputTextModule,
-        SelectModule
+        SelectModule,
+        // Enhanced Components
+        PageHeaderComponent,
+        EnhancedCardComponent,
+        EnhancedButtonComponent,
+        StatusBadgeComponent
     ],
-    template: `
-        <div class="main-layout">
-            <!-- Page Header -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                        <i class="pi pi-users text-sky-600"></i>
-                        User Management
-                    </h1>
-                    <p class="text-sm text-gray-600 mt-1">Manage users, roles, and permissions</p>
-                </div>
-                <button 
-                    pButton 
-                    label="Add User" 
-                    icon="pi pi-plus"
-                    (click)="showCreateDialog()"
-                    class="p-button-primary"
-                ></button>
-            </div>
-
-            <!-- Table Card -->
-            <div class="bg-white rounded-lg shadow-sm p-6" style="max-height: calc(100vh - 13rem); overflow-y: auto">
-
-                <p-table 
-                    [value]="users" 
-                    [paginator]="true" 
-                    [rows]="10"
-                    [showCurrentPageReport]="true"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users"
-                >
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Department</th>
-                            <th>Last Login</th>
-                            <th>Actions</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-user>
-                        <tr>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.full_name }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>
-                                <p-tag [value]="user.role" [severity]="getRoleSeverity(user.role)"></p-tag>
-                            </td>
-                            <td>
-                                <p-tag [value]="user.status" [severity]="getStatusSeverity(user.status)"></p-tag>
-                            </td>
-                            <td>{{ user.department || '-' }}</td>
-                            <td>{{ user.last_login ? (user.last_login | date:'short') : 'Never' }}</td>
-                            <td>
-                                <div class="flex gap-2">
-                                    <button 
-                                        pButton 
-                                        icon="pi pi-pencil"
-                                        class="p-button-sm p-button-text"
-                                        (click)="showEditDialog(user)"
-                                        pTooltip="Edit"
-                                    ></button>
-                                    <button 
-                                        pButton 
-                                        icon="pi pi-history"
-                                        class="p-button-sm p-button-text"
-                                        (click)="showActivityDialog(user)"
-                                        pTooltip="Activity Log"
-                                    ></button>
-                                    <button 
-                                        pButton 
-                                        icon="pi pi-trash"
-                                        class="p-button-sm p-button-text p-button-danger"
-                                        (click)="deleteUser(user)"
-                                        pTooltip="Delete"
-                                    ></button>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-        </div>
-
-        <!-- Create/Edit User Dialog -->
-        <p-dialog 
-            [(visible)]="displayDialog" 
-            [header]="isEditMode ? 'Edit User' : 'Create User'"
-            [modal]="true"
-            [style]="{width: '500px'}"
-        >
-            <form [formGroup]="userForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
-                    <input 
-                        pInputText 
-                        formControlName="username"
-                        class="w-full"
-                        [disabled]="isEditMode"
-                    />
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                    <input 
-                        pInputText 
-                        formControlName="full_name"
-                        class="w-full"
-                    />
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                    <input 
-                        pInputText 
-                        type="email"
-                        formControlName="email"
-                        class="w-full"
-                    />
-                </div>
-
-                <div *ngIf="!isEditMode">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
-                    <input 
-                        pInputText 
-                        type="password"
-                        formControlName="password"
-                        class="w-full"
-                    />
-                    <p class="text-xs text-gray-500 mt-1">
-                        Min 8 chars, uppercase, lowercase, number, special char
-                    </p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Role *</label>
-                    <p-select 
-                        formControlName="role"
-                        [options]="roleOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="w-full"
-                    ></p-select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
-                    <p-select 
-                        formControlName="status"
-                        [options]="statusOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="w-full"
-                    ></p-select>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                    <input 
-                        pInputText 
-                        formControlName="phone"
-                        class="w-full"
-                    />
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                    <input 
-                        pInputText 
-                        formControlName="department"
-                        class="w-full"
-                    />
-                </div>
-            </form>
-
-            <ng-template pTemplate="footer">
-                <button 
-                    pButton 
-                    label="Cancel" 
-                    icon="pi pi-times"
-                    (click)="displayDialog = false"
-                    class="p-button-text"
-                ></button>
-                <button 
-                    pButton 
-                    [label]="isEditMode ? 'Update' : 'Create'" 
-                    icon="pi pi-check"
-                    (click)="saveUser()"
-                    [disabled]="!userForm.valid"
-                    class="p-button-primary"
-                ></button>
-            </ng-template>
-        </p-dialog>
-
-        <!-- Activity Log Dialog -->
-        <p-dialog 
-            [(visible)]="displayActivityDialog" 
-            header="User Activity Log"
-            [modal]="true"
-            [style]="{width: '700px'}"
-        >
-            <p-table [value]="userActivities" [paginator]="true" [rows]="10">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Action</th>
-                        <th>Entity</th>
-                        <th>Details</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-activity>
-                    <tr>
-                        <td>{{ activity.timestamp | date:'short' }}</td>
-                        <td>{{ activity.action }}</td>
-                        <td>{{ activity.entity_type || '-' }}</td>
-                        <td>{{ activity.details ? (activity.details | json) : '-' }}</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-dialog>
-    `
+    templateUrl: './user-list.component.html',
+    styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
     private userService = inject(UserManagementService);
@@ -362,18 +152,18 @@ export class UserListComponent implements OnInit {
         });
     }
 
-    getRoleSeverity(role: UserRole): any {
-        const map: Record<UserRole, string> = {
+    getRoleSeverity(role: UserRole): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        const map: Record<UserRole, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
             [UserRole.ADMIN]: 'danger',
             [UserRole.WAREHOUSE]: 'info',
             [UserRole.PRODUCTION]: 'success',
-            [UserRole.AUDIT]: 'warning'
+            [UserRole.AUDIT]: 'warn'
         };
         return map[role] || 'info';
     }
 
-    getStatusSeverity(status: UserStatus): any {
-        const map: Record<UserStatus, string> = {
+    getStatusSeverity(status: UserStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        const map: Record<UserStatus, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
             [UserStatus.ACTIVE]: 'success',
             [UserStatus.INACTIVE]: 'secondary',
             [UserStatus.SUSPENDED]: 'danger'

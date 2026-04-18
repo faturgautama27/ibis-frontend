@@ -17,6 +17,14 @@ import { MessageModule as MessagesModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
+// Enhanced Components
+import { EnhancedButtonComponent } from '../../../../shared/components/enhanced-button/enhanced-button.component';
+import { EnhancedCardComponent } from '../../../../shared/components/enhanced-card/enhanced-card.component';
+import { EnhancedFormFieldComponent } from '../../../../shared/components/enhanced-form-field/enhanced-form-field.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { ValidationMessageComponent } from '../../../../shared/components/validation-message/validation-message.component';
+
 // Services and Models
 import { PurchaseOrderService, CreatePurchaseOrderDto } from '../../services/purchase-order.service';
 import { InputMethod, PurchaseOrderLine } from '../../models/purchase-order.model';
@@ -49,11 +57,18 @@ import { ApiIntegrationService, ApiSyncResult } from '../../../../core/services/
         TableModule,
         MessageModule,
         MessagesModule,
-        ToastModule
+        ToastModule,
+        // Enhanced Components
+        EnhancedButtonComponent,
+        EnhancedCardComponent,
+        EnhancedFormFieldComponent,
+        PageHeaderComponent,
+        LoadingSpinnerComponent,
+        ValidationMessageComponent
     ],
     providers: [MessageService],
     templateUrl: './purchase-order-form.component.html',
-    styleUrls: ['./purchase-order-form.component.css']
+    styleUrls: ['./purchase-order-form.component.scss']
 })
 export class PurchaseOrderFormComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();

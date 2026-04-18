@@ -1,8 +1,133 @@
-// Sales Order Form Component Styles
+@import '../../../../../styles/design-system/index.scss';
 
-.card {
-    background: white;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+.sales-order-form-container {
+    min-height: 100vh;
+    background-color: var(--gray-50);
+
+    // Input method selector styling
+    .input-method-card {
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, transparent, var(--primary-50));
+            opacity: 0;
+            transition: opacity 200ms;
+        }
+
+        &:hover::before {
+            opacity: 1;
+        }
+
+        &.border-primary-500::before {
+            opacity: 1;
+        }
+    }
+
+    // Enhanced form field styling
+    .enhanced-input {
+        transition: all 200ms;
+        border: 2px solid var(--gray-200);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+
+        &:hover {
+            border-color: var(--gray-300);
+        }
+
+        &:focus {
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 2px var(--primary-100);
+            outline: none;
+        }
+
+        &.ng-invalid.ng-touched {
+            border-color: #fca5a5;
+
+            &:focus {
+                border-color: #ef4444;
+                box-shadow: 0 0 0 2px #fee2e2;
+            }
+        }
+
+        &.ng-valid.ng-touched {
+            border-color: #86efac;
+
+            &:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 2px #dcfce7;
+            }
+        }
+    }
+
+    .enhanced-textarea {
+        @extend .enhanced-input;
+        resize: none;
+    }
+
+    :host ::ng-deep .p-datepicker {
+        .p-inputtext {
+            padding: 0.5rem 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 0.5rem;
+            transition: all 200ms;
+
+            &:hover {
+                border-color: var(--gray-300);
+            }
+
+            &:focus {
+                border-color: var(--primary-500);
+                box-shadow: 0 0 0 2px var(--primary-100);
+            }
+        }
+    }
+
+    // Form validation styling
+    .form-field-error {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        .pi {
+            font-size: 0.75rem;
+        }
+    }
+
+    .form-field-success {
+        color: #16a34a;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        .pi {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .input-method-card {
+            padding: 0.75rem;
+
+            .flex.items-center.gap-3 {
+                gap: 0.5rem;
+            }
+
+            i {
+                font-size: 1.25rem;
+            }
+
+            span {
+                font-size: 0.875rem;
+            }
+        }
+    }
 }

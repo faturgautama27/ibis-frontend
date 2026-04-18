@@ -1,0 +1,501 @@
+/**
+ * Design System Configuration
+ * Central configuration for the IBIS Inventory Management System design system
+ * 
+ * This file provides:
+ * - Design system metadata and versioning
+ * - Component configuration maps
+ * - Utility mixins for consistent styling
+ * - Responsive breakpoint mixins
+ * - Animation and transition utilities
+ */
+
+/* ===== DESIGN SYSTEM METADATA ===== */
+$design-system-version: '1.0.0';
+$design-system-name: 'IBIS Design System';
+
+/* ===== COMPONENT CONFIGURATION MAPS ===== */
+$button-variants: (
+    'primary': ('bg': 'var(--primary-500)',
+        'color': 'white',
+        'border': 'var(--primary-500)',
+        'hover-bg': 'var(--primary-600)',
+        'hover-border': 'var(--primary-600)',
+        'active-bg': 'var(--primary-700)',
+        'active-border': 'var(--primary-700)'
+    ),
+    'secondary': ('bg': 'white',
+        'color': 'var(--gray-700)',
+        'border': 'var(--gray-300)',
+        'hover-bg': 'var(--gray-50)',
+        'hover-border': 'var(--gray-400)',
+        'active-bg': 'var(--gray-100)',
+        'active-border': 'var(--gray-500)'
+    ),
+    'danger': ('bg': 'var(--error-500)',
+        'color': 'white',
+        'border': 'var(--error-500)',
+        'hover-bg': 'var(--error-600)',
+        'hover-border': 'var(--error-600)',
+        'active-bg': 'var(--error-700)',
+        'active-border': 'var(--error-700)'
+    ),
+    'text': ('bg': 'transparent',
+        'color': 'var(--primary-600)',
+        'border': 'transparent',
+        'hover-bg': 'var(--primary-50)',
+        'hover-color': 'var(--primary-700)',
+        'active-bg': 'var(--primary-100)',
+        'active-color': 'var(--primary-800)'
+    )
+);
+
+$button-sizes: (
+    'sm': ('padding': 'var(--padding-xs) var(--padding-sm)',
+        'font-size': 'var(--text-xs)',
+        'min-height': '28px'
+    ),
+    'md': ('padding': 'var(--padding-sm) var(--padding-md)',
+        'font-size': 'var(--text-sm)',
+        'min-height': 'var(--min-click-target)'
+    ),
+    'lg': ('padding': 'var(--padding-md) var(--padding-lg)',
+        'font-size': 'var(--text-base)',
+        'min-height': 'var(--min-touch-target)'
+    )
+);
+
+$status-variants: (
+    'success': ('bg': 'var(--success-50)',
+        'color': 'var(--success-700)',
+        'border': 'var(--success-200)'
+    ),
+    'warning': ('bg': 'var(--warning-50)',
+        'color': 'var(--warning-700)',
+        'border': 'var(--warning-200)'
+    ),
+    'error': ('bg': 'var(--error-50)',
+        'color': 'var(--error-700)',
+        'border': 'var(--error-200)'
+    ),
+    'info': ('bg': 'var(--info-50)',
+        'color': 'var(--info-700)',
+        'border': 'var(--info-200)'
+    ),
+    'neutral': ('bg': 'var(--gray-50)',
+        'color': 'var(--gray-700)',
+        'border': 'var(--gray-200)'
+    )
+);
+
+/* ===== UTILITY MIXINS ===== */
+
+// Focus ring mixin for consistent focus styling
+@mixin focus-ring($color: var(--primary-500), $width: 3px, $opacity: 0.1) {
+    outline: none;
+    box-shadow: 0 0 0 #{$width} rgba(#{$color}, #{$opacity});
+}
+
+// Button base styles mixin
+@mixin button-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-weight: var(--font-medium);
+    line-height: var(--leading-normal);
+    border: var(--button-border-width) solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-out);
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+
+    &:focus {
+        @include focus-ring();
+    }
+
+    &:disabled {
+        opacity: var(--button-disabled-opacity);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Card base styles mixin
+@mixin card-base {
+    background-color: white;
+    border: var(--card-border-width) solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+    padding: var(--padding-lg);
+    transition: all var(--duration-normal) var(--ease-out);
+}
+
+// Form input base styles mixin
+@mixin form-input-base {
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-md);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--gray-900);
+    background-color: white;
+    border: var(--form-border-width) solid var(--gray-200);
+    border-radius: var(--radius-md);
+    transition: all var(--duration-normal) var(--ease-out);
+
+    &:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 var(--form-focus-ring-width) rgba(14, 165, 233, var(--form-focus-ring-opacity));
+    }
+
+    &:disabled {
+        background-color: var(--gray-100);
+        color: var(--gray-400);
+        cursor: not-allowed;
+    }
+}
+
+// Status tag base styles mixin
+@mixin status-tag-base {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--status-tag-padding);
+    font-size: var(--status-tag-font-size);
+    font-weight: var(--font-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--status-tag-letter-spacing);
+    border: var(--status-tag-border-width) solid;
+    border-radius: var(--radius-full);
+}
+
+// Hover effect mixin
+@mixin hover-lift {
+    transition: all var(--duration-normal) var(--ease-out);
+
+    &:hover {
+        transform: var(--button-transform-hover);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+// Loading spinner mixin
+@mixin loading-spinner($size: var(--spinner-size), $color: var(--primary-500)) {
+    width: #{$size};
+    height: #{$size};
+    border: var(--spinner-border-width) solid var(--gray-200);
+    border-top: var(--spinner-border-width) solid #{$color};
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+// Skeleton loading mixin
+@mixin skeleton-loading {
+    background: linear-gradient(90deg,
+            var(--gray-200) 25%,
+            var(--gray-100) 50%,
+            var(--gray-200) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+/* ===== RESPONSIVE BREAKPOINT MIXINS ===== */
+
+// Mobile first approach
+@mixin mobile {
+    @media (max-width: 767px) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: 768px) and (max-width: 1023px) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: 1024px) {
+        @content;
+    }
+}
+
+@mixin large-desktop {
+    @media (min-width: 1280px) {
+        @content;
+    }
+}
+
+// Specific breakpoint mixins
+@mixin sm-up {
+    @media (min-width: 640px) {
+        @content;
+    }
+}
+
+@mixin md-up {
+    @media (min-width: 768px) {
+        @content;
+    }
+}
+
+@mixin lg-up {
+    @media (min-width: 1024px) {
+        @content;
+    }
+}
+
+@mixin xl-up {
+    @media (min-width: 1280px) {
+        @content;
+    }
+}
+
+@mixin xxl-up {
+    @media (min-width: 1536px) {
+        @content;
+    }
+}
+
+// Max-width breakpoints
+@mixin sm-down {
+    @media (max-width: 639px) {
+        @content;
+    }
+}
+
+@mixin md-down {
+    @media (max-width: 767px) {
+        @content;
+    }
+}
+
+@mixin lg-down {
+    @media (max-width: 1023px) {
+        @content;
+    }
+}
+
+@mixin xl-down {
+    @media (max-width: 1279px) {
+        @content;
+    }
+}
+
+/* ===== ANIMATION UTILITIES ===== */
+
+// Fade in animation
+@mixin fade-in($duration: var(--duration-normal)) {
+    animation: fadeIn #{$duration} var(--ease-out);
+}
+
+// Slide in animation
+@mixin slide-in($duration: var(--duration-slow)) {
+    animation: slideIn #{$duration} var(--ease-out);
+}
+
+// Slide up animation
+@mixin slide-up($duration: var(--duration-normal)) {
+    animation: slideUp #{$duration} var(--ease-out);
+}
+
+// Scale animation
+@mixin scale-in($duration: var(--duration-fast)) {
+    animation: scaleIn #{$duration} var(--ease-out);
+}
+
+/* ===== ACCESSIBILITY UTILITIES ===== */
+
+// Screen reader only content
+@mixin sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Focus visible for keyboard navigation
+@mixin focus-visible {
+    &:focus-visible {
+        @include focus-ring();
+    }
+}
+
+// High contrast mode support
+@mixin high-contrast {
+    @media (prefers-contrast: high) {
+        @content;
+    }
+}
+
+// Reduced motion support
+@mixin reduced-motion {
+    @media (prefers-reduced-motion: reduce) {
+        @content;
+    }
+}
+
+/* ===== LAYOUT UTILITIES ===== */
+
+// Flexbox utilities
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+// Grid utilities
+@mixin grid-auto-fit($min-width: 250px) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(#{$min-width}, 1fr));
+    gap: var(--space-4);
+}
+
+@mixin grid-auto-fill($min-width: 250px) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(#{$min-width}, 1fr));
+    gap: var(--space-4);
+}
+
+// Container utilities
+@mixin container {
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+
+    @include mobile {
+        padding: 0 var(--space-4);
+    }
+}
+
+// Aspect ratio utility
+@mixin aspect-ratio($width, $height) {
+    aspect-ratio: #{$width} / #{$height};
+}
+
+/* ===== TEXT UTILITIES ===== */
+
+// Text truncation
+@mixin text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Multi-line text truncation
+@mixin text-truncate-lines($lines: 2) {
+    display: -webkit-box;
+    -webkit-line-clamp: #{$lines};
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// Text gradient
+@mixin text-gradient($gradient) {
+    background: #{$gradient};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ===== COMPONENT GENERATION UTILITIES ===== */
+
+// Generate button variants
+@mixin generate-button-variants {
+    @each $variant, $props in $button-variants {
+        &.btn-#{$variant} {
+            background-color: map-get($props, 'bg');
+            color: map-get($props, 'color');
+            border-color: map-get($props, 'border');
+
+            &:hover:not(:disabled) {
+                background-color: map-get($props, 'hover-bg');
+                border-color: map-get($props, 'hover-border');
+
+                @if map-has-key($props, 'hover-color') {
+                    color: map-get($props, 'hover-color');
+                }
+
+                transform: var(--button-transform-hover);
+
+                @if $variant !='text' {
+                    box-shadow: var(--shadow-md);
+                }
+            }
+
+            &:active:not(:disabled) {
+                background-color: map-get($props, 'active-bg');
+                border-color: map-get($props, 'active-border');
+
+                @if map-has-key($props, 'active-color') {
+                    color: map-get($props, 'active-color');
+                }
+
+                transform: var(--button-transform-active);
+            }
+        }
+    }
+}
+
+// Generate button sizes
+@mixin generate-button-sizes {
+    @each $size, $props in $button-sizes {
+        &.btn-#{$size} {
+            padding: map-get($props, 'padding');
+            font-size: map-get($props, 'font-size');
+            min-height: map-get($props, 'min-height');
+        }
+    }
+}
+
+// Generate status variants
+@mixin generate-status-variants {
+    @each $variant, $props in $status-variants {
+        &.status-#{$variant} {
+            background-color: map-get($props, 'bg');
+            color: map-get($props, 'color');
+            border-color: map-get($props, 'border');
+        }
+    }
+}
+
+/* ===== PRINT UTILITIES ===== */
+@mixin print-hidden {
+    @media print {
+        display: none !important;
+    }
+}
+
+@mixin print-only {
+    display: none;
+
+    @media print {
+        display: block !important;
+    }
+}
+
+@mixin print-styles {
+    @media print {
+        @content;
+    }
+}
