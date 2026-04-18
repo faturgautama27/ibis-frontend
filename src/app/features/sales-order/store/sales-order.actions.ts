@@ -108,6 +108,23 @@ export const updateOrderStatusFailure = createAction(
     props<{ error: string }>()
 );
 
+// Recalculate and Update Order Status
+// Requirements: 11.3, 11.4
+export const recalculateOrderStatus = createAction(
+    '[Sales Order] Recalculate Order Status',
+    props<{ orderId: string }>()
+);
+
+export const recalculateOrderStatusSuccess = createAction(
+    '[Sales Order] Recalculate Order Status Success',
+    props<{ order: SalesOrderHeader }>()
+);
+
+export const recalculateOrderStatusFailure = createAction(
+    '[Sales Order] Recalculate Order Status Failure',
+    props<{ error: string }>()
+);
+
 // Select Order
 export const selectOrder = createAction(
     '[Sales Order] Select Order',

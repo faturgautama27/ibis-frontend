@@ -10,7 +10,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, retry, timeout } from 'rxjs/operators';
+import { catchError, retry, timeout, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
     SalesOrderHeader,
@@ -19,6 +19,8 @@ import {
     SOLookupCriteria,
     SOStatus
 } from '../models/sales-order.model';
+import { BusinessRuleValidator, ItemForValidation } from '../../../shared/validators/business-rule.validator';
+import { ItemCategory } from '../../item-master/models/item-category.enum';
 
 /**
  * DTOs for Create and Update operations
@@ -42,6 +44,9 @@ export interface CreateSalesOrderDto {
 export interface CreateSalesOrderDetailDto {
     lineNumber: number;
     itemId: string;
+    itemCode?: string;
+    itemName?: string;
+    category?: ItemCategory;
     orderedQuantity: number;
     unit: string;
     unitPrice: number;
@@ -109,8 +114,16 @@ export class SalesOrderService {
 
     /**
      * Create a new sales order
+     * Validates item categories before creation
+     * Requirements: 10.3, 10.4, 10.6
      */
     createOrder(order: CreateSalesOrderDto): Observable<SalesOrderHeader> {
+        // Validate item categories
+        const validationResult = this.validateItemCategories(order.details);
+        if (!validationResult.valid) {
+            return throwError(() => new Error(validationResult.message));
+        }
+
         return this.http.post<SalesOrderHeader>(this.apiUrl, order).pipe(
             timeout(this.defaultTimeout),
             catchError(this.handleError)
@@ -119,8 +132,18 @@ export class SalesOrderService {
 
     /**
      * Update an existing sales order
+     * Validates item categories if details are provided
+     * Requirements: 10.3, 10.4, 10.6
      */
     updateOrder(id: string, order: UpdateSalesOrderDto): Observable<SalesOrderHeader> {
+        // Validate item categories if details are being updated
+        if (order.details && order.details.length > 0) {
+            const validationResult = this.validateItemCategories(order.details);
+            if (!validationResult.valid) {
+                return throwError(() => new Error(validationResult.message));
+            }
+        }
+
         return this.http.put<SalesOrderHeader>(`${this.apiUrl}/${id}`, order).pipe(
             timeout(this.defaultTimeout),
             catchError(this.handleError)
@@ -169,6 +192,74 @@ export class SalesOrderService {
      */
     lookupSalesOrders(criteria: SOLookupCriteria): Observable<SalesOrderHeader[]> {
         return this.searchForLookup(criteria);
+    }
+
+    /**
+     * Validate item categories for sales order
+     * Ensures all items are FINISHED_GOOD category
+     * Requirements: 10.3, 10.4, 10.6
+     */
+    private validateItemCategories(details: CreateSalesOrderDetailDto[]): { valid: boolean; message?: string } {
+        const items: ItemForValidation[] = details
+            .filter(detail => detail.category !== undefined)
+            .map(detail => ({
+                id: detail.itemId,
+                itemCode: detail.itemCode || detail.itemId,
+                itemName: detail.itemName || 'Unknown',
+                category: detail.category!
+            }));
+
+        if (items.length === 0) {
+            // If no category information is provided, skip validation
+            // Backend will handle validation
+            return { valid: true };
+        }
+
+        return BusinessRuleValidator.validateItemCategories(items, 'SO');
+    }
+
+    /**
+     * Calculate sales order status based on shipped quantities
+     * Requirements: 11.2, 11.3
+     * 
+     * @param details - Sales order line items with ordered and shipped quantities
+     * @returns Calculated status (PENDING, PARTIALLY_SHIPPED, or FULLY_SHIPPED)
+     */
+    calculateOrderStatus(details: SalesOrderDetail[]): SOStatus {
+        if (!details || details.length === 0) {
+            return SOStatus.PENDING;
+        }
+
+        let totalOrdered = 0;
+        let totalShipped = 0;
+
+        details.forEach(detail => {
+            totalOrdered += detail.orderedQuantity;
+            totalShipped += detail.shippedQuantity;
+        });
+
+        if (totalShipped === 0) {
+            return SOStatus.PENDING;
+        } else if (totalShipped >= totalOrdered) {
+            return SOStatus.FULLY_SHIPPED;
+        } else {
+            return SOStatus.PARTIALLY_SHIPPED;
+        }
+    }
+
+    /**
+     * Update order status based on shipped quantities
+     * Automatically calculates and updates status when outbound transactions are linked
+     * Requirements: 11.3, 11.4
+     * 
+     * @param orderId - Sales order ID
+     * @returns Observable of updated sales order
+     */
+    recalculateAndUpdateStatus(orderId: string): Observable<SalesOrderHeader> {
+        return this.getOrderDetails(orderId).pipe(
+            map(details => this.calculateOrderStatus(details)),
+            switchMap(newStatus => this.updateStatus(orderId, newStatus))
+        );
     }
 
     /**

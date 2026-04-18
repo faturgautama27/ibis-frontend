@@ -1,0 +1,33 @@
+/**
+ * Outbound Detail Component Styles
+ */
+
+:host {
+    display: block;
+}
+
+// Ensure proper spacing and layout
+::ng-deep .p-card {
+    .p-card-body {
+        padding: 1.5rem;
+    }
+
+    .p-card-header {
+        padding: 0;
+    }
+}
+
+// Table styling
+::ng-deep .p-datatable {
+    .p-datatable-thead>tr>th {
+        background-color: var(--surface-50);
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .p-datatable-tbody>tr {
+        &:hover {
+            background-color: var(--surface-hover);
+        }
+    }
+}

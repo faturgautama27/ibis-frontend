@@ -42,6 +42,22 @@ export const routes: Routes = [
                     .then(m => m.ItemFormComponent)
             },
 
+            // Master Data - Raw Materials (filtered items)
+            {
+                path: 'items/raw-materials',
+                loadComponent: () => import('./features/inventory/components/item-list/item-list.component')
+                    .then(m => m.ItemListComponent),
+                data: { category: 'RAW_MATERIAL' }
+            },
+
+            // Master Data - Finished Goods (filtered items)
+            {
+                path: 'items/finished-goods',
+                loadComponent: () => import('./features/inventory/components/item-list/item-list.component')
+                    .then(m => m.ItemListComponent),
+                data: { category: 'FINISHED_GOOD' }
+            },
+
             // Master Data - Warehouses
             {
                 path: 'warehouses',
@@ -125,6 +141,82 @@ export const routes: Routes = [
                 path: 'outbound/:id/edit',
                 loadComponent: () => import('./features/outbound/components/outbound-form/outbound-form.component')
                     .then(m => m.OutboundFormComponent)
+            },
+
+            // Orders - Purchase Orders
+            {
+                path: 'purchase-orders',
+                loadComponent: () => import('./features/purchase-order/components/purchase-order-list/purchase-order-list.component')
+                    .then(m => m.PurchaseOrderListComponent)
+            },
+            {
+                path: 'purchase-orders/new',
+                loadComponent: () => import('./features/purchase-order/components/purchase-order-form/purchase-order-form.component')
+                    .then(m => m.PurchaseOrderFormComponent)
+            },
+            {
+                path: 'purchase-orders/:id',
+                loadComponent: () => import('./features/purchase-order/components/purchase-order-detail/purchase-order-detail.component')
+                    .then(m => m.PurchaseOrderDetailComponent)
+            },
+            {
+                path: 'purchase-orders/:id/edit',
+                loadComponent: () => import('./features/purchase-order/components/purchase-order-form/purchase-order-form.component')
+                    .then(m => m.PurchaseOrderFormComponent)
+            },
+
+            // Orders - Sales Orders
+            {
+                path: 'sales-orders',
+                loadComponent: () => import('./features/sales-order/components/sales-order-list/sales-order-list.component')
+                    .then(m => m.SalesOrderListComponent)
+            },
+            {
+                path: 'sales-orders/new',
+                loadComponent: () => import('./features/sales-order/components/sales-order-form/sales-order-form.component')
+                    .then(m => m.SalesOrderFormComponent)
+            },
+            {
+                path: 'sales-orders/:id',
+                loadComponent: () => import('./features/sales-order/components/sales-order-detail/sales-order-detail.component')
+                    .then(m => m.SalesOrderDetailComponent)
+            },
+            {
+                path: 'sales-orders/:id/edit',
+                loadComponent: () => import('./features/sales-order/components/sales-order-form/sales-order-form.component')
+                    .then(m => m.SalesOrderFormComponent)
+            },
+
+            // Stock Management - Stock Adjustments
+            {
+                path: 'stock-adjustment',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-list/stock-adjustment-list.component')
+                    .then(m => m.StockAdjustmentListComponent)
+            },
+            {
+                path: 'stock-adjustment/new',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-form/stock-adjustment-form.component')
+                    .then(m => m.StockAdjustmentFormComponent)
+            },
+            {
+                path: 'stock-adjustment/view/:id',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-detail/stock-adjustment-detail.component')
+                    .then(m => m.StockAdjustmentDetailComponent)
+            },
+            {
+                path: 'stock-adjustment/approve',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-approval/stock-adjustment-approval.component')
+                    .then(m => m.StockAdjustmentApprovalComponent)
+            },
+            {
+                path: 'stock-adjustment/approve/:id',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-approval/stock-adjustment-approval.component')
+                    .then(m => m.StockAdjustmentApprovalComponent)
+            },
+            {
+                path: 'stock-adjustment/audit',
+                loadComponent: () => import('./features/stock-adjustment/components/stock-adjustment-audit/stock-adjustment-audit.component')
+                    .then(m => m.StockAdjustmentAuditComponent)
             },
 
             // Transactions - Production
@@ -221,6 +313,42 @@ export const routes: Routes = [
                 path: 'reports',
                 loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
                     .then(m => m.ReportGeneratorComponent)
+            },
+            {
+                path: 'reports/inbound',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'inbound' }
+            },
+            {
+                path: 'reports/outbound',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'outbound' }
+            },
+            {
+                path: 'reports/purchase-orders',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'purchase-orders' }
+            },
+            {
+                path: 'reports/sales-orders',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'sales-orders' }
+            },
+            {
+                path: 'reports/stock-opname',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'stock-opname' }
+            },
+            {
+                path: 'reports/stock-adjustment',
+                loadComponent: () => import('./features/reporting/components/report-generator/report-generator.component')
+                    .then(m => m.ReportGeneratorComponent),
+                data: { reportType: 'stock-adjustment' }
             },
 
             // Audit Trail

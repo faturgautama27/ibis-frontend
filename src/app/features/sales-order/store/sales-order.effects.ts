@@ -8,7 +8,7 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { map, catchError, exhaustMap, switchMap } from 'rxjs/operators';
-import { SalesOrderService } from '../services/sales-order.service';
+import { SalesOrderDemoService } from '../services/sales-order-demo.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import * as SalesOrderActions from './sales-order.actions';
 
@@ -19,7 +19,7 @@ import * as SalesOrderActions from './sales-order.actions';
 @Injectable()
 export class SalesOrderEffects {
     private actions$ = inject(Actions);
-    private salesOrderService = inject(SalesOrderService);
+    private salesOrderService = inject(SalesOrderDemoService);
     private notificationService = inject(NotificationService);
 
     /**
@@ -30,7 +30,7 @@ export class SalesOrderEffects {
         this.actions$.pipe(
             ofType(SalesOrderActions.loadOrders),
             switchMap(({ filters }) =>
-                this.salesOrderService.getOrders(filters).pipe(
+                this.salesOrderService.getAll().pipe(
                     map(orders => SalesOrderActions.loadOrdersSuccess({
                         orders,
                         totalRecords: orders.length

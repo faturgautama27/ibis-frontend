@@ -67,7 +67,7 @@ export class SalesOrderListComponent implements OnInit {
 
     // Filter properties for two-way binding
     searchQuery = '';
-    selectedStatus: SOStatus[] = [];
+    selectedStatus: SOStatus | null = null;
     dateFrom: Date | null = null;
     dateTo: Date | null = null;
 
@@ -115,7 +115,7 @@ export class SalesOrderListComponent implements OnInit {
     /**
      * Handle status filter change
      */
-    onStatusChange(status: SOStatus[]): void {
+    onStatusChange(status: SOStatus | null): void {
         this.selectedStatus = status;
         this.applyFilters();
     }
@@ -142,7 +142,7 @@ export class SalesOrderListComponent implements OnInit {
     private applyFilters(): void {
         const filters: SOFilters = {
             searchQuery: this.searchQuery || undefined,
-            status: this.selectedStatus.length > 0 ? this.selectedStatus : undefined,
+            status: this.selectedStatus ? [this.selectedStatus] : undefined,
             dateFrom: this.dateFrom || undefined,
             dateTo: this.dateTo || undefined
         };
@@ -155,7 +155,7 @@ export class SalesOrderListComponent implements OnInit {
      */
     onClearFilters(): void {
         this.searchQuery = '';
-        this.selectedStatus = [];
+        this.selectedStatus = null;
         this.dateFrom = null;
         this.dateTo = null;
         this.store.dispatch(setFilters({ filters: {} }));
@@ -165,21 +165,21 @@ export class SalesOrderListComponent implements OnInit {
      * Navigate to create sales order page
      */
     onCreateOrder(): void {
-        this.router.navigate(['/sales-order/create']);
+        this.router.navigate(['/sales-orders/new']);
     }
 
     /**
      * Navigate to view sales order details
      */
     onViewOrder(order: SalesOrderHeader): void {
-        this.router.navigate(['/sales-order/view', order.id]);
+        this.router.navigate(['/sales-orders', order.id]);
     }
 
     /**
      * Navigate to edit sales order page
      */
     onEditOrder(order: SalesOrderHeader): void {
-        this.router.navigate(['/sales-order/edit', order.id]);
+        this.router.navigate(['/sales-orders', order.id, 'edit']);
     }
 
     /**

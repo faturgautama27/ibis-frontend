@@ -75,9 +75,21 @@ export class NavigationService {
                 children: [
                     {
                         id: 'inventory',
-                        label: 'Items',
+                        label: 'All Items',
                         icon: lucideIcons.Package,
                         route: '/inventory'
+                    },
+                    {
+                        id: 'raw-materials',
+                        label: 'Raw Materials',
+                        icon: lucideIcons.Component,
+                        route: '/items/raw-materials'
+                    },
+                    {
+                        id: 'finished-goods',
+                        label: 'Finished Goods',
+                        icon: lucideIcons.PackageCheck,
+                        route: '/items/finished-goods'
                     },
                     {
                         id: 'warehouse',
@@ -112,10 +124,22 @@ export class NavigationService {
                 ]
             },
             {
+                id: 'purchase-orders',
+                label: 'Purchase Orders',
+                icon: lucideIcons.ShoppingCart,
+                route: '/purchase-orders'
+            },
+            {
                 id: 'inbound',
                 label: 'Inbound',
                 icon: lucideIcons.PackageCheck,
                 route: '/inbound'
+            },
+            {
+                id: 'sales-orders',
+                label: 'Sales Orders',
+                icon: lucideIcons.ShoppingBag,
+                route: '/sales-orders'
             },
             {
                 id: 'outbound',
@@ -135,6 +159,12 @@ export class NavigationService {
                 icon: lucideIcons.Boxes,
                 route: '#',
                 children: [
+                    {
+                        id: 'stock-adjustment',
+                        label: 'Stock Adjustment',
+                        icon: lucideIcons.Settings,
+                        route: '/stock-adjustment'
+                    },
                     {
                         id: 'stock-mutation',
                         label: 'Stock Mutation',
@@ -171,7 +201,51 @@ export class NavigationService {
                 id: 'reports',
                 label: 'Reports',
                 icon: lucideIcons.BarChart3,
-                route: '/reports'
+                route: '#',
+                children: [
+                    {
+                        id: 'report-inbound',
+                        label: 'Inbound Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/inbound'
+                    },
+                    {
+                        id: 'report-outbound',
+                        label: 'Outbound Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/outbound'
+                    },
+                    {
+                        id: 'report-purchase-order',
+                        label: 'Purchase Order Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/purchase-orders'
+                    },
+                    {
+                        id: 'report-sales-order',
+                        label: 'Sales Order Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/sales-orders'
+                    },
+                    {
+                        id: 'report-stock-opname',
+                        label: 'Stock Opname Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/stock-opname'
+                    },
+                    {
+                        id: 'report-stock-adjustment',
+                        label: 'Stock Adjustment Report',
+                        icon: lucideIcons.FileBarChart,
+                        route: '/reports/stock-adjustment'
+                    },
+                    {
+                        id: 'report-all',
+                        label: 'All Reports',
+                        icon: lucideIcons.FileText,
+                        route: '/reports'
+                    }
+                ]
             },
             {
                 id: 'audit-trail',

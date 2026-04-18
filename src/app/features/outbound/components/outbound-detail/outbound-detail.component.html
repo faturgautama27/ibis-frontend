@@ -1,0 +1,228 @@
+<div class="main-layout">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <lucide-icon [img]="PackageOpenIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
+                <h1 class="text-2xl font-semibold text-gray-900">Outbound Shipment Details</h1>
+            </div>
+            <button pButton label="Back to List" icon="pi pi-arrow-left" class="p-button-text"
+                (click)="goBack()"></button>
+        </div>
+    </div>
+
+    @if (loading) {
+    <div class="flex justify-center items-center py-12">
+        <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+    </div>
+    }
+
+    @if (error) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded text-red-700">
+        <i class="pi pi-exclamation-triangle mr-2"></i>
+        {{ error }}
+    </div>
+    }
+
+    @if (outbound && !loading) {
+    <!-- Header Information Card -->
+    <p-card class="mb-4">
+        <ng-template pTemplate="header">
+            <div class="p-4 border-b">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">{{ outbound.outbound_number }}</h2>
+                        <p class="text-sm text-gray-600">{{ formatDate(outbound.outbound_date) }}</p>
+                    </div>
+                    <p-tag [value]="outbound.status" [severity]="getStatusSeverity(outbound.status)" />
+                </div>
+            </div>
+        </ng-template>
+
+        <!-- SO Reference Section (Requirements: 7.8) -->
+        @if (outbound.sales_order_id) {
+        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex-1">
+                    <h3 class="text-sm font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                        <i class="pi pi-link"></i>
+                        Linked Sales Order
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <p class="text-xs text-gray-600">SO Number</p>
+                            <p class="text-sm font-semibold text-gray-900">{{ outbound.sales_order_number }}</p>
+                        </div>
+                        @if (outbound.auto_populated_from_so) {
+                        <div>
+                            <p class="text-xs text-gray-600">Auto-populated</p>
+                            <p-tag value="Yes" severity="info" [rounded]="true" />
+                        </div>
+                        }
+                        @if (outbound.so_link_date) {
+                        <div>
+                            <p class="text-xs text-gray-600">Linked Date</p>
+                            <p class="text-sm text-gray-900">{{ formatDate(outbound.so_link_date) }}</p>
+                        </div>
+                        }
+                        @if (outbound.so_link_by) {
+                        <div>
+                            <p class="text-xs text-gray-600">Linked By</p>
+                            <p class="text-sm text-gray-900">{{ outbound.so_link_by }}</p>
+                        </div>
+                        }
+                    </div>
+                </div>
+                <button pButton label="View SO" icon="pi pi-external-link" class="p-button-sm p-button-outlined"
+                    (click)="viewSalesOrder()"></button>
+            </div>
+        </div>
+        }
+
+        <p-divider />
+
+        <!-- Basic Information -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <p class="text-xs text-gray-600 mb-1">BC Document Number</p>
+                <p class="text-sm font-semibold text-gray-900">{{ outbound.bc_document_number }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-600 mb-1">Outbound Type</p>
+                <p class="text-sm text-gray-900">{{ outbound.outbound_type }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-600 mb-1">Delivery Number</p>
+                <p class="text-sm text-gray-900">{{ outbound.delivery_number || '-' }}</p>
+            </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Customer & Warehouse -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900 mb-2">Customer Information</h3>
+                <div class="space-y-2">
+                    <div>
+                        <p class="text-xs text-gray-600">Customer Name</p>
+                        <p class="text-sm text-gray-900">{{ outbound.customer_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Customer Code</p>
+                        <p class="text-sm text-gray-900">{{ outbound.customer_code }}</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-900 mb-2">Warehouse Information</h3>
+                <div class="space-y-2">
+                    <div>
+                        <p class="text-xs text-gray-600">Warehouse Name</p>
+                        <p class="text-sm text-gray-900">{{ outbound.warehouse_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Warehouse Code</p>
+                        <p class="text-sm text-gray-900">{{ outbound.warehouse_code }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p-divider />
+
+        <!-- Delivery Information -->
+        @if (outbound.vehicle_number || outbound.driver_name || outbound.delivery_date) {
+        <div class="mb-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Delivery Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-xs text-gray-600">Delivery Date</p>
+                    <p class="text-sm text-gray-900">{{ formatDate(outbound.delivery_date) }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-600">Vehicle Number</p>
+                    <p class="text-sm text-gray-900">{{ outbound.vehicle_number || '-' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-600">Driver Name</p>
+                    <p class="text-sm text-gray-900">{{ outbound.driver_name || '-' }}</p>
+                </div>
+            </div>
+        </div>
+        <p-divider />
+        }
+
+        <!-- Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-600 mb-1">Total Items</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ outbound.total_items }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-600 mb-1">Total Quantity</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ outbound.total_quantity }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4">
+                <p class="text-xs text-gray-600 mb-1">Total Value</p>
+                <p class="text-2xl font-semibold text-gray-900">{{ formatCurrency(outbound.total_value) }}</p>
+            </div>
+        </div>
+
+        @if (outbound.notes) {
+        <p-divider />
+        <div>
+            <h3 class="text-sm font-semibold text-gray-900 mb-2">Notes</h3>
+            <p class="text-sm text-gray-700">{{ outbound.notes }}</p>
+        </div>
+        }
+    </p-card>
+
+    <!-- Line Items Table -->
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold text-gray-900">Line Items</h2>
+            </div>
+        </ng-template>
+
+        <p-table [value]="details" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Line</th>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Ordered Qty</th>
+                    <th>Shipped Qty</th>
+                    <th>Unit</th>
+                    <th>Unit Price</th>
+                    <th>Total Price</th>
+                    <th>Batch</th>
+                    <th>Location</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-detail>
+                <tr>
+                    <td>{{ detail.line_number }}</td>
+                    <td>{{ detail.item_code }}</td>
+                    <td>{{ detail.item_name }}</td>
+                    <td>{{ detail.ordered_quantity }}</td>
+                    <td>{{ detail.shipped_quantity }}</td>
+                    <td>{{ detail.unit }}</td>
+                    <td>{{ formatCurrency(detail.unit_price) }}</td>
+                    <td>{{ formatCurrency(detail.total_price) }}</td>
+                    <td>{{ detail.batch_number || '-' }}</td>
+                    <td>{{ detail.location_code || '-' }}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="10" class="text-center py-4 text-gray-500">
+                        No line items found
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+    }
+</div>

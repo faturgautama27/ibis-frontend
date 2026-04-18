@@ -1,0 +1,229 @@
+<div class="stock-adjustment-approval-container">
+    <!-- Single Adjustment Approval Mode -->
+    <div *ngIf="!batchMode && (adjustment$ | async) as adjustment" class="single-approval-mode">
+        <!-- Header -->
+        <div class="flex justify-content-between align-items-center mb-4">
+            <h2 class="text-2xl font-semibold">Review Stock Adjustment</h2>
+            <p-button label="Back to List" icon="pi pi-arrow-left" (onClick)="onCancel()"
+                styleClass="p-button-outlined">
+            </p-button>
+        </div>
+
+        <!-- Adjustment Header Info -->
+        <div class="card mb-4">
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Adjustment Number</label>
+                        <p>{{ adjustment.adjustmentNumber }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Status</label>
+                        <p>
+                            <p-tag [value]="getStatusLabel(adjustment.status)"
+                                [severity]="getStatusSeverity(adjustment.status)">
+                            </p-tag>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Adjustment Date</label>
+                        <p>{{ formatDate(adjustment.adjustmentDate) }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Warehouse</label>
+                        <p>{{ adjustment.warehouseName }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Submitted By</label>
+                        <p>{{ adjustment.submittedByName || adjustment.submittedBy }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Submitted At</label>
+                        <p>{{ formatDateTime(adjustment.submittedAt) }}</p>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="adjustment.notes">
+                    <div class="field">
+                        <label class="font-semibold">Notes</label>
+                        <p>{{ adjustment.notes }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adjustment Details -->
+        <div class="card mb-4">
+            <h3 class="text-xl font-semibold mb-3">Adjustment Items</h3>
+            <p-table [value]="(details$ | async) || []" [loading]="(loading$ | async) || false"
+                styleClass="p-datatable-striped" responsiveLayout="scroll">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Item Code</th>
+                        <th>Item Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Before</th>
+                        <th>After</th>
+                        <th>Reason</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-detail>
+                    <tr>
+                        <td>{{ detail.itemCode }}</td>
+                        <td>{{ detail.itemName }}</td>
+                        <td>
+                            <p-tag [value]="getTypeLabel(detail.adjustmentType)"
+                                [severity]="detail.adjustmentType === 'INCREASE' ? 'success' : 'warn'">
+                            </p-tag>
+                        </td>
+                        <td class="font-semibold">
+                            {{ detail.adjustmentType === 'INCREASE' ? '+' : '-' }}{{ detail.quantity }}
+                        </td>
+                        <td>{{ detail.beforeQuantity }}</td>
+                        <td class="font-semibold">
+                            {{ detail.adjustmentType === 'INCREASE'
+                            ? detail.beforeQuantity + detail.quantity
+                            : detail.beforeQuantity - detail.quantity }}
+                        </td>
+                        <td>{{ detail.reason }}</td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No items found</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Review Form -->
+        <div class="card mb-4">
+            <h3 class="text-xl font-semibold mb-3">Review Decision</h3>
+            <form [formGroup]="reviewForm">
+                <div class="field">
+                    <label for="comments">Comments <span class="text-red-500" *ngIf="false">*</span></label>
+                    <textarea id="comments" pInputTextarea formControlName="comments" rows="4"
+                        placeholder="Enter your comments (required for rejection)..." class="w-full">
+                    </textarea>
+                    <small class="text-500">Maximum 500 characters</small>
+                </div>
+            </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancel" icon="pi pi-times" (onClick)="onCancel()" styleClass="p-button-outlined"
+                [disabled]="(saving$ | async) || false">
+            </p-button>
+            <p-button label="Reject" icon="pi pi-times-circle" (onClick)="onReject(adjustment)"
+                styleClass="p-button-danger" [loading]="(saving$ | async) || false">
+            </p-button>
+            <p-button label="Approve" icon="pi pi-check-circle" (onClick)="onApprove(adjustment)"
+                styleClass="p-button-success" [loading]="(saving$ | async) || false">
+            </p-button>
+        </div>
+    </div>
+
+    <!-- Batch Approval Mode (Pending Queue) -->
+    <div *ngIf="batchMode" class="batch-approval-mode">
+        <!-- Header -->
+        <div class="flex justify-content-between align-items-center mb-4">
+            <h2 class="text-2xl font-semibold">Pending Approvals</h2>
+            <p-button label="Batch Approve Selected" icon="pi pi-check" (onClick)="onBatchApprove()"
+                [disabled]="selectedAdjustments.length === 0" styleClass="p-button-success">
+            </p-button>
+        </div>
+
+        <!-- Batch Comments -->
+        <div class="card mb-4" *ngIf="selectedAdjustments.length > 0">
+            <form [formGroup]="reviewForm">
+                <div class="field">
+                    <label for="batchComments">Batch Approval Comments (Optional)</label>
+                    <textarea id="batchComments" pInputTextarea formControlName="comments" rows="3"
+                        placeholder="Enter comments for all selected adjustments..." class="w-full">
+                    </textarea>
+                </div>
+            </form>
+        </div>
+
+        <!-- Pending Adjustments Table -->
+        <div class="card">
+            <p-table [value]="(pendingApprovals$ | async) || []" [(selection)]="selectedAdjustments"
+                [loading]="(loading$ | async) || false" dataKey="id" styleClass="p-datatable-striped"
+                responsiveLayout="scroll">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-checkbox [binary]="true" (onChange)="onSelectAllChange($event.checked)">
+                            </p-checkbox>
+                        </th>
+                        <th>Adjustment Number</th>
+                        <th>Date</th>
+                        <th>Warehouse</th>
+                        <th>Total Items</th>
+                        <th>Submitted By</th>
+                        <th>Submitted At</th>
+                        <th>Actions</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-adjustment>
+                    <tr>
+                        <td>
+                            <p-checkbox [binary]="true" [ngModel]="isSelected(adjustment)"
+                                (onChange)="onCheckboxChange(adjustment, $event.checked)">
+                            </p-checkbox>
+                        </td>
+                        <td>{{ adjustment.adjustmentNumber }}</td>
+                        <td>{{ formatDate(adjustment.adjustmentDate) }}</td>
+                        <td>{{ adjustment.warehouseName }}</td>
+                        <td>{{ adjustment.totalItems }}</td>
+                        <td>{{ adjustment.submittedByName || adjustment.submittedBy }}</td>
+                        <td>{{ formatDateTime(adjustment.submittedAt) }}</td>
+                        <td>
+                            <div class="flex gap-2">
+                                <p-button icon="pi pi-eye" styleClass="p-button-text p-button-sm"
+                                    (onClick)="onViewDetails(adjustment)" pTooltip="View Details" tooltipPosition="top">
+                                </p-button>
+                                <p-button icon="pi pi-check" styleClass="p-button-text p-button-success p-button-sm"
+                                    (onClick)="onApprove(adjustment)" pTooltip="Approve" tooltipPosition="top">
+                                </p-button>
+                                <p-button icon="pi pi-times" styleClass="p-button-text p-button-danger p-button-sm"
+                                    (onClick)="onReject(adjustment)" pTooltip="Reject" tooltipPosition="top">
+                                </p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="flex flex-column align-items-center gap-2">
+                                <i class="pi pi-inbox text-4xl text-400"></i>
+                                <p class="text-500">No pending approvals</p>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Dialog -->
+<p-confirmDialog></p-confirmDialog>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -31,6 +31,10 @@ import { Item } from '../../../inventory/models/item.model';
 import { BCDocument } from '../../../bc-documents/models/bc-document.model';
 import { Customer } from '../../../suppliers-customers/models/customer.model';
 import { Warehouse } from '../../../warehouse/models/warehouse.model';
+import { SalesOrderHeader } from '../../../sales-order/models/sales-order.model';
+
+// Components
+import { SalesOrderLookupComponent } from '../../../sales-order/components/sales-order-lookup/sales-order-lookup.component';
 
 /**
  * Outbound Form Component
@@ -51,7 +55,8 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
     TableModule,
     ToastModule,
     DialogModule,
-    LucideAngularModule
+    LucideAngularModule,
+    SalesOrderLookupComponent
   ],
   providers: [MessageService],
   template: `
@@ -126,6 +131,61 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
           <!-- BC Document & Customer -->
           <div class="mb-6">
             <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">BC Document & Customer</h2>
+            
+            <!-- SO Lookup Section (Requirements: 7.1, 7.3, 7.7) -->
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <h3 class="text-sm font-semibold text-blue-900 mb-1">Sales Order Link</h3>
+                  @if (linkedSalesOrder) {
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm text-blue-700">
+                        Linked to SO: <strong>{{ linkedSalesOrder.soNumber }}</strong>
+                      </span>
+                      @if (outboundForm.get('auto_populated_from_so')?.value) {
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Auto-populated</span>
+                      }
+                    </div>
+                  } @else {
+                    <p class="text-sm text-blue-700">Link this outbound to an existing sales order (optional)</p>
+                  }
+                </div>
+                <div class="flex gap-2">
+                  @if (!linkedSalesOrder) {
+                    <button
+                      pButton
+                      type="button"
+                      label="Lookup SO"
+                      icon="pi pi-search"
+                      class="p-button-sm"
+                      (click)="showSOLookup()"
+                      [disabled]="isEditMode"
+                    ></button>
+                  } @else {
+                    <button
+                      pButton
+                      type="button"
+                      label="Clear Link"
+                      icon="pi pi-times"
+                      class="p-button-sm p-button-secondary"
+                      (click)="clearSOLink()"
+                      [disabled]="isEditMode"
+                    ></button>
+                    @if (!manualOverride) {
+                      <button
+                        pButton
+                        type="button"
+                        label="Manual Override"
+                        icon="pi pi-pencil"
+                        class="p-button-sm p-button-warning"
+                        (click)="enableManualOverride()"
+                        [disabled]="isEditMode"
+                      ></button>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="flex flex-col">
@@ -476,6 +536,12 @@ import { Warehouse } from '../../../warehouse/models/warehouse.model';
       </p-dialog>
     </div>
 
+    <!-- Sales Order Lookup Component (Requirements: 7.1, 7.3) -->
+    <app-sales-order-lookup
+      #soLookup
+      (soSelected)="onSOSelected($event)"
+    />
+
     <p-toast />
   `
 })
@@ -494,6 +560,13 @@ export class OutboundFormComponent implements OnInit {
   PackageOpenIcon = PackageOpen;
   PlusIcon = Plus;
   Trash2Icon = Trash2;
+
+  // ViewChild for SO Lookup component (Requirements: 7.1, 7.3)
+  @ViewChild('soLookup') soLookupComponent!: SalesOrderLookupComponent;
+
+  // SO Linking state (Requirements: 7.1, 7.3, 7.4, 7.5)
+  linkedSalesOrder: SalesOrderHeader | null = null;
+  manualOverride = false;
 
   // Form
   outboundForm!: FormGroup;
@@ -662,6 +735,12 @@ export class OutboundFormComponent implements OnInit {
       outbound_type: ['', Validators.required],
       bc_document_id: [''],
       bc_document_number: ['', Validators.required],
+      // Sales Order reference fields (Requirements: 7.6, 7.8)
+      sales_order_id: [''],
+      sales_order_number: [''],
+      auto_populated_from_so: [false],
+      so_link_date: [null],
+      so_link_by: [''],
       customer_id: [''],
       customer_code: [''],
       customer_name: ['', Validators.required],
@@ -878,6 +957,80 @@ export class OutboundFormComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(['/outbound']);
+  }
+
+  /**
+   * Show SO Lookup Dialog
+   * Requirements: 7.1, 7.3
+   */
+  showSOLookup(): void {
+    this.soLookupComponent.show();
+  }
+
+  /**
+   * Handle SO Selection from Lookup
+   * Requirements: 7.3, 7.4, 7.5
+   */
+  onSOSelected(salesOrder: SalesOrderHeader): void {
+    this.linkedSalesOrder = salesOrder;
+
+    // Auto-populate form fields from SO
+    this.outboundForm.patchValue({
+      sales_order_id: salesOrder.id,
+      sales_order_number: salesOrder.soNumber,
+      auto_populated_from_so: true,
+      so_link_date: new Date(),
+      so_link_by: 'admin', // Should be current user
+      customer_id: salesOrder.customerId,
+      customer_code: salesOrder.customerCode,
+      customer_name: salesOrder.customerName,
+      warehouse_id: salesOrder.warehouseId,
+      warehouse_code: salesOrder.warehouseCode,
+      warehouse_name: salesOrder.warehouseName
+    });
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'SO Linked',
+      detail: `Sales Order ${salesOrder.soNumber} linked successfully. Form fields have been auto-populated.`
+    });
+  }
+
+  /**
+   * Clear SO Link
+   * Requirements: 7.5, 7.7
+   */
+  clearSOLink(): void {
+    this.linkedSalesOrder = null;
+    this.manualOverride = false;
+
+    // Clear SO reference fields but keep manually entered data
+    this.outboundForm.patchValue({
+      sales_order_id: '',
+      sales_order_number: '',
+      auto_populated_from_so: false,
+      so_link_date: null,
+      so_link_by: ''
+    });
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'SO Link Cleared',
+      detail: 'Sales order link has been removed. You can now enter details manually.'
+    });
+  }
+
+  /**
+   * Enable manual override of auto-populated fields
+   * Requirements: 7.5
+   */
+  enableManualOverride(): void {
+    this.manualOverride = true;
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Manual Override Enabled',
+      detail: 'You can now modify auto-populated fields.'
+    });
   }
 
   isFieldInvalid(fieldName: string): boolean {

@@ -10,7 +10,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, retry, timeout } from 'rxjs/operators';
+import { catchError, retry, timeout, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import {
     PurchaseOrderHeader,
@@ -19,6 +19,8 @@ import {
     POLookupCriteria,
     POStatus
 } from '../models/purchase-order.model';
+import { BusinessRuleValidator, ItemForValidation } from '../../../shared/validators/business-rule.validator';
+import { ItemCategory } from '../../item-master/models/item-category.enum';
 
 /**
  * DTOs for Create and Update operations
@@ -40,6 +42,9 @@ export interface CreatePurchaseOrderDto {
 export interface CreatePurchaseOrderDetailDto {
     lineNumber: number;
     itemId: string;
+    itemCode?: string;
+    itemName?: string;
+    category?: ItemCategory;
     orderedQuantity: number;
     unit: string;
     unitPrice: number;
@@ -105,8 +110,16 @@ export class PurchaseOrderService {
 
     /**
      * Create a new purchase order
+     * Validates item categories before creation
+     * Requirements: 10.1, 10.2, 10.6
      */
     createOrder(order: CreatePurchaseOrderDto): Observable<PurchaseOrderHeader> {
+        // Validate item categories
+        const validationResult = this.validateItemCategories(order.details);
+        if (!validationResult.valid) {
+            return throwError(() => new Error(validationResult.message));
+        }
+
         return this.http.post<PurchaseOrderHeader>(this.apiUrl, order).pipe(
             timeout(this.defaultTimeout),
             catchError(this.handleError)
@@ -115,8 +128,18 @@ export class PurchaseOrderService {
 
     /**
      * Update an existing purchase order
+     * Validates item categories if details are provided
+     * Requirements: 10.1, 10.2, 10.6
      */
     updateOrder(id: string, order: UpdatePurchaseOrderDto): Observable<PurchaseOrderHeader> {
+        // Validate item categories if details are being updated
+        if (order.details && order.details.length > 0) {
+            const validationResult = this.validateItemCategories(order.details);
+            if (!validationResult.valid) {
+                return throwError(() => new Error(validationResult.message));
+            }
+        }
+
         return this.http.put<PurchaseOrderHeader>(`${this.apiUrl}/${id}`, order).pipe(
             timeout(this.defaultTimeout),
             catchError(this.handleError)
@@ -163,6 +186,74 @@ export class PurchaseOrderService {
      */
     lookupPurchaseOrders(criteria: POLookupCriteria): Observable<PurchaseOrderHeader[]> {
         return this.searchForLookup(criteria);
+    }
+
+    /**
+     * Validate item categories for purchase order
+     * Ensures all items are RAW_MATERIAL category
+     * Requirements: 10.1, 10.2, 10.6
+     */
+    private validateItemCategories(details: CreatePurchaseOrderDetailDto[]): { valid: boolean; message?: string } {
+        const items: ItemForValidation[] = details
+            .filter(detail => detail.category !== undefined)
+            .map(detail => ({
+                id: detail.itemId,
+                itemCode: detail.itemCode || detail.itemId,
+                itemName: detail.itemName || 'Unknown',
+                category: detail.category!
+            }));
+
+        if (items.length === 0) {
+            // If no category information is provided, skip validation
+            // Backend will handle validation
+            return { valid: true };
+        }
+
+        return BusinessRuleValidator.validateItemCategories(items, 'PO');
+    }
+
+    /**
+     * Calculate purchase order status based on received quantities
+     * Requirements: 11.1, 11.3
+     * 
+     * @param details - Purchase order line items with ordered and received quantities
+     * @returns Calculated status (PENDING, PARTIALLY_RECEIVED, or FULLY_RECEIVED)
+     */
+    calculateOrderStatus(details: PurchaseOrderDetail[]): POStatus {
+        if (!details || details.length === 0) {
+            return POStatus.PENDING;
+        }
+
+        let totalOrdered = 0;
+        let totalReceived = 0;
+
+        details.forEach(detail => {
+            totalOrdered += detail.orderedQuantity;
+            totalReceived += detail.receivedQuantity;
+        });
+
+        if (totalReceived === 0) {
+            return POStatus.PENDING;
+        } else if (totalReceived >= totalOrdered) {
+            return POStatus.FULLY_RECEIVED;
+        } else {
+            return POStatus.PARTIALLY_RECEIVED;
+        }
+    }
+
+    /**
+     * Update order status based on received quantities
+     * Automatically calculates and updates status when inbound transactions are linked
+     * Requirements: 11.3, 11.4
+     * 
+     * @param orderId - Purchase order ID
+     * @returns Observable of updated purchase order
+     */
+    recalculateAndUpdateStatus(orderId: string): Observable<PurchaseOrderHeader> {
+        return this.getOrderDetails(orderId).pipe(
+            map(details => this.calculateOrderStatus(details)),
+            switchMap(newStatus => this.updateStatus(orderId, newStatus))
+        );
     }
 
 

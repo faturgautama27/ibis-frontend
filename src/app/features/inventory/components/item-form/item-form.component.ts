@@ -546,6 +546,9 @@ export class ItemFormComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    // Initialize form first
+    this.initializeForm();
+
     // Check if we're in edit mode
     this.itemId = this.route.snapshot.paramMap.get('id');
     this.isEditMode = !!this.itemId;

@@ -1,0 +1,210 @@
+<div class="stock-adjustment-detail-container">
+    <div *ngIf="(adjustment$ | async) as adjustment">
+        <!-- Header -->
+        <div class="flex justify-content-between align-items-center mb-4">
+            <h2 class="text-2xl font-semibold">Stock Adjustment Details</h2>
+            <div class="flex gap-2">
+                <p-button label="Print" icon="pi pi-print" (onClick)="onPrint()" styleClass="p-button-outlined">
+                </p-button>
+                <p-button label="Export PDF" icon="pi pi-file-pdf" (onClick)="onExportPDF()"
+                    styleClass="p-button-outlined">
+                </p-button>
+                <p-button label="Back" icon="pi pi-arrow-left" (onClick)="onBack()" styleClass="p-button-outlined">
+                </p-button>
+            </div>
+        </div>
+
+        <!-- Adjustment Header Information -->
+        <div class="card mb-4">
+            <h3 class="text-xl font-semibold mb-3">Adjustment Information</h3>
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Adjustment Number</label>
+                        <p>{{ adjustment.adjustmentNumber }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Status</label>
+                        <p>
+                            <p-tag [value]="getStatusLabel(adjustment.status)"
+                                [severity]="getStatusSeverity(adjustment.status)">
+                            </p-tag>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Adjustment Date</label>
+                        <p>{{ formatDate(adjustment.adjustmentDate) }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Warehouse</label>
+                        <p>{{ adjustment.warehouseName }} ({{ adjustment.warehouseCode }})</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Total Items</label>
+                        <p>{{ adjustment.totalItems }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Submitted By</label>
+                        <p>{{ adjustment.submittedByName || adjustment.submittedBy }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="field">
+                        <label class="font-semibold">Submitted At</label>
+                        <p>{{ formatDateTime(adjustment.submittedAt) }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6" *ngIf="adjustment.reviewedBy">
+                    <div class="field">
+                        <label class="font-semibold">Reviewed By</label>
+                        <p>{{ adjustment.reviewedByName || adjustment.reviewedBy }}</p>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6" *ngIf="adjustment.reviewedAt">
+                    <div class="field">
+                        <label class="font-semibold">Reviewed At</label>
+                        <p>{{ formatDateTime(adjustment.reviewedAt) }}</p>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="adjustment.reviewComments">
+                    <div class="field">
+                        <label class="font-semibold">Review Comments</label>
+                        <p>{{ adjustment.reviewComments }}</p>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="adjustment.notes">
+                    <div class="field">
+                        <label class="font-semibold">Notes</label>
+                        <p>{{ adjustment.notes }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adjustment Details (Line Items) -->
+        <div class="card mb-4">
+            <h3 class="text-xl font-semibold mb-3">Adjustment Items</h3>
+            <p-table [value]="(details$ | async) || []" [loading]="(loading$ | async) || false"
+                styleClass="p-datatable-striped" responsiveLayout="scroll">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Line</th>
+                        <th>Item Code</th>
+                        <th>Item Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Before</th>
+                        <th>After</th>
+                        <th>Reason Category</th>
+                        <th>Reason</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-detail>
+                    <tr>
+                        <td>{{ detail.lineNumber }}</td>
+                        <td>{{ detail.itemCode }}</td>
+                        <td>{{ detail.itemName }}</td>
+                        <td>
+                            <p-tag [value]="getTypeLabel(detail.adjustmentType)"
+                                [severity]="detail.adjustmentType === 'INCREASE' ? 'success' : 'warn'">
+                            </p-tag>
+                        </td>
+                        <td class="font-semibold">
+                            <span [class.text-green-600]="detail.adjustmentType === 'INCREASE'"
+                                [class.text-orange-600]="detail.adjustmentType === 'DECREASE'">
+                                {{ detail.adjustmentType === 'INCREASE' ? '+' : '-' }}{{ detail.quantity }}
+                            </span>
+                        </td>
+                        <td>{{ detail.beforeQuantity }}</td>
+                        <td class="font-semibold">{{ getAfterQuantity(detail) }}</td>
+                        <td>{{ detail.reasonCategory }}</td>
+                        <td>{{ detail.reason }}</td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="summary">
+                    <div class="flex justify-content-end" *ngIf="(details$ | async) as details">
+                        <div class="font-semibold">
+                            Total Quantity Change:
+                            <span [class.text-green-600]="getTotalQuantityChange(details) > 0"
+                                [class.text-orange-600]="getTotalQuantityChange(details) < 0">
+                                {{ getTotalQuantityChange(details) > 0 ? '+' : '' }}{{ getTotalQuantityChange(details)
+                                }}
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="9" class="text-center py-4">No items found</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Approval History Timeline -->
+        <div class="card">
+            <h3 class="text-xl font-semibold mb-3">Approval History</h3>
+            <p-timeline [value]="(auditTrail$ | async) || []" align="left" styleClass="customized-timeline">
+
+                <ng-template pTemplate="marker" let-audit>
+                    <span class="custom-marker shadow-2" [style.backgroundColor]="getTimelineColor(audit.action)">
+                        <i [class]="getTimelineIcon(audit.action)"></i>
+                    </span>
+                </ng-template>
+
+                <ng-template pTemplate="content" let-audit>
+                    <div class="timeline-content">
+                        <div class="font-semibold mb-1">{{ getAuditActionLabel(audit.action) }}</div>
+                        <div class="text-sm text-500 mb-2">
+                            {{ formatDateTime(audit.performedAt) }} by {{ audit.performedByName }}
+                        </div>
+                        <div *ngIf="audit.comments" class="text-sm">
+                            <strong>Comments:</strong> {{ audit.comments }}
+                        </div>
+                        <div *ngIf="audit.beforeStatus && audit.afterStatus" class="text-sm">
+                            <strong>Status Change:</strong>
+                            <p-tag [value]="audit.beforeStatus" severity="secondary" styleClass="mr-2"></p-tag>
+                            <i class="pi pi-arrow-right mr-2"></i>
+                            <p-tag [value]="audit.afterStatus"
+                                [severity]="getStatusSeverity(audit.afterStatus)"></p-tag>
+                        </div>
+                        <div *ngIf="audit.beforeQuantity !== undefined && audit.afterQuantity !== undefined"
+                            class="text-sm">
+                            <strong>Quantity Change:</strong>
+                            {{ audit.beforeQuantity }} → {{ audit.afterQuantity }}
+                        </div>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="opposite" let-audit>
+                    <small class="text-500">{{ formatDateTime(audit.performedAt) }}</small>
+                </ng-template>
+            </p-timeline>
+
+            <div *ngIf="!(auditTrail$ | async)?.length" class="text-center py-4 text-500">
+                No audit trail available
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="(loading$ | async) && !(adjustment$ | async)"
+        class="flex align-items-center justify-content-center py-8">
+        <i class="pi pi-spin pi-spinner text-4xl"></i>
+        <span class="ml-3 text-xl">Loading adjustment details...</span>
+    </div>
+</div>

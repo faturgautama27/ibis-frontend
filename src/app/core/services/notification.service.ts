@@ -33,14 +33,15 @@ export class NotificationService {
      * Display an error notification
      * @param message - The message to display
      * @param title - Optional title (defaults to 'Error')
-     * @param life - Duration in milliseconds (defaults to 5000)
+     * @param life - Duration in milliseconds (defaults to 0 for manual dismiss)
      */
-    error(message: string, title: string = 'Error', life: number = 5000): void {
+    error(message: string, title: string = 'Error', life: number = 0): void {
         this.messageService.add({
             severity: 'error',
             summary: title,
             detail: message,
-            life
+            life,
+            sticky: life === 0
         });
     }
 

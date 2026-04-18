@@ -67,7 +67,7 @@ export class PurchaseOrderListComponent implements OnInit {
 
     // Filter properties for two-way binding
     searchQuery = '';
-    selectedStatus: POStatus[] = [];
+    selectedStatus: POStatus | null = null;
     dateFrom: Date | null = null;
     dateTo: Date | null = null;
 
@@ -115,7 +115,7 @@ export class PurchaseOrderListComponent implements OnInit {
     /**
      * Handle status filter change
      */
-    onStatusChange(status: POStatus[]): void {
+    onStatusChange(status: POStatus | null): void {
         this.selectedStatus = status;
         this.applyFilters();
     }
@@ -142,7 +142,7 @@ export class PurchaseOrderListComponent implements OnInit {
     private applyFilters(): void {
         const filters: POFilters = {
             searchQuery: this.searchQuery || undefined,
-            status: this.selectedStatus.length > 0 ? this.selectedStatus : undefined,
+            status: this.selectedStatus ? [this.selectedStatus] : undefined,
             dateFrom: this.dateFrom || undefined,
             dateTo: this.dateTo || undefined
         };
@@ -155,7 +155,7 @@ export class PurchaseOrderListComponent implements OnInit {
      */
     onClearFilters(): void {
         this.searchQuery = '';
-        this.selectedStatus = [];
+        this.selectedStatus = null;
         this.dateFrom = null;
         this.dateTo = null;
         this.store.dispatch(setFilters({ filters: {} }));
@@ -165,21 +165,21 @@ export class PurchaseOrderListComponent implements OnInit {
      * Navigate to create purchase order page
      */
     onCreateOrder(): void {
-        this.router.navigate(['/purchase-order/create']);
+        this.router.navigate(['/purchase-orders/new']);
     }
 
     /**
      * Navigate to view purchase order details
      */
     onViewOrder(order: PurchaseOrderHeader): void {
-        this.router.navigate(['/purchase-order/view', order.id]);
+        this.router.navigate(['/purchase-orders', order.id]);
     }
 
     /**
      * Navigate to edit purchase order page
      */
     onEditOrder(order: PurchaseOrderHeader): void {
-        this.router.navigate(['/purchase-order/edit', order.id]);
+        this.router.navigate(['/purchase-orders', order.id, 'edit']);
     }
 
     /**

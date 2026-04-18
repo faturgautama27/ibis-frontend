@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { NotificationService } from './notification.service';
 import { PurchaseOrderHeader } from '../../features/purchase-order/models/purchase-order.model';
 import { SalesOrderHeader } from '../../features/sales-order/models/sales-order.model';
+import { BusinessRuleValidator, ItemForValidation } from '../../shared/validators/business-rule.validator';
+import { ItemCategory } from '../../features/item-master/models/item-category.enum';
 
 /**
  * API Integration Service
@@ -31,6 +33,9 @@ export class ApiIntegrationService {
     /**
      * Fetch purchase orders from external API
      * Implements retry strategy for transient errors
+     * Validates item categories for all fetched orders
+     * 
+     * Requirements: 10.5
      * 
      * @param criteria - Search criteria for fetching purchase orders
      * @returns Observable of API sync result containing purchase orders
@@ -49,7 +54,12 @@ export class ApiIntegrationService {
                     return throwError(() => error);
                 }
             }),
-            map(response => this.transformApiResponse<PurchaseOrderHeader>(response)),
+            map(response => {
+                const result = this.transformApiResponse<PurchaseOrderHeader>(response);
+                // Validate item categories for purchase orders
+                result.errors = [...result.errors, ...this.validatePurchaseOrderItems(result.data)];
+                return result;
+            }),
             catchError(error => {
                 this.logApiError('fetchPurchaseOrders', error);
                 this.notifyAdminOfError('fetchPurchaseOrders', error);
@@ -61,8 +71,9 @@ export class ApiIntegrationService {
     /**
      * Fetch sales orders from external API
      * Implements retry strategy for transient errors
+     * Validates item categories for all fetched orders
      * 
-     * Requirements: 5.6, 5.7, 5.8
+     * Requirements: 5.6, 5.7, 5.8, 10.5
      * 
      * @param criteria - Search criteria for fetching sales orders
      * @returns Observable of API sync result containing sales orders
@@ -79,7 +90,12 @@ export class ApiIntegrationService {
                     return throwError(() => error);
                 }
             }),
-            map(response => this.transformApiResponse<SalesOrderHeader>(response)),
+            map(response => {
+                const result = this.transformApiResponse<SalesOrderHeader>(response);
+                // Validate item categories for sales orders
+                result.errors = [...result.errors, ...this.validateSalesOrderItems(result.data)];
+                return result;
+            }),
             catchError(error => {
                 this.logApiError('fetchSalesOrders', error);
                 this.notifyAdminOfError('fetchSalesOrders', error);
@@ -217,15 +233,94 @@ export class ApiIntegrationService {
 
     /**
      * Get API error logs (for admin view)
+     * Enhanced with filtering capabilities
+     * Requirements: 13.3
      * 
+     * @param filters - Optional filters for error logs
      * @returns Array of error logs
      */
-    getErrorLogs(): any[] {
+    getErrorLogs(filters?: ApiErrorLogFilters): any[] {
         try {
-            return JSON.parse(localStorage.getItem('api_error_logs') || '[]');
+            let logs = JSON.parse(localStorage.getItem('api_error_logs') || '[]');
+
+            // Apply filters if provided
+            if (filters) {
+                if (filters.operation) {
+                    logs = logs.filter((log: any) =>
+                        log.operation.toLowerCase().includes(filters.operation!.toLowerCase())
+                    );
+                }
+
+                if (filters.dateFrom) {
+                    logs = logs.filter((log: any) =>
+                        new Date(log.timestamp) >= filters.dateFrom!
+                    );
+                }
+
+                if (filters.dateTo) {
+                    logs = logs.filter((log: any) =>
+                        new Date(log.timestamp) <= filters.dateTo!
+                    );
+                }
+
+                if (filters.status) {
+                    logs = logs.filter((log: any) => log.status === filters.status);
+                }
+            }
+
+            // Sort by timestamp descending (most recent first)
+            logs.sort((a: any, b: any) =>
+                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+
+            return logs;
         } catch (e) {
             console.error('Failed to retrieve error logs:', e);
             return [];
+        }
+    }
+
+    /**
+     * Get error log statistics
+     * Requirements: 13.3
+     * 
+     * @returns Statistics about API errors
+     */
+    getErrorLogStatistics(): ApiErrorStatistics {
+        try {
+            const logs = JSON.parse(localStorage.getItem('api_error_logs') || '[]');
+
+            const stats: ApiErrorStatistics = {
+                totalErrors: logs.length,
+                errorsByOperation: {},
+                errorsByStatus: {},
+                recentErrors: logs.slice(0, 10)
+            };
+
+            logs.forEach((log: any) => {
+                // Count by operation
+                if (!stats.errorsByOperation[log.operation]) {
+                    stats.errorsByOperation[log.operation] = 0;
+                }
+                stats.errorsByOperation[log.operation]++;
+
+                // Count by status
+                const status = log.status || 'unknown';
+                if (!stats.errorsByStatus[status]) {
+                    stats.errorsByStatus[status] = 0;
+                }
+                stats.errorsByStatus[status]++;
+            });
+
+            return stats;
+        } catch (e) {
+            console.error('Failed to retrieve error statistics:', e);
+            return {
+                totalErrors: 0,
+                errorsByOperation: {},
+                errorsByStatus: {},
+                recentErrors: []
+            };
         }
     }
 
@@ -234,6 +329,62 @@ export class ApiIntegrationService {
      */
     clearErrorLogs(): void {
         localStorage.removeItem('api_error_logs');
+    }
+
+    /**
+     * Validate item categories for purchase orders
+     * Ensures all items are RAW_MATERIAL category
+     * Requirements: 10.5
+     * 
+     * @param orders - Purchase orders to validate
+     * @returns Array of API errors for invalid items
+     */
+    private validatePurchaseOrderItems(orders: any[]): ApiError[] {
+        const errors: ApiError[] = [];
+
+        orders.forEach((order: any, orderIndex: number) => {
+            if (order.details && Array.isArray(order.details)) {
+                order.details.forEach((detail: any, detailIndex: number) => {
+                    if (detail.category && detail.category !== ItemCategory.RAW_MATERIAL) {
+                        errors.push({
+                            code: 'INVALID_ITEM_CATEGORY',
+                            message: `PO ${order.poNumber || orderIndex + 1}, Line ${detailIndex + 1}: Item must be RAW_MATERIAL. Found: ${detail.category}`,
+                            field: `orders[${orderIndex}].details[${detailIndex}].category`
+                        });
+                    }
+                });
+            }
+        });
+
+        return errors;
+    }
+
+    /**
+     * Validate item categories for sales orders
+     * Ensures all items are FINISHED_GOOD category
+     * Requirements: 10.5
+     * 
+     * @param orders - Sales orders to validate
+     * @returns Array of API errors for invalid items
+     */
+    private validateSalesOrderItems(orders: any[]): ApiError[] {
+        const errors: ApiError[] = [];
+
+        orders.forEach((order: any, orderIndex: number) => {
+            if (order.details && Array.isArray(order.details)) {
+                order.details.forEach((detail: any, detailIndex: number) => {
+                    if (detail.category && detail.category !== ItemCategory.FINISHED_GOOD) {
+                        errors.push({
+                            code: 'INVALID_ITEM_CATEGORY',
+                            message: `SO ${order.soNumber || orderIndex + 1}, Line ${detailIndex + 1}: Item must be FINISHED_GOOD. Found: ${detail.category}`,
+                            field: `orders[${orderIndex}].details[${detailIndex}].category`
+                        });
+                    }
+                });
+            }
+        });
+
+        return errors;
     }
 }
 
@@ -277,4 +428,26 @@ interface ApiResponse {
     data: any[];
     errors?: ApiError[];
     timestamp: string;
+}
+
+/**
+ * API Error Log Filters
+ * Requirements: 13.3
+ */
+export interface ApiErrorLogFilters {
+    operation?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+    status?: number;
+}
+
+/**
+ * API Error Statistics
+ * Requirements: 13.3
+ */
+export interface ApiErrorStatistics {
+    totalErrors: number;
+    errorsByOperation: { [operation: string]: number };
+    errorsByStatus: { [status: string]: number };
+    recentErrors: any[];
 }

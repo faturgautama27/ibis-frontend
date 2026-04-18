@@ -9,6 +9,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of } from 'rxjs';
 import { map, catchError, exhaustMap, switchMap } from 'rxjs/operators';
 import * as PurchaseOrderActions from './purchase-order.actions';
+import { PurchaseOrderDemoService } from '../services/purchase-order-demo.service';
 
 /**
  * Purchase Order Effects
@@ -17,8 +18,7 @@ import * as PurchaseOrderActions from './purchase-order.actions';
 @Injectable()
 export class PurchaseOrderEffects {
     private actions$ = inject(Actions);
-    // Note: PurchaseOrderService needs to be created and injected here
-    // private purchaseOrderService = inject(PurchaseOrderService);
+    private purchaseOrderService = inject(PurchaseOrderDemoService);
 
     /**
      * Load Orders Effect
@@ -28,22 +28,15 @@ export class PurchaseOrderEffects {
         this.actions$.pipe(
             ofType(PurchaseOrderActions.loadOrders),
             switchMap(({ filters }) => {
-                // TODO: Replace with actual service call
-                // return this.purchaseOrderService.getOrders(filters).pipe(
-                //   map(response => PurchaseOrderActions.loadOrdersSuccess({ 
-                //     orders: response.data, 
-                //     totalRecords: response.totalRecords 
-                //   })),
-                //   catchError(error => of(PurchaseOrderActions.loadOrdersFailure({ 
-                //     error: error.message || 'Failed to load orders' 
-                //   })))
-                // );
-
-                // Placeholder implementation
-                return of(PurchaseOrderActions.loadOrdersSuccess({
-                    orders: [],
-                    totalRecords: 0
-                }));
+                return this.purchaseOrderService.getAll().pipe(
+                    map(orders => PurchaseOrderActions.loadOrdersSuccess({
+                        orders: orders,
+                        totalRecords: orders.length
+                    })),
+                    catchError(error => of(PurchaseOrderActions.loadOrdersFailure({
+                        error: error.message || 'Failed to load orders'
+                    })))
+                );
             })
         )
     );

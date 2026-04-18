@@ -1,0 +1,98 @@
+.stock-adjustment-detail-container {
+    padding: 1.5rem;
+
+    .card {
+        background: var(--surface-card);
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    h2,
+    h3 {
+        margin: 0;
+        color: var(--text-color);
+    }
+
+    .field {
+        margin-bottom: 1rem;
+
+        label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-color-secondary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+    }
+
+    ::ng-deep {
+        .p-datatable {
+            .p-datatable-thead>tr>th {
+                background: var(--surface-100);
+                color: var(--text-color);
+                font-weight: 600;
+                padding: 1rem;
+            }
+
+            .p-datatable-tbody>tr>td {
+                padding: 0.75rem 1rem;
+            }
+
+            .p-datatable-tbody>tr:hover {
+                background: var(--surface-hover);
+            }
+        }
+
+        .p-tag {
+            font-weight: 500;
+            padding: 0.25rem 0.75rem;
+        }
+
+        // Timeline customization
+        .customized-timeline {
+            .p-timeline-event-content {
+                line-height: 1.5;
+            }
+
+            .custom-marker {
+                display: flex;
+                width: 2.5rem;
+                height: 2.5rem;
+                align-items: center;
+                justify-content: center;
+                color: #ffffff;
+                border-radius: 50%;
+                z-index: 1;
+
+                i {
+                    font-size: 1.25rem;
+                }
+            }
+
+            .timeline-content {
+                padding: 1rem;
+                background: var(--surface-50);
+                border-radius: 8px;
+                border-left: 3px solid var(--primary-color);
+            }
+        }
+    }
+
+    @media print {
+        .flex.justify-content-between {
+            display: none !important;
+        }
+
+        .card {
+            box-shadow: none;
+            border: 1px solid #ddd;
+        }
+    }
+}

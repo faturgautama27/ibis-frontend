@@ -1,0 +1,21 @@
+/**
+ * Sales Order Lookup Component Styles
+ */
+
+:host {
+    display: block;
+}
+
+// Ensure table rows are clickable
+::ng-deep .p-datatable-tbody>tr {
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--surface-hover);
+    }
+
+    &.p-highlight {
+        background-color: var(--primary-color);
+        color: var(--primary-color-text);
+    }
+}

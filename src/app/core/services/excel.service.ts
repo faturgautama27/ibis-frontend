@@ -78,6 +78,57 @@ export class ExcelService {
     }
 
     /**
+     * Validate and transform Excel data with business rule validation
+     * Supports additional validation for item categories and other business rules
+     * Requirements: 10.5, 12.1, 12.2, 12.3
+     * 
+     * @param data - Raw data from Excel sheet
+     * @param mapping - Column mapping configuration
+     * @param businessRuleValidator - Optional function for additional business rule validation
+     * @returns ExcelParseResult with validated and transformed data
+     */
+    validateAndTransformWithBusinessRules<T>(
+        data: any[],
+        mapping: ExcelColumnMapping,
+        businessRuleValidator?: (row: T, rowNumber: number) => ExcelImportError[]
+    ): ExcelParseResult<T> {
+        const validRows: T[] = [];
+        const errors: ExcelImportError[] = [];
+
+        data.forEach((row, index) => {
+            const rowNumber = index + 2; // +2 to account for header row (row 1)
+            const validationResult = this.validateRow(row, mapping, rowNumber);
+
+            if (validationResult.valid) {
+                const transformedRow = this.transformRow<T>(row, mapping);
+
+                // Apply business rule validation if provided
+                if (businessRuleValidator) {
+                    const businessRuleErrors = businessRuleValidator(transformedRow, rowNumber);
+                    if (businessRuleErrors.length > 0) {
+                        errors.push(...businessRuleErrors);
+                    } else {
+                        validRows.push(transformedRow);
+                    }
+                } else {
+                    validRows.push(transformedRow);
+                }
+            } else {
+                errors.push(...validationResult.errors);
+            }
+        });
+
+        return {
+            success: errors.length === 0,
+            validRows,
+            errors,
+            totalRows: data.length,
+            validCount: validRows.length,
+            errorCount: errors.length
+        };
+    }
+
+    /**
      * Generate Excel template with headers and sample data
      * @param templateConfig - Configuration for template generation
      */
@@ -96,6 +147,9 @@ export class ExcelService {
 
     /**
      * Export error report to Excel file
+     * Enhanced with detailed error information including row, column, value, and message
+     * Requirements: 12.1, 12.2, 12.3, 12.4
+     * 
      * @param errors - Array of import errors
      * @param fileName - Name for the error report file
      */
@@ -103,7 +157,7 @@ export class ExcelService {
         const errorData = errors.map(error => ({
             'Row': error.row,
             'Column': error.column,
-            'Value': error.value,
+            'Value': error.value !== null && error.value !== undefined ? String(error.value) : '(empty)',
             'Error Message': error.message
         }));
 
@@ -114,12 +168,57 @@ export class ExcelService {
         // Set column widths for better readability
         worksheet['!cols'] = [
             { wch: 8 },  // Row
-            { wch: 20 }, // Column
-            { wch: 20 }, // Value
-            { wch: 50 }  // Error Message
+            { wch: 25 }, // Column
+            { wch: 25 }, // Value
+            { wch: 60 }  // Error Message
         ];
 
+        // Add header styling (if supported by the library version)
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+        for (let col = range.s.c; col <= range.e.c; col++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+            if (!worksheet[cellAddress]) continue;
+            worksheet[cellAddress].s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: 'FFFF00' } }
+            };
+        }
+
         XLSX.writeFile(workbook, fileName);
+    }
+
+    /**
+     * Generate detailed error summary
+     * Requirements: 12.2, 12.3, 12.4
+     * 
+     * @param errors - Array of import errors
+     * @returns Error summary with counts by type and column
+     */
+    generateErrorSummary(errors: ExcelImportError[]): ExcelErrorSummary {
+        const errorsByColumn: { [column: string]: number } = {};
+        const errorsByRow: { [row: number]: number } = {};
+
+        errors.forEach(error => {
+            // Count by column
+            if (!errorsByColumn[error.column]) {
+                errorsByColumn[error.column] = 0;
+            }
+            errorsByColumn[error.column]++;
+
+            // Count by row
+            if (!errorsByRow[error.row]) {
+                errorsByRow[error.row] = 0;
+            }
+            errorsByRow[error.row]++;
+        });
+
+        return {
+            totalErrors: errors.length,
+            errorsByColumn,
+            errorsByRow,
+            affectedRows: Object.keys(errorsByRow).length,
+            affectedColumns: Object.keys(errorsByColumn).length
+        };
     }
 
     /**
@@ -273,4 +372,16 @@ export interface ExcelTemplateConfig {
     sheetName: string;
     sampleData: any[];
     columnWidths?: number[];
+}
+
+/**
+ * Excel error summary
+ * Requirements: 12.2, 12.3, 12.4
+ */
+export interface ExcelErrorSummary {
+    totalErrors: number;
+    errorsByColumn: { [column: string]: number };
+    errorsByRow: { [row: number]: number };
+    affectedRows: number;
+    affectedColumns: number;
 }

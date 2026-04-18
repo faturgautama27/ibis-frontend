@@ -28,6 +28,13 @@ export interface OutboundHeader {
     bc_document_id: string;
     bc_document_number: string;
 
+    // Sales Order reference (Requirements: 7.6, 7.8)
+    sales_order_id?: string;
+    sales_order_number?: string;
+    auto_populated_from_so?: boolean;
+    so_link_date?: Date;
+    so_link_by?: string;
+
     // Customer info
     customer_id: string;
     customer_code: string;
@@ -114,4 +121,17 @@ export function getOutboundTypeLabel(type: OutboundType): string {
         [OutboundType.SAMPLE]: 'Sample'
     };
     return labels[type];
+}
+
+/**
+ * Sales Order Lookup Criteria
+ * Search criteria for SO lookup in Outbound transaction forms
+ * Requirements: 7.6, 7.8
+ */
+export interface SOLookupCriteria {
+    soNumber?: string;
+    customerId?: string;
+    dateFrom?: Date;
+    dateTo?: Date;
+    excludeFullyShipped?: boolean;
 }

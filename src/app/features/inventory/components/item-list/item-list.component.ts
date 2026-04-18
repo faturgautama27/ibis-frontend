@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 
 // PrimeNG imports
@@ -68,9 +68,18 @@ import { Item, ItemType } from '../../models/item.model';
         <div>
           <h1 class="text-2xl font-semibold text-gray-900 flex items-center gap-2">
             <lucide-icon [img]="PackageIcon" class="w-6 h-6 text-sky-600"></lucide-icon>
-            Inventory Items
+            {{ pageTitle }}
           </h1>
-          <p class="text-sm text-gray-600 mt-1">Manage your inventory items and stock</p>
+          <p class="text-sm text-gray-600 mt-1">{{ pageSubtitle }}</p>
+          <button
+            *ngIf="categoryFilter"
+            pButton
+            type="button"
+            label="Back to Dashboard"
+            icon="pi pi-arrow-left"
+            class="p-button-text p-button-sm mt-2"
+            (click)="router.navigate(['/dashboard'])"
+          ></button>
         </div>
         <button
           pButton
@@ -282,7 +291,7 @@ import { Item, ItemType } from '../../models/item.model';
 export class ItemListComponent implements OnInit {
   private inventoryService = inject(InventoryDemoService);
   private messageService = inject(MessageService);
-  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private confirmationService = inject(ConfirmationService);
 
   // Icons
@@ -297,11 +306,15 @@ export class ItemListComponent implements OnInit {
   items: Item[] = [];
   filteredItems: Item[] = [];
   loading = false;
+  router = inject(Router); // Make router public for template access
 
   // Filter properties
   searchQuery = '';
   selectedItemType: string | null = null;
   selectedHazardous: boolean | null = null;
+  categoryFilter: string | null = null; // For RAW_MATERIAL or FINISHED_GOOD filtering
+  pageTitle = 'Inventory Items';
+  pageSubtitle = 'Manage your inventory items and stock';
 
   // Dropdown options
   itemTypeOptions = [
@@ -319,6 +332,22 @@ export class ItemListComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
+    // Check if we have a category filter from route data
+    this.route.data.subscribe(data => {
+      if (data['category']) {
+        this.categoryFilter = data['category'];
+        if (this.categoryFilter === 'RAW_MATERIAL') {
+          this.pageTitle = 'Raw Materials';
+          this.pageSubtitle = 'Manage raw material inventory';
+          this.selectedItemType = ItemType.RAW;
+        } else if (this.categoryFilter === 'FINISHED_GOOD') {
+          this.pageTitle = 'Finished Goods';
+          this.pageSubtitle = 'Manage finished goods inventory';
+          this.selectedItemType = ItemType.FG;
+        }
+      }
+    });
+
     this.loadItems();
   }
 
