@@ -50,7 +50,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Computed property: Get sidebar width class based on toggle state
    */
   get sidebarWidthClass(): string {
-    return this.toggleSidebar ? 'w-80' : 'w-20';
+    return this.toggleSidebar ? 'w-86' : 'w-20';
   }
 
   /**
